@@ -3,5 +3,37 @@
     {
       "mode": "auto"
     }
-  ]
+  ],
+  "eslint.nodePath": "./node_modules",
+  "typescript.tsdk": "./node_modules/typescript/lib",
+  "prettier.prettierPath": "./node_modules/prettier/index.cjs",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+  "[javascript]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "[javascriptreact]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "[typescript]": {
+    "editor.formatOnSave": false,
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "[typescriptreact]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "dbaeumer.vscode-eslint"
+  },
+  "search.useIgnoreFiles": true,
+  "files.associations": {
+    ".code-workspace": "jsonc",
+    ".eslintrc": "jsonc",
+    ".eslintrc*.json": "jsonc",
+    ".stylelintrc": "jsonc",
+    "stylelintrc": "jsonc",
+    "README": "markdown"
+  }
 }
