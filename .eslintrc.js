@@ -1,10 +1,7 @@
-// This configuration only applies to the package manager root.
+require("@rushstack/eslint-patch/modern-module-resolution");
+
 /** @type {import("eslint").Linter.Config} */
 module.exports = {
-  ignorePatterns: ["apps/**", "packages/**"],
-  extends: ["@repo/eslint-config/library.js"],
-  parser: "@typescript-eslint/parser",
-  parserOptions: {
-    project: true,
-  },
-};
+  extends: ['@repo/eslint-config-standard'],
+  root: true,
+}

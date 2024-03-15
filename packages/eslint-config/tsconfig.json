@@ -3,9 +3,8 @@
   "compilerOptions": {
     "rootDir": ".",
     "baseUrl": ".",
-    "paths": {
-      "@/*": ["./src/*"]
-    }
+    "module": "CommonJS",
+    "moduleResolution": "node"
   },
   "include": ["src", "modern.config.ts"]
 }

@@ -4,14 +4,18 @@
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
-    "lint": "turbo lint",
-    "prepare": "husky install .git-hooks",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "lint": "eslint .",
+    "prepare": "husky .git-hooks",
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "lint:fix": "eslint --fix"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.1",
     "@commitlint/cli": "^19.1.0",
     "@commitlint/config-conventional": "^19.1.0",
+    "@ies/eslint-config-standard": "^1.1.0",
+    "@repo/eslint-config-standard": "workspace:^",
+    "@rushstack/eslint-patch": "^1.7.2",
     "husky": "^9.0.11",
     "lint-staged": "^15.2.2",
     "prettier": "^3.2.5",
@@ -23,21 +27,29 @@
     "node": ">=18"
   },
   "eslintIgnore": [
-    "**/*/node_modules",
+    "**/*/es",
     "**/*/lib",
     "**/*/dist",
     "**/*/output",
-    "**/*/.eslintrc.js",
-    "*.less",
-    "*.json",
-    "*.d.ts"
+    "**/node_modules",
+    "**/.eslintrc.js",
+    "**/*.less",
+    "**/*.json"
   ],
   "prettier": {
-    "semi": true,
+    "semi": false,
     "tabWidth": 2,
     "singleQuote": true,
     "trailingComma": "es5",
-    "printWidth": 120
+    "printWidth": 120,
+    "overrides": [
+      {
+        "files": "*.json",
+        "options": {
+          "trailingComma": "none"
+        }
+      }
+    ]
   },
   "lint-staged": {
     "**/*.{js,ts,jsx,tsx}": [
