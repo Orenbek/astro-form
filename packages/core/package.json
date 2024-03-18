@@ -8,6 +8,8 @@
     }
   },
   "scripts": {
+    "build-storybook": "storybook build",
+    "storybook": "storybook dev -p 6006",
     "prepare": "modern build",
     "dev": "modern dev",
     "build": "modern build",
@@ -28,7 +30,11 @@
     "@modern-js/module-tools": "2.48.0",
     "typescript": "~5.0.4",
     "@types/node": "~16.11.7",
-    "rimraf": "~3.0.2"
+    "rimraf": "~3.0.2",
+    "@modern-js/storybook": "2.48.0",
+    "react-dom": "^17",
+    "react": "^17",
+    "@storybook/addon-essentials": "^7"
   },
   "sideEffects": [],
   "publishConfig": {
