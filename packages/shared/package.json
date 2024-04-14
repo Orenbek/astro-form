@@ -1,5 +1,5 @@
 {
-  "name": "@astro-form/core",
+  "name": "@astro-form/shared",
   "version": "0.1.0",
   "exports": {
     ".": {
@@ -24,18 +24,11 @@
     "new": "modern new",
     "upgrade": "modern upgrade"
   },
-  "dependencies": {
-    "@astro-form/shared": "workspace:*",
-    "@formily/path": "^2.3.1",
-    "@formily/validator": "^2.3.1"
-  },
   "devDependencies": {
     "@modern-js/module-tools": "2.48.0",
     "@modern-js/storybook": "2.48.0",
     "@storybook/addon-essentials": "^7",
     "@types/node": "~16.11.7",
-    "react": "^17",
-    "react-dom": "^17",
     "rimraf": "~3.0.2",
     "typescript": "~5.0.4"
   },
