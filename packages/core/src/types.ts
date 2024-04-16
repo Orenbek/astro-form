@@ -69,6 +69,57 @@ export enum LifeCycleTypes {
   ON_FIELD_UNMOUNT = 'onFieldUnmount',
 }
 
+export type FormLifeCycleUnion =
+  | LifeCycleTypes.ON_FORM_INIT
+  | LifeCycleTypes.ON_FORM_MOUNT
+  | LifeCycleTypes.ON_FORM_UNMOUNT
+  | LifeCycleTypes.ON_FORM_INPUT_CHANGE
+  | LifeCycleTypes.ON_FORM_VALUES_CHANGE
+  | LifeCycleTypes.ON_FORM_INITIAL_VALUES_CHANGE
+  | LifeCycleTypes.ON_FORM_SUBMIT
+  | LifeCycleTypes.ON_FORM_RESET
+  | LifeCycleTypes.ON_FORM_SUBMIT_START
+  | LifeCycleTypes.ON_FORM_SUBMITTING
+  | LifeCycleTypes.ON_FORM_SUBMIT_END
+  | LifeCycleTypes.ON_FORM_SUBMIT_VALIDATE_START
+  | LifeCycleTypes.ON_FORM_SUBMIT_VALIDATE_SUCCESS
+  | LifeCycleTypes.ON_FORM_SUBMIT_VALIDATE_FAILED
+  | LifeCycleTypes.ON_FORM_SUBMIT_VALIDATE_END
+  | LifeCycleTypes.ON_FORM_SUBMIT_SUCCESS
+  | LifeCycleTypes.ON_FORM_SUBMIT_FAILED
+  | LifeCycleTypes.ON_FORM_VALIDATE_START
+  | LifeCycleTypes.ON_FORM_VALIDATING
+  | LifeCycleTypes.ON_FORM_VALIDATE_SUCCESS
+  | LifeCycleTypes.ON_FORM_VALIDATE_FAILED
+  | LifeCycleTypes.ON_FORM_VALIDATE_END
+  | LifeCycleTypes.ON_FORM_GRAPH_CHANGE
+  | LifeCycleTypes.ON_FORM_LOADING
+
+export type FieldLifeCycleUnion =
+  | LifeCycleTypes.ON_FIELD_INIT
+  | LifeCycleTypes.ON_FIELD_INPUT_VALUE_CHANGE
+  | LifeCycleTypes.ON_FIELD_VALUE_CHANGE
+  | LifeCycleTypes.ON_FIELD_INITIAL_VALUE_CHANGE
+  | LifeCycleTypes.ON_FIELD_SUBMIT
+  | LifeCycleTypes.ON_FIELD_SUBMIT_START
+  | LifeCycleTypes.ON_FIELD_SUBMITTING
+  | LifeCycleTypes.ON_FIELD_SUBMIT_END
+  | LifeCycleTypes.ON_FIELD_SUBMIT_VALIDATE_START
+  | LifeCycleTypes.ON_FIELD_SUBMIT_VALIDATE_SUCCESS
+  | LifeCycleTypes.ON_FIELD_SUBMIT_VALIDATE_FAILED
+  | LifeCycleTypes.ON_FIELD_SUBMIT_VALIDATE_END
+  | LifeCycleTypes.ON_FIELD_SUBMIT_SUCCESS
+  | LifeCycleTypes.ON_FIELD_SUBMIT_FAILED
+  | LifeCycleTypes.ON_FIELD_VALIDATE_START
+  | LifeCycleTypes.ON_FIELD_VALIDATING
+  | LifeCycleTypes.ON_FIELD_VALIDATE_SUCCESS
+  | LifeCycleTypes.ON_FIELD_VALIDATE_FAILED
+  | LifeCycleTypes.ON_FIELD_VALIDATE_END
+  | LifeCycleTypes.ON_FIELD_LOADING
+  | LifeCycleTypes.ON_FIELD_RESET
+  | LifeCycleTypes.ON_FIELD_MOUNT
+  | LifeCycleTypes.ON_FIELD_UNMOUNT
+
 export type FieldDisplayTypes = 'none' | 'hidden' | 'visible' | (object & string)
 
 export type FieldPatternTypes = 'editable' | 'disabled' | 'readPretty' | (object & string)

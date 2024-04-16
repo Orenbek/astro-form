@@ -1,7 +1,6 @@
 export type { Form } from './Form'
 export type { Field } from './Field'
 export type { Query } from './Query'
-export type { Heart } from './Heart'
 export type { LifeCycle } from './LifeCycle'
 export type { ArrayField } from './ArrayField'
 export type { ObjectField } from './ObjectField'

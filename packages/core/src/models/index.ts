@@ -1,4 +1,3 @@
-export * from './Heart'
 export * from './LifeCycle'
 export * from './Query'
 export * from './Form'

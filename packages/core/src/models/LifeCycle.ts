@@ -1,51 +1,45 @@
-/* eslint-disable no-plusplus */
-import { isFn, isObj, isStr } from '@astro-form/shared'
+import { Subscribable, Subscriber, EventType } from './Subscribable'
 
-export type LifeCycleHandler<T> = (payload: T, context: any) => void
-export type LifeCyclePayload<T> = (
-  params: {
-    type: string
-    payload: T
-  },
-  context: any
-) => void
+export class LifeCycle {
+  private subscriber = new Subscribable()
 
-type LifeCycleParams<Payload> = Array<string | LifeCycleHandler<Payload> | { [key: string]: LifeCycleHandler<Payload> }>
-export class LifeCycle<Payload = any> {
-  private listener: LifeCyclePayload<Payload>
+  /** 缓存 effect 下注册的所有 eventListener 的 dispose 函数 */
+  private effects: Map<string, Array<() => void>> = new Map()
 
-  constructor(...params: LifeCycleParams<Payload>) {
-    this.listener = this.buildListener(params)
-  }
+  private eventDisposer: Array<() => void> = []
 
-  buildListener(params: LifeCycleParams<Payload>) {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const that = this
-    return function (payload: { type: string; payload: Payload }, ctx: any) {
-      for (let index = 0; index < params.length; index++) {
-        const item = params[index]
-        const handlerFn = params[index + 1]
-        if (isFn(item)) {
-          item.call(that, payload.payload, ctx)
-        } else if (isStr(item) && isFn(handlerFn)) {
-          if (item === payload.type) {
-            handlerFn.call(that, payload.payload, ctx)
-          }
-          index++
-        } else if (isObj(item)) {
-          Object.entries(item).forEach(([type, handler]) => {
-            if (type === payload.type) {
-              handler.call(that, payload.payload, ctx)
-            }
-          })
-        }
-      }
+  addEffects(id: string, effects: () => void) {
+    if (this.effects.has(id)) {
+      // 如果有注册 则删除重新添加
+      this.removeEffects(id)
+    }
+    try {
+      effects()
+    } finally {
+      this.effects.set(id, this.eventDisposer)
+      this.eventDisposer = []
     }
   }
 
-  notify(type: any, payload?: Payload, ctx?: any) {
-    if (isStr(type)) {
-      this.listener.call(ctx, { type, payload: payload as Payload }, ctx)
-    }
+  removeEffects(id: string) {
+    const disposers = this.effects.get(id)
+    if (!disposers) return
+    disposers.forEach((dispose) => dispose())
+    this.effects.delete(id)
+  }
+
+  /** 注册生命周期监听函数 */
+  registerLifeCycleSubscriber(sub: Subscriber) {
+    const dispose = this.subscriber.subscribe(sub)
+    this.eventDisposer.push(dispose)
+  }
+
+  clearAll() {
+    this.effects.clear()
+    this.subscriber.clearAll()
+  }
+
+  emit(event: EventType) {
+    this.subscriber.emit(event)
   }
 }
