@@ -1,5 +1,5 @@
-import { Form, Field, ArrayField, ObjectField } from '@/models'
-import { JSXComponent } from '@/types'
+import { Form, Field, ArrayField, ObjectField, Query } from '@/models'
+import { GeneralField, JSXComponent } from '@/types'
 
 export const isForm = (node: any): node is Form => {
   return node instanceof Form
@@ -21,4 +21,12 @@ export const isObjectField = <Component extends JSXComponent = any, ValueType ex
   node: any
 ): node is ObjectField<Component, ValueType> => {
   return node instanceof ObjectField
+}
+
+export const isGeneralField = (node: any): node is GeneralField => {
+  return node instanceof Field || node instanceof ArrayField || node instanceof ObjectField
+}
+
+export const isQuery = (query: any): query is Query => {
+  return query && query instanceof Query
 }
