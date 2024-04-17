@@ -134,6 +134,12 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
     }
   }
 
+  /** form 中挂载 field */
+  protected locate<F extends Field>(path: FormPathPattern, field: F) {
+    this.form.fields[path.toString()] = field as any
+    locateNode(field, path)
+  }
+
   get parent(): Field | ArrayField | ObjectField | undefined {
     let parent = this.path.parent()
     let identifier = parent.toString()
@@ -346,12 +352,6 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
     return !this.form.fields[this.path.toString()]
   }
 
-  /** form 中挂载 field */
-  protected locate<F extends Field>(path: FormPathPattern, field: F) {
-    this.form.fields[path.toString()] = field as any
-    locateNode(field, path)
-  }
-
   setValue(value: ValueType) {
     if (this.destroyed) return
     if (this.display === 'none') {
@@ -483,6 +483,10 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
 
   queryFeedbacks(search: ISearchFeedback): IFieldFeedback[] {
     return queryFeedbacks(this, search)
+  }
+
+  match = (pattern: FormPathPattern) => {
+    return FormPath.parse(pattern).match(this.path)
   }
 
   // 父组件负责实现，因为需要在 notify 执行时上报 field 实例

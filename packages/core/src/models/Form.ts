@@ -6,8 +6,6 @@ import { isValid, isObj, isArr, isPlainObj } from '@astro-form/shared'
 import structuredClone from '@ungap/structured-clone'
 import { reaction, makeObservable, observable, computed, action } from 'mobx'
 
-import { DEAULT_EFFECT_ID_NAME } from '@/shared/constants'
-
 import {
   JSXComponent,
   LifeCycleTypes,
@@ -105,9 +103,6 @@ export class Form<ValueType extends object = any> {
     this.hidden = props.hidden
     this.values = structuredClone(props.values || {})
     this.initialValues = structuredClone(props.initialValues || {})
-    if (props.effects) {
-      this.addEffects(DEAULT_EFFECT_ID_NAME, props.effects)
-    }
   }
 
   protected makeObservable() {
@@ -524,7 +519,7 @@ export class Form<ValueType extends object = any> {
         this.lifecycle.registerLifeCycleSubscriber({
           type: lifecycle,
           cb: (field) => {
-            if (FormPath.parse(args[1]).matchAliasGroup(field.address, field.path)) {
+            if (FormPath.parse(args[1]).match(field.path)) {
               args[2](field, this)
             }
           },
@@ -544,7 +539,7 @@ export class Form<ValueType extends object = any> {
   }
 
   queryFeedbacks(search: ISearchFeedback): IFormFeedback[] {
-    return this.query(search.path || '*').reduce((messages, field) => {
+    return this.query(search.path || '*').reduce<IFormFeedback[]>((messages, field) => {
       return messages.concat(
         field
           .queryFeedbacks(search)
@@ -579,7 +574,6 @@ export class Form<ValueType extends object = any> {
     this.disposers.forEach((dispose) => dispose())
     this.unmounted = true
     this.indexes = {}
-    this.removeEffects(DEAULT_EFFECT_ID_NAME)
   }
 
   async validate(pattern: FormPathPattern = '*') {

@@ -80,27 +80,12 @@ export class Query {
 
   reduce<Result>(reducer: (value: Result, field: GeneralField, path: FormPath) => Result, initial?: Result): Result {
     return this.paths.reduce(
-      (value, path) => output(this.form.fields[path], (field, _path) => reducer(value, field, _path)),
+      (value, path) => output(this.form.fields[path], (field, _path) => reducer(value!, field, _path)),
       initial
     ) as any
   }
 
-  get<K extends keyof IGeneralFieldState>(key: K): IGeneralFieldState[K] {
-    const results: any = this.take()
-    if (results) {
-      return results[key]
-    }
-  }
-
-  getIn(pattern?: FormPathPattern) {
+  getIn(pattern: FormPathPattern) {
     return FormPath.getIn(this.take(), pattern)
-  }
-
-  value() {
-    return this.get('value')
-  }
-
-  initialValue() {
-    return this.get('initialValue')
   }
 }
