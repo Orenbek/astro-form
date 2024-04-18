@@ -16,11 +16,10 @@ export class ObjectField<Component extends JSXComponent = any, ValueType extends
 
   constructor(path: FormPathPattern, props: IFieldProps<Component>, form: Form) {
     super(path, props, form)
-    this.locate(path, this)
-    this.makeObservable()
+    this.#makeObservable()
   }
 
-  protected makeObservable() {
+  #makeObservable() {
     makeObservable(this, {
       setValue: override,
       addProperty: action,

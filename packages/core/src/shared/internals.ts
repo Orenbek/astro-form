@@ -5,7 +5,7 @@ import { parseValidatorDescriptions, ValidatorTriggerType, validate, IValidateRe
 import { runInAction, toJS } from 'mobx'
 
 import {
-  LifeCycleTypes,
+  LifeCycles,
   IFormFeedback,
   ISearchFeedback,
   IFieldFeedback,
@@ -19,7 +19,7 @@ import { isArrayField, isForm, isObjectField } from '@/shared/checkers'
 
 import { RESPONSE_REQUEST_DURATION, NumberIndexReg } from './constants'
 
-const notify = (target: Form | BaseField, formType: LifeCycleTypes, fieldType: LifeCycleTypes) => {
+const notify = (target: Form | BaseField, formType: LifeCycles, fieldType: LifeCycles) => {
   if (isForm(target)) {
     target.notify(formType)
   } else {
@@ -71,15 +71,15 @@ export const setValidating = (target: Form | BaseField, validating: boolean) => 
     target.requests.validate = setTimeout(() => {
       runInAction(() => {
         target.validating = validating
-        notify(target, LifeCycleTypes.ON_FORM_VALIDATING, LifeCycleTypes.ON_FIELD_VALIDATING)
+        notify(target, LifeCycles.ON_FORM_VALIDATING, LifeCycles.ON_FIELD_VALIDATING)
       })
     }, RESPONSE_REQUEST_DURATION)
-    notify(target, LifeCycleTypes.ON_FORM_VALIDATE_START, LifeCycleTypes.ON_FIELD_VALIDATE_START)
+    notify(target, LifeCycles.ON_FORM_VALIDATE_START, LifeCycles.ON_FIELD_VALIDATE_START)
   } else {
     if (target.validating !== validating) {
       target.validating = validating
     }
-    notify(target, LifeCycleTypes.ON_FORM_VALIDATE_END, LifeCycleTypes.ON_FIELD_VALIDATE_END)
+    notify(target, LifeCycles.ON_FORM_VALIDATE_END, LifeCycles.ON_FIELD_VALIDATE_END)
   }
 }
 
@@ -89,15 +89,15 @@ export const setSubmitting = (target: Form | BaseField, submitting: boolean) => 
     target.requests.submit = setTimeout(() => {
       runInAction(() => {
         target.submitting = submitting
-        notify(target, LifeCycleTypes.ON_FORM_SUBMITTING, LifeCycleTypes.ON_FIELD_SUBMITTING)
+        notify(target, LifeCycles.ON_FORM_SUBMITTING, LifeCycles.ON_FIELD_SUBMITTING)
       })
     }, RESPONSE_REQUEST_DURATION)
-    notify(target, LifeCycleTypes.ON_FORM_SUBMIT_START, LifeCycleTypes.ON_FIELD_SUBMIT_START)
+    notify(target, LifeCycles.ON_FORM_SUBMIT_START, LifeCycles.ON_FIELD_SUBMIT_START)
   } else {
     if (target.submitting !== submitting) {
       target.submitting = submitting
     }
-    notify(target, LifeCycleTypes.ON_FORM_SUBMIT_END, LifeCycleTypes.ON_FIELD_SUBMIT_END)
+    notify(target, LifeCycles.ON_FORM_SUBMIT_END, LifeCycles.ON_FIELD_SUBMIT_END)
   }
 }
 
@@ -107,7 +107,7 @@ export const setLoading = (target: Form | BaseField, loading: boolean) => {
     target.requests.loading = setTimeout(() => {
       runInAction(() => {
         target.loading = loading
-        notify(target, LifeCycleTypes.ON_FORM_LOADING, LifeCycleTypes.ON_FIELD_LOADING)
+        notify(target, LifeCycles.ON_FORM_LOADING, LifeCycles.ON_FIELD_LOADING)
       })
     }, RESPONSE_REQUEST_DURATION)
   } else if (target.loading !== loading) {
@@ -195,13 +195,13 @@ export const batchSubmit = async <T>(
   }
   target.setSubmitting(true)
   try {
-    notify(target, LifeCycleTypes.ON_FORM_SUBMIT_VALIDATE_START, LifeCycleTypes.ON_FIELD_SUBMIT_VALIDATE_START)
+    notify(target, LifeCycles.ON_FORM_SUBMIT_VALIDATE_START, LifeCycles.ON_FIELD_SUBMIT_VALIDATE_START)
     await target.validate()
-    notify(target, LifeCycleTypes.ON_FORM_SUBMIT_VALIDATE_SUCCESS, LifeCycleTypes.ON_FIELD_SUBMIT_VALIDATE_SUCCESS)
+    notify(target, LifeCycles.ON_FORM_SUBMIT_VALIDATE_SUCCESS, LifeCycles.ON_FIELD_SUBMIT_VALIDATE_SUCCESS)
   } catch (e) {
-    notify(target, LifeCycleTypes.ON_FORM_SUBMIT_VALIDATE_FAILED, LifeCycleTypes.ON_FIELD_SUBMIT_VALIDATE_FAILED)
+    notify(target, LifeCycles.ON_FORM_SUBMIT_VALIDATE_FAILED, LifeCycles.ON_FIELD_SUBMIT_VALIDATE_FAILED)
   }
-  notify(target, LifeCycleTypes.ON_FORM_SUBMIT_VALIDATE_END, LifeCycleTypes.ON_FIELD_SUBMIT_VALIDATE_END)
+  notify(target, LifeCycles.ON_FORM_SUBMIT_VALIDATE_END, LifeCycles.ON_FIELD_SUBMIT_VALIDATE_END)
   let results: any
   try {
     if (target.invalid) {
@@ -213,15 +213,15 @@ export const batchSubmit = async <T>(
     } else {
       results = getValues(target)
     }
-    notify(target, LifeCycleTypes.ON_FORM_SUBMIT_SUCCESS, LifeCycleTypes.ON_FIELD_SUBMIT_SUCCESS)
+    notify(target, LifeCycles.ON_FORM_SUBMIT_SUCCESS, LifeCycles.ON_FIELD_SUBMIT_SUCCESS)
   } catch (e) {
     target.setSubmitting(false)
-    notify(target, LifeCycleTypes.ON_FORM_SUBMIT_FAILED, LifeCycleTypes.ON_FIELD_SUBMIT_FAILED)
-    notify(target, LifeCycleTypes.ON_FORM_SUBMIT, LifeCycleTypes.ON_FIELD_SUBMIT)
+    notify(target, LifeCycles.ON_FORM_SUBMIT_FAILED, LifeCycles.ON_FIELD_SUBMIT_FAILED)
+    notify(target, LifeCycles.ON_FORM_SUBMIT, LifeCycles.ON_FIELD_SUBMIT)
     throw e
   }
   target.setSubmitting(false)
-  notify(target, LifeCycleTypes.ON_FORM_SUBMIT, LifeCycleTypes.ON_FIELD_SUBMIT)
+  notify(target, LifeCycles.ON_FORM_SUBMIT, LifeCycles.ON_FIELD_SUBMIT)
   return results
 }
 
@@ -252,9 +252,9 @@ export const validateSelf = async (target: Field, triggerType?: ValidatorTrigger
     setValidating(target, false)
     if (noEmit) return
     if (target.selfValid) {
-      target.notify(LifeCycleTypes.ON_FIELD_VALIDATE_SUCCESS)
+      target.notify(LifeCycles.ON_FIELD_VALIDATE_SUCCESS)
     } else {
-      target.notify(LifeCycleTypes.ON_FIELD_VALIDATE_FAILED)
+      target.notify(LifeCycles.ON_FIELD_VALIDATE_FAILED)
     }
   }
 
@@ -308,11 +308,11 @@ export const batchValidate = async (
     target.setValidating(false)
   }
   if (target.invalid) {
-    notify(target, LifeCycleTypes.ON_FORM_VALIDATE_FAILED, LifeCycleTypes.ON_FIELD_VALIDATE_FAILED)
+    notify(target, LifeCycles.ON_FORM_VALIDATE_FAILED, LifeCycles.ON_FIELD_VALIDATE_FAILED)
     // eslint-disable-next-line @typescript-eslint/no-throw-literal
     throw target.errors
   }
-  notify(target, LifeCycleTypes.ON_FORM_VALIDATE_SUCCESS, LifeCycleTypes.ON_FIELD_VALIDATE_SUCCESS)
+  notify(target, LifeCycles.ON_FORM_VALIDATE_SUCCESS, LifeCycles.ON_FIELD_VALIDATE_SUCCESS)
 }
 
 export const resetSelf = (target: Field, options?: IFieldResetOptions, noEmit = false) => {
@@ -337,7 +337,7 @@ export const resetSelf = (target: Field, options?: IFieldResetOptions, noEmit = 
     }
   }
   if (!noEmit) {
-    target.notify(LifeCycleTypes.ON_FIELD_RESET)
+    target.notify(LifeCycles.ON_FIELD_RESET)
   }
   if (options?.validate) {
     return validateSelf(target)
@@ -353,7 +353,7 @@ export const batchReset = async (target: Form | Field, pattern: FormPathPattern,
   if (isForm(target)) {
     target.modified = false
   }
-  notify(target, LifeCycleTypes.ON_FORM_RESET, LifeCycleTypes.ON_FIELD_RESET)
+  notify(target, LifeCycles.ON_FORM_RESET, LifeCycles.ON_FIELD_RESET)
   await Promise.all(tasks)
 }
 
@@ -529,7 +529,7 @@ export const spliceArrayState = (
     }
   })
   patchFieldStates(fields, fieldPatches)
-  field.form.notify(LifeCycleTypes.ON_FORM_GRAPH_CHANGE)
+  field.form.notify(LifeCycles.ON_FORM_GRAPH_CHANGE)
 }
 
 export const exchangeArrayState = (
@@ -601,5 +601,5 @@ export const exchangeArrayState = (
     }
   })
   patchFieldStates(fields, fieldPatches)
-  field.form.notify(LifeCycleTypes.ON_FORM_GRAPH_CHANGE)
+  field.form.notify(LifeCycles.ON_FORM_GRAPH_CHANGE)
 }

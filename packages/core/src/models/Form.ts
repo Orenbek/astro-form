@@ -4,11 +4,11 @@ import { Path as FormPath, Pattern as FormPathPattern } from '@formily/path'
 import { merge } from '@formily/shared/esm/merge'
 import { isValid, isObj, isArr, isPlainObj } from '@astro-form/shared'
 import structuredClone from '@ungap/structured-clone'
-import { reaction, makeObservable, observable, computed, action } from 'mobx'
+import { reaction, makeObservable, observable, computed, action, toJS } from 'mobx'
 
 import {
   JSXComponent,
-  LifeCycleTypes,
+  LifeCycles,
   FormPatternTypes,
   IFormFeedback,
   ISearchFeedback,
@@ -75,7 +75,7 @@ export class Form<ValueType extends object = any> {
 
   constructor(props: IFormProps<ValueType>) {
     this.initialize(props)
-    this.makeObservable()
+    this.#makeObservable()
     this.makeReactive()
     this.onInit()
   }
@@ -101,7 +101,7 @@ export class Form<ValueType extends object = any> {
     this.initialValues = structuredClone(props.initialValues || {})
   }
 
-  protected makeObservable() {
+  #makeObservable() {
     makeObservable<Form, '_display' | '_pattern'>(this, {
       _display: observable.ref,
       _pattern: observable.ref,
@@ -155,7 +155,7 @@ export class Form<ValueType extends object = any> {
         () => this.values,
         () => {
           if (this.initialized) {
-            this.notify(LifeCycleTypes.ON_FORM_VALUES_CHANGE)
+            this.notify(LifeCycles.ON_FORM_VALUES_CHANGE)
           }
         }
       ),
@@ -163,7 +163,7 @@ export class Form<ValueType extends object = any> {
         () => this.initialValues,
         () => {
           if (this.initialized) {
-            this.notify(LifeCycleTypes.ON_FORM_INITIAL_VALUES_CHANGE)
+            this.notify(LifeCycles.ON_FORM_INITIAL_VALUES_CHANGE)
           }
         }
       )
@@ -287,7 +287,7 @@ export class Form<ValueType extends object = any> {
     if (!identifier) return undefined
     if (!this.fields[identifier]) {
       new Field(path, props, this)
-      this.notify(LifeCycleTypes.ON_FORM_GRAPH_CHANGE)
+      this.notify(LifeCycles.ON_FORM_GRAPH_CHANGE)
     }
     return this.fields[identifier] as Field
   }
@@ -307,7 +307,7 @@ export class Form<ValueType extends object = any> {
         },
         this
       )
-      this.notify(LifeCycleTypes.ON_FORM_GRAPH_CHANGE)
+      this.notify(LifeCycles.ON_FORM_GRAPH_CHANGE)
     }
     return this.fields[identifier] as any
   }
@@ -327,7 +327,7 @@ export class Form<ValueType extends object = any> {
         },
         this
       )
-      this.notify(LifeCycleTypes.ON_FORM_GRAPH_CHANGE)
+      this.notify(LifeCycles.ON_FORM_GRAPH_CHANGE)
     }
     return this.fields[identifier] as any
   }
@@ -381,7 +381,7 @@ export class Form<ValueType extends object = any> {
   }
 
   getValuesIn(pattern: FormPathPattern) {
-    return FormPath.getIn(this.values, pattern)
+    return toJS(FormPath.getIn(this.values, pattern))
   }
 
   deleteInitialValuesIn(pattern: FormPathPattern) {
@@ -393,7 +393,7 @@ export class Form<ValueType extends object = any> {
   }
 
   getInitialValuesIn(pattern: FormPathPattern) {
-    return FormPath.getIn(this.initialValues, pattern)
+    return toJS(FormPath.getIn(this.initialValues, pattern))
   }
 
   setDisplay(display: FormDisplayTypes) {
@@ -460,58 +460,58 @@ export class Form<ValueType extends object = any> {
   ) {
     const [lifecycle] = args
     switch (lifecycle) {
-      case LifeCycleTypes.ON_FORM_INIT:
-      case LifeCycleTypes.ON_FORM_MOUNT:
-      case LifeCycleTypes.ON_FORM_UNMOUNT:
-      case LifeCycleTypes.ON_FORM_INPUT_CHANGE:
-      case LifeCycleTypes.ON_FORM_VALUES_CHANGE:
-      case LifeCycleTypes.ON_FORM_INITIAL_VALUES_CHANGE:
-      case LifeCycleTypes.ON_FORM_SUBMIT:
-      case LifeCycleTypes.ON_FORM_RESET:
-      case LifeCycleTypes.ON_FORM_SUBMIT_START:
-      case LifeCycleTypes.ON_FORM_SUBMITTING:
-      case LifeCycleTypes.ON_FORM_SUBMIT_END:
-      case LifeCycleTypes.ON_FORM_SUBMIT_VALIDATE_START:
-      case LifeCycleTypes.ON_FORM_SUBMIT_VALIDATE_SUCCESS:
-      case LifeCycleTypes.ON_FORM_SUBMIT_VALIDATE_FAILED:
-      case LifeCycleTypes.ON_FORM_SUBMIT_VALIDATE_END:
-      case LifeCycleTypes.ON_FORM_SUBMIT_SUCCESS:
-      case LifeCycleTypes.ON_FORM_SUBMIT_FAILED:
-      case LifeCycleTypes.ON_FORM_VALIDATE_START:
-      case LifeCycleTypes.ON_FORM_VALIDATING:
-      case LifeCycleTypes.ON_FORM_VALIDATE_SUCCESS:
-      case LifeCycleTypes.ON_FORM_VALIDATE_FAILED:
-      case LifeCycleTypes.ON_FORM_VALIDATE_END:
-      case LifeCycleTypes.ON_FORM_GRAPH_CHANGE:
-      case LifeCycleTypes.ON_FORM_LOADING:
+      case LifeCycles.ON_FORM_INIT:
+      case LifeCycles.ON_FORM_MOUNT:
+      case LifeCycles.ON_FORM_UNMOUNT:
+      case LifeCycles.ON_FORM_INPUT_CHANGE:
+      case LifeCycles.ON_FORM_VALUES_CHANGE:
+      case LifeCycles.ON_FORM_INITIAL_VALUES_CHANGE:
+      case LifeCycles.ON_FORM_SUBMIT:
+      case LifeCycles.ON_FORM_RESET:
+      case LifeCycles.ON_FORM_SUBMIT_START:
+      case LifeCycles.ON_FORM_SUBMITTING:
+      case LifeCycles.ON_FORM_SUBMIT_END:
+      case LifeCycles.ON_FORM_SUBMIT_VALIDATE_START:
+      case LifeCycles.ON_FORM_SUBMIT_VALIDATE_SUCCESS:
+      case LifeCycles.ON_FORM_SUBMIT_VALIDATE_FAILED:
+      case LifeCycles.ON_FORM_SUBMIT_VALIDATE_END:
+      case LifeCycles.ON_FORM_SUBMIT_SUCCESS:
+      case LifeCycles.ON_FORM_SUBMIT_FAILED:
+      case LifeCycles.ON_FORM_VALIDATE_START:
+      case LifeCycles.ON_FORM_VALIDATING:
+      case LifeCycles.ON_FORM_VALIDATE_SUCCESS:
+      case LifeCycles.ON_FORM_VALIDATE_FAILED:
+      case LifeCycles.ON_FORM_VALIDATE_END:
+      case LifeCycles.ON_FORM_GRAPH_CHANGE:
+      case LifeCycles.ON_FORM_LOADING:
         this.lifecycle.registerLifeCycleSubscriber({
           type: lifecycle,
           cb: () => args[1](this),
         })
         break
-      case LifeCycleTypes.ON_FIELD_INIT:
-      case LifeCycleTypes.ON_FIELD_INPUT_VALUE_CHANGE:
-      case LifeCycleTypes.ON_FIELD_VALUE_CHANGE:
-      case LifeCycleTypes.ON_FIELD_INITIAL_VALUE_CHANGE:
-      case LifeCycleTypes.ON_FIELD_SUBMIT:
-      case LifeCycleTypes.ON_FIELD_SUBMIT_START:
-      case LifeCycleTypes.ON_FIELD_SUBMITTING:
-      case LifeCycleTypes.ON_FIELD_SUBMIT_END:
-      case LifeCycleTypes.ON_FIELD_SUBMIT_VALIDATE_START:
-      case LifeCycleTypes.ON_FIELD_SUBMIT_VALIDATE_SUCCESS:
-      case LifeCycleTypes.ON_FIELD_SUBMIT_VALIDATE_FAILED:
-      case LifeCycleTypes.ON_FIELD_SUBMIT_VALIDATE_END:
-      case LifeCycleTypes.ON_FIELD_SUBMIT_SUCCESS:
-      case LifeCycleTypes.ON_FIELD_SUBMIT_FAILED:
-      case LifeCycleTypes.ON_FIELD_VALIDATE_START:
-      case LifeCycleTypes.ON_FIELD_VALIDATING:
-      case LifeCycleTypes.ON_FIELD_VALIDATE_SUCCESS:
-      case LifeCycleTypes.ON_FIELD_VALIDATE_FAILED:
-      case LifeCycleTypes.ON_FIELD_VALIDATE_END:
-      case LifeCycleTypes.ON_FIELD_LOADING:
-      case LifeCycleTypes.ON_FIELD_RESET:
-      case LifeCycleTypes.ON_FIELD_MOUNT:
-      case LifeCycleTypes.ON_FIELD_UNMOUNT:
+      case LifeCycles.ON_FIELD_INIT:
+      case LifeCycles.ON_FIELD_INPUT_VALUE_CHANGE:
+      case LifeCycles.ON_FIELD_VALUE_CHANGE:
+      case LifeCycles.ON_FIELD_INITIAL_VALUE_CHANGE:
+      case LifeCycles.ON_FIELD_SUBMIT:
+      case LifeCycles.ON_FIELD_SUBMIT_START:
+      case LifeCycles.ON_FIELD_SUBMITTING:
+      case LifeCycles.ON_FIELD_SUBMIT_END:
+      case LifeCycles.ON_FIELD_SUBMIT_VALIDATE_START:
+      case LifeCycles.ON_FIELD_SUBMIT_VALIDATE_SUCCESS:
+      case LifeCycles.ON_FIELD_SUBMIT_VALIDATE_FAILED:
+      case LifeCycles.ON_FIELD_SUBMIT_VALIDATE_END:
+      case LifeCycles.ON_FIELD_SUBMIT_SUCCESS:
+      case LifeCycles.ON_FIELD_SUBMIT_FAILED:
+      case LifeCycles.ON_FIELD_VALIDATE_START:
+      case LifeCycles.ON_FIELD_VALIDATING:
+      case LifeCycles.ON_FIELD_VALIDATE_SUCCESS:
+      case LifeCycles.ON_FIELD_VALIDATE_FAILED:
+      case LifeCycles.ON_FIELD_VALIDATE_END:
+      case LifeCycles.ON_FIELD_LOADING:
+      case LifeCycles.ON_FIELD_RESET:
+      case LifeCycles.ON_FIELD_MOUNT:
+      case LifeCycles.ON_FIELD_UNMOUNT:
         this.lifecycle.registerLifeCycleSubscriber({
           type: lifecycle,
           cb: (field) => {
@@ -556,16 +556,16 @@ export class Form<ValueType extends object = any> {
 
   onInit() {
     this.initialized = true
-    this.notify(LifeCycleTypes.ON_FORM_INIT)
+    this.notify(LifeCycles.ON_FORM_INIT)
   }
 
   onMount() {
     this.mounted = true
-    this.notify(LifeCycleTypes.ON_FORM_MOUNT)
+    this.notify(LifeCycles.ON_FORM_MOUNT)
   }
 
   onUnmount() {
-    this.notify(LifeCycleTypes.ON_FORM_UNMOUNT)
+    this.notify(LifeCycles.ON_FORM_UNMOUNT)
     this.query('*').forEach((field) => field.destroy(false))
     this.disposers.forEach((dispose) => dispose())
     this.unmounted = true

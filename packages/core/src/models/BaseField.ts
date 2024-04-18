@@ -2,7 +2,7 @@
 import { isValid, isFn, isArr } from '@astro-form/shared'
 import { Path as FormPath, Pattern as FormPathPattern } from '@formily/path'
 import { parseValidatorDescriptions } from '@formily/validator'
-import type { IReactionDisposer } from 'mobx'
+import { type IReactionDisposer } from 'mobx'
 
 import type {
   JSXComponent,
@@ -16,7 +16,7 @@ import type {
   IFormFeedback,
   ISearchFeedback,
 } from '../types'
-import { LifeCycleTypes } from '../types'
+import { LifeCycles } from '../types'
 import {
   locateNode,
   destroy,
@@ -57,11 +57,11 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
 
   unmounted: boolean = false
 
-  data: any
+  data: any = undefined
 
-  componentType!: Component
+  componentType: Component = undefined as any
 
-  componentProps!: Record<string, any>
+  componentProps: Record<string, any> = undefined as any
 
   loading: boolean = false
 
@@ -73,9 +73,9 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
 
   visited: boolean = false
 
-  dataSource?: FieldDataSource
+  dataSource?: FieldDataSource = undefined
 
-  validator!: FieldValidator
+  validator: FieldValidator = undefined as any
 
   feedbacks: IFieldFeedback[] = []
 
@@ -95,13 +95,14 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
   /** 仅用来标记状态变更 */
   requests: IFieldRequests = {}
 
-  constructor(path: FormPathPattern, props: IBaseFieldProps<Component, ValueType>, form: Form) {
+  constructor(props: IBaseFieldProps<Component, ValueType>, form: Form) {
     this.form = form
-    this.initialize(props)
+    this.#initialize(props)
     this.onInit()
   }
 
-  protected initialize(props: IBaseFieldProps<Component, ValueType>) {
+  /** abtract class 时，这属性必须得定义为 private 函数 */
+  #initialize(props: IBaseFieldProps<Component, ValueType>) {
     /** 下面一串值可以是空，函数内部有冗余判空逻辑 */
     // @ts-expect-error
     this.setDisplay(props.display)
@@ -129,15 +130,6 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
     if (props.initialValue !== undefined) {
       this.initialValue = props.initialValue
     }
-    if (props.value !== undefined) {
-      this.value = props.value
-    }
-  }
-
-  /** form 中挂载 field */
-  protected locate<F extends Field>(path: FormPathPattern, field: F) {
-    this.form.fields[path.toString()] = field as any
-    locateNode(field, path)
   }
 
   get parent(): Field | ArrayField | ObjectField | undefined {
@@ -458,19 +450,19 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
 
   onInit() {
     this.initialized = true
-    this.notify(LifeCycleTypes.ON_FIELD_INIT)
+    this.notify(LifeCycles.ON_FIELD_INIT)
   }
 
   onMount() {
     this.mounted = true
     this.unmounted = false
-    this.notify(LifeCycleTypes.ON_FIELD_MOUNT)
+    this.notify(LifeCycles.ON_FIELD_MOUNT)
   }
 
   onUnmount() {
     this.mounted = false
     this.unmounted = true
-    this.notify(LifeCycleTypes.ON_FIELD_UNMOUNT)
+    this.notify(LifeCycles.ON_FIELD_UNMOUNT)
   }
 
   query(pattern: FormPathPattern | RegExp) {
@@ -490,7 +482,7 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
   }
 
   // 父组件负责实现，因为需要在 notify 执行时上报 field 实例
-  abstract notify(type: LifeCycleTypes, payload?: any): void
+  abstract notify(type: LifeCycles, payload?: any): void
 
   dispose() {
     this.disposers.forEach((dispose) => dispose())

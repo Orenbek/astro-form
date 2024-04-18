@@ -4,7 +4,7 @@ import { ValidatorTriggerType } from '@formily/validator'
 import { makeObservable, observable, action, computed, reaction, autorun } from 'mobx'
 import { isValid, isArr } from '@astro-form/shared'
 
-import { LifeCycleTypes } from '@/types'
+import { LifeCycles } from '@/types'
 
 import type { JSXComponent, IFieldProps, IFieldResetOptions, FieldReaction } from '../types'
 import {
@@ -15,6 +15,7 @@ import {
   batchReset,
   validateSelf,
   modifySelf,
+  locateNode,
 } from '../shared/internals'
 
 import type { Form } from './Form'
@@ -37,17 +38,21 @@ export class Field<Component extends JSXComponent = any, ValueType = any> extend
   inputValues: any[] = []
 
   /** 字段校验是否只校验第一个非法规则 */
-  validateFirst?: boolean
+  validateFirst?: boolean = undefined
 
   constructor(path: FormPathPattern, props: IFieldProps<Component, ValueType>, form: Form) {
-    super(path, props, form)
+    super(props, form)
     this.locate(path, this)
-    this.initialize(props)
-    this.makeObservable()
-    this.makeReactive()
+    this.#initialize(props)
+    this.#makeObservable()
+    this.#makeReactive()
   }
 
-  protected initialize(props: IFieldProps<Component, ValueType>) {
+  #initialize(props: IFieldProps<Component, ValueType>) {
+    // value 的初始化需保证 locate 执行完之后再执行
+    if (props.value !== undefined) {
+      this.value = props.value
+    }
     if (isValid(props.validateFirst)) {
       this.validateFirst = props.validateFirst
     }
@@ -62,7 +67,7 @@ export class Field<Component extends JSXComponent = any, ValueType = any> extend
     }
   }
 
-  protected makeObservable() {
+  #makeObservable() {
     makeObservable<Field, '_display' | '_pattern'>(this, {
       _display: observable.ref,
       _pattern: observable.ref,
@@ -139,12 +144,12 @@ export class Field<Component extends JSXComponent = any, ValueType = any> extend
     })
   }
 
-  protected makeReactive() {
+  #makeReactive() {
     this.disposers.push(
       reaction(
         () => this.value,
         (value) => {
-          this.notify(LifeCycleTypes.ON_FIELD_VALUE_CHANGE)
+          this.notify(LifeCycles.ON_FIELD_VALUE_CHANGE)
           if (isValid(value) && this.selfModified) {
             validateSelf(this)
           }
@@ -153,13 +158,19 @@ export class Field<Component extends JSXComponent = any, ValueType = any> extend
       reaction(
         () => this.initialValue,
         () => {
-          this.notify(LifeCycleTypes.ON_FIELD_INITIAL_VALUE_CHANGE)
+          this.notify(LifeCycles.ON_FIELD_INITIAL_VALUE_CHANGE)
         }
       )
     )
   }
 
-  notify(type: LifeCycleTypes, payload?: any): void {
+  /** form 中挂载 field */
+  protected locate<F extends Field>(path: FormPathPattern, field: F) {
+    this.form.fields[path.toString()] = field as any
+    locateNode(field, path)
+  }
+
+  notify(type: LifeCycles, payload?: any): void {
     this.form.notify(type, payload ?? this)
   }
 
@@ -168,7 +179,7 @@ export class Field<Component extends JSXComponent = any, ValueType = any> extend
     await batchValidate(this, `${this.path}.**`, triggerType)
   }
 
-  async submit<T>(onSubmit?: (values: any) => Promise<T> | void) {
+  async submit<T>(onSubmit?: (values: any) => Promise<T> | void): Promise<T> {
     return batchSubmit<T>(this, onSubmit)
   }
 
@@ -194,8 +205,8 @@ export class Field<Component extends JSXComponent = any, ValueType = any> extend
     this.inputValues = values
     this.value = value
     modifySelf(this)
-    this.notify(LifeCycleTypes.ON_FIELD_INPUT_VALUE_CHANGE)
-    this.notify(LifeCycleTypes.ON_FORM_INPUT_CHANGE, this.form)
+    this.notify(LifeCycles.ON_FIELD_INPUT_VALUE_CHANGE)
+    this.notify(LifeCycles.ON_FORM_INPUT_CHANGE, this.form)
     await validateSelf(this, 'onInput')
   }
 
