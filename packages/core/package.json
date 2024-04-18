@@ -22,7 +22,8 @@
     "gen-release-note": "modern gen-release-note",
     "release": "modern release",
     "new": "modern new",
-    "upgrade": "modern upgrade"
+    "upgrade": "modern upgrade",
+    "test": "modern test"
   },
   "dependencies": {
     "@astro-form/shared": "workspace:*",
@@ -40,7 +41,9 @@
     "react": "^17",
     "react-dom": "^17",
     "rimraf": "~3.0.2",
-    "typescript": "~5.0.4"
+    "typescript": "~5.0.4",
+    "@modern-js/plugin-testing": "2.48.0",
+    "@types/jest": "~29.2.4"
   },
   "sideEffects": [],
   "publishConfig": {

@@ -40,9 +40,9 @@ interface IFieldActions {
   [key: string]: (...args: any[]) => any
 }
 interface IFieldRequests {
-  validate?: number
-  submit?: number
-  loading?: number
+  validate?: NodeJS.Timeout
+  submit?: NodeJS.Timeout
+  loading?: NodeJS.Timeout
   batch?: () => void
 }
 
@@ -87,7 +87,7 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
    * reaction 的 dispose 函数会缓存在这里，派生类注册 reaction 时需要把 dispose 函数缓存进来
    * 由 base 类负责销毁 field 逻辑
    */
-  disposers: IReactionDisposer[] = []
+  protected disposers: IReactionDisposer[] = []
 
   /** 字段模型注入的可执行方法，目前没啥用 */
   #actions: IFieldActions = {}

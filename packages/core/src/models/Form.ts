@@ -28,17 +28,10 @@ import { ObjectField } from './ObjectField'
 import { LifeCycle } from './LifeCycle'
 import { Query } from './Query'
 
-type IFieldUpdate = {
-  pattern: FormPath
-  callbacks: ((...args: any[]) => any)[]
-}
-
 interface IFormRequests {
-  validate?: number
-  submit?: number
-  loading?: number
-  updates?: IFieldUpdate[]
-  updateIndexes?: Record<string, number>
+  validate?: NodeJS.Timeout
+  submit?: NodeJS.Timeout
+  loading?: NodeJS.Timeout
 }
 
 type IFormMergeStrategy = 'overwrite' | 'merge' | 'shallowMerge'
@@ -63,6 +56,8 @@ export class Form<ValueType extends object = any> {
   submitting: boolean = false
 
   modified: boolean = false
+
+  validateFirst?: boolean
 
   values!: ValueType
 
@@ -101,6 +96,7 @@ export class Form<ValueType extends object = any> {
     this.visible = props.visible
     // @ts-expect-error
     this.hidden = props.hidden
+    this.validateFirst = props.validateFirst
     this.values = structuredClone(props.values || {})
     this.initialValues = structuredClone(props.initialValues || {})
   }

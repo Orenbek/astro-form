@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Pattern as FormPathPattern } from '@formily/path'
 import { ValidatorTriggerType } from '@formily/validator'
-import { makeObservable, observable, action, computed, reaction } from 'mobx'
-import { isValid } from '@astro-form/shared'
+import { makeObservable, observable, action, computed, reaction, autorun } from 'mobx'
+import { isValid, isArr } from '@astro-form/shared'
 
 import { LifeCycleTypes } from '@/types'
 
-import type { JSXComponent, IFieldProps, IFieldResetOptions } from '../types'
+import type { JSXComponent, IFieldProps, IFieldResetOptions, FieldReaction } from '../types'
 import {
   getValuesFromEvent,
   isHTMLInputEvent,
@@ -50,6 +50,15 @@ export class Field<Component extends JSXComponent = any, ValueType = any> extend
   protected initialize(props: IFieldProps<Component, ValueType>) {
     if (isValid(props.validateFirst)) {
       this.validateFirst = props.validateFirst
+    }
+    if (isValid(props.reactions)) {
+      if (isArr(props.reactions)) {
+        props.reactions.forEach((fn) => {
+          this.disposers.push(autorun(() => fn(this)))
+        })
+      } else {
+        this.disposers.push(autorun(() => (props.reactions as FieldReaction)(this)))
+      }
     }
   }
 

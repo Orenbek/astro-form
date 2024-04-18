@@ -14,8 +14,8 @@ import { IFormProps } from '../types'
 
 import { isArrayField, isField, isForm, isGeneralField, isObjectField, isQuery } from './checkers'
 
-const createForm = <T extends object = any>(options: IFormProps<T>) => {
-  return new Form(options)
+const createForm = <T extends object = any>(options?: IFormProps<T>) => {
+  return new Form(options || {})
 }
 
 export {

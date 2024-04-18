@@ -198,7 +198,7 @@ export type FieldFeedbackCodeTypes =
 
 export type ISearchFeedback = {
   triggerType?: ValidatorTriggerType
-  type: FieldFeedbackTypes
+  type?: FieldFeedbackTypes
   code?: FieldFeedbackCodeTypes
   path?: string
 }
@@ -224,7 +224,6 @@ export interface IFormProps<ValueType extends object = any> {
   disabled?: boolean
   readOnly?: boolean
   readPretty?: boolean
-  effects?: (form: Form<ValueType>) => void
   validateFirst?: boolean
 }
 
