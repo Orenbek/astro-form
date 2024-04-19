@@ -28,8 +28,10 @@ const notify = (target: Form | BaseField, formType: LifeCycles, fieldType: LifeC
 }
 
 export const locateNode = (field: Field, path: FormPathPattern) => {
-  field.path = FormPath.parse(path)
-  field.form.indexes[field.path.toString()] = field.path.toString()
+  runInAction(() => {
+    field.path = FormPath.parse(path)
+    field.form.indexes[field.path.toString()] = field.path.toString()
+  })
   return field
 }
 
@@ -133,13 +135,14 @@ export const matchFeedback = (search: ISearchFeedback, feedback: IFormFeedback) 
 }
 
 export const queryFeedbacks = (field: BaseField, search: ISearchFeedback) => {
-  return field.feedbacks.filter((feedback) => {
+  const feedbacks = field.feedbacks.filter((feedback) => {
     if (!feedback.messages.length) return false
     return matchFeedback(search, {
       ...feedback,
       path: field.path?.toString(),
     })
   })
+  return toJS(feedbacks)
 }
 
 export const queryFeedbackMessages = (field: BaseField, search: ISearchFeedback) => {
@@ -370,52 +373,6 @@ export const modifySelf = (target: Field) => {
   target.form.modified = true
 }
 
-export const cleanupObjectChildren = (field: ObjectField, keys: string[]) => {
-  if (keys.length === 0) return
-  const path = field.path.toString()
-  const { fields } = field.form
-
-  const isObjectChildren = (identifier: string) => {
-    return identifier.indexOf(path) === 0 && identifier.length > path.length
-  }
-
-  const isNeedCleanup = (identifier: string) => {
-    const afterStr = identifier.slice(path.length)
-    const key = afterStr.match(/^\.([^.]+)/)?.[1]
-    if (key === undefined) return false
-    return keys.includes(key)
-  }
-
-  Object.entries(fields).forEach(([identifier, _field]) => {
-    if (isObjectChildren(identifier) && isNeedCleanup(identifier)) {
-      field.destroy()
-    }
-  })
-}
-
-export const cleanupArrayChildren = (field: ArrayField, start: number) => {
-  const path = field.path.toString()
-  const { fields } = field.form
-
-  const isArrayChildren = (identifier: string) => {
-    return identifier.indexOf(path) === 0 && identifier.length > path.length
-  }
-
-  const isNeedCleanup = (identifier: string) => {
-    const afterStr = identifier.slice(path.length)
-    const numStr = afterStr.match(NumberIndexReg)?.[1]
-    if (numStr === undefined) return false
-    const index = Number(numStr)
-    return index >= start
-  }
-
-  Object.entries(fields).forEach(([identifier, _field]) => {
-    if (isArrayChildren(identifier) && isNeedCleanup(identifier)) {
-      field.destroy()
-    }
-  })
-}
-
 export const getValuesFromEvent = (args: any[]) => {
   return args.map((event) => {
     if (event?.target) {
@@ -602,4 +559,14 @@ export const exchangeArrayState = (
   })
   patchFieldStates(fields, fieldPatches)
   field.form.notify(LifeCycles.ON_FORM_GRAPH_CHANGE)
+}
+
+/** 清空本 field 以及所有子 field 的 error */
+export const clearAllSubErrors = (field: BaseField) => {
+  field.query('*').forEach((_field) => {
+    _field.setFeedback({
+      type: 'error',
+      messages: [],
+    })
+  })
 }

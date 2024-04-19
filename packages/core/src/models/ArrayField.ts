@@ -1,9 +1,9 @@
 import { isArr } from '@astro-form/shared'
-import { makeObservable, override, action } from 'mobx'
+import { makeObservable, action } from 'mobx'
 
 import { move } from '@/utils'
 
-import { spliceArrayState, exchangeArrayState, cleanupArrayChildren } from '../shared/internals'
+import { spliceArrayState, exchangeArrayState } from '../shared/internals'
 import { JSXComponent, IFieldProps, FormPathPattern } from '../types'
 
 import { Field } from './Field'
@@ -22,7 +22,6 @@ export class ArrayField<Component extends JSXComponent = any, ValueType extends 
 
   #makeObservable() {
     makeObservable(this, {
-      setValue: override,
       push: action,
       pop: action,
       insert: action,
@@ -33,22 +32,8 @@ export class ArrayField<Component extends JSXComponent = any, ValueType extends 
     })
   }
 
-  setValue(value: ValueType) {
-    if (this.destroyed) return
-    if (this.display === 'none') {
-      return
-    }
-    const oldLength = this.value.length
-    this.form.setValuesIn(this.path, value)
-    const newLength = this.value.length
-
-    if (newLength !== oldLength) {
-      if (oldLength && !newLength) {
-        cleanupArrayChildren(this, 0)
-      } else if (newLength < oldLength) {
-        cleanupArrayChildren(this, newLength)
-      }
-    }
+  get indexes(): number[] {
+    return this.path.transform(/^\d+$/, (...args) => args.map((index) => Number(index))) as number[]
   }
 
   async push(...items: any[]) {

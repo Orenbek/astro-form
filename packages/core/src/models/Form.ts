@@ -399,11 +399,23 @@ export class Form<ValueType extends object = any> {
   setDisplay(display: FormDisplayTypes) {
     if (!isValid(display)) return
     this._display = display
+    const actualDisplay = this.display
+    if (actualDisplay === 'none') {
+      // 当前节点及子节点value清空
+      this.deleteValuesIn('*')
+    }
+    if (actualDisplay === 'hidden' || actualDisplay === 'none') {
+      this.clearErrors()
+    }
   }
 
   setPattern(pattern: FormPatternTypes) {
     if (!isValid(pattern)) return
     this._pattern = pattern
+    const actualPattern = this.pattern
+    if (actualPattern !== 'editable') {
+      this.clearErrors()
+    }
   }
 
   setLoading(loading: boolean) {

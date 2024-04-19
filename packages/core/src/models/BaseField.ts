@@ -11,14 +11,13 @@ import type {
   FieldComponent,
   FieldValidator,
   FieldDataSource,
-  IBaseFieldProps,
   IFieldFeedback,
   IFormFeedback,
   ISearchFeedback,
+  IBaseFieldProps,
 } from '../types'
 import { LifeCycles } from '../types'
 import {
-  locateNode,
   destroy,
   updateFeedback,
   queryFeedbackMessages,
@@ -28,6 +27,8 @@ import {
   setLoading,
   createChildrenFeedbackFilter,
   queryFeedbacks,
+  clearAllSubErrors,
+  locateNode,
 } from '../shared/internals'
 
 import type { Form } from './Form'
@@ -47,9 +48,9 @@ interface IFieldRequests {
 }
 
 export abstract class BaseField<Component extends JSXComponent = any, ValueType = any> {
-  protected _display: FieldDisplayTypes = 'visible'
+  private _display: FieldDisplayTypes = 'visible'
 
-  protected _pattern: FieldPatternTypes = 'editable'
+  private _pattern: FieldPatternTypes = 'editable'
 
   initialized: boolean = false
 
@@ -95,13 +96,25 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
   /** 仅用来标记状态变更 */
   requests: IFieldRequests = {}
 
-  constructor(props: IBaseFieldProps<Component, ValueType>, form: Form) {
+  constructor(path: FormPathPattern, props: IBaseFieldProps<Component, ValueType>, form: Form) {
     this.form = form
+    this.#locate(path)
     this.#initialize(props)
     this.onInit()
   }
 
-  /** abtract class 时，这属性必须得定义为 private 函数 */
+  /** form 中挂载 field */
+  #locate(path: FormPathPattern) {
+    /** 在基类中直接挂载 this 是没有问题的。这里的 this 实际指向的是 Field | ObjectField | ArrayField */
+    /**
+     * 这里的关键点是，super() 调用的是父类 Parent 的构造器，但是在这个构造器执行的上下文中（即 this 指向的上下文），
+     * this 实际上指向的是子类 Child 的实例。这是因为当创建一个 Child 类的实例时，JavaScript 的类继承机制确保了 this
+     * 在整个继承链中正确地指向正在被构造的对象，即使是在父类的构造函数中。
+     */
+    this.form.fields[path.toString()] = this as any
+    locateNode(this as any, path)
+  }
+
   #initialize(props: IBaseFieldProps<Component, ValueType>) {
     /** 下面一串值可以是空，函数内部有冗余判空逻辑 */
     // @ts-expect-error
@@ -130,6 +143,11 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
     if (props.initialValue !== undefined) {
       this.initialValue = props.initialValue
     }
+    if (props.value !== undefined) {
+      this.value = props.value
+    } else if (props.initialValue !== undefined) {
+      this.value = props.initialValue
+    }
   }
 
   get parent(): Field | ArrayField | ObjectField | undefined {
@@ -155,6 +173,12 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
   }
 
   get display() {
+    const parentDisplay = this.parent ? this.parent.display : this.form.display
+    if (parentDisplay === 'none') return 'none'
+    if (parentDisplay === 'hidden') {
+      if (this._display === 'none') return 'none'
+      return 'hidden'
+    }
     return this._display
   }
 
@@ -163,6 +187,12 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
   }
 
   get pattern() {
+    const parentPattern = this.parent ? this.parent.pattern : this.form.pattern
+    if (parentPattern === 'disabled') return 'disabled'
+    if (parentPattern === 'readPretty') {
+      if (this._pattern === 'disabled') return 'disabled'
+      return 'readPretty'
+    }
     return this._pattern
   }
 
@@ -359,21 +389,24 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
 
   setDisplay(type: FieldDisplayTypes) {
     if (!isValid(type)) return
-    if (type === 'none') {
+    this._display = type
+    const actualDisplay = this.display
+    if (actualDisplay === 'none') {
+      // 当前节点及子节点value清空
       this.form.deleteValuesIn(this.path)
     }
-    if (type === 'none' || type === 'hidden') {
-      this.setFeedback({ type: 'error', messages: [] })
+    if (actualDisplay === 'hidden' || actualDisplay === 'none') {
+      clearAllSubErrors(this)
     }
-    this._display = type
   }
 
   setPattern(type: FieldPatternTypes) {
     if (!isValid(type)) return
-    if (type !== 'editable') {
-      this.setFeedback({ type: 'error', messages: [] })
-    }
     this._pattern = type
+    const actualPattern = this.pattern
+    if (actualPattern !== 'editable') {
+      clearAllSubErrors(this)
+    }
   }
 
   setLoading(loading: boolean) {

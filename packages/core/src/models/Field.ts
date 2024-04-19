@@ -41,18 +41,13 @@ export class Field<Component extends JSXComponent = any, ValueType = any> extend
   validateFirst?: boolean = undefined
 
   constructor(path: FormPathPattern, props: IFieldProps<Component, ValueType>, form: Form) {
-    super(props, form)
-    this.locate(path, this)
+    super(path, props, form)
     this.#initialize(props)
     this.#makeObservable()
     this.#makeReactive()
   }
 
   #initialize(props: IFieldProps<Component, ValueType>) {
-    // value 的初始化需保证 locate 执行完之后再执行
-    if (props.value !== undefined) {
-      this.value = props.value
-    }
     if (isValid(props.validateFirst)) {
       this.validateFirst = props.validateFirst
     }
@@ -162,12 +157,6 @@ export class Field<Component extends JSXComponent = any, ValueType = any> extend
         }
       )
     )
-  }
-
-  /** form 中挂载 field */
-  protected locate<F extends Field>(path: FormPathPattern, field: F) {
-    this.form.fields[path.toString()] = field as any
-    locateNode(field, path)
   }
 
   notify(type: LifeCycles, payload?: any): void {
