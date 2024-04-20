@@ -2,7 +2,7 @@
 import { isValid, isFn, isArr } from '@astro-form/shared'
 import { Path as FormPath, Pattern as FormPathPattern } from '@formily/path'
 import { parseValidatorDescriptions } from '@formily/validator'
-import { type IReactionDisposer } from 'mobx'
+import { autorun, type IReactionDisposer } from 'mobx'
 
 import type {
   JSXComponent,
@@ -15,6 +15,8 @@ import type {
   IFormFeedback,
   ISearchFeedback,
   IBaseFieldProps,
+  GeneralField,
+  FieldReaction,
 } from '../types'
 import { LifeCycles } from '../types'
 import {
@@ -22,9 +24,6 @@ import {
   updateFeedback,
   queryFeedbackMessages,
   setValidatorRule,
-  setValidating,
-  setSubmitting,
-  setLoading,
   createChildrenFeedbackFilter,
   queryFeedbacks,
   clearAllSubErrors,
@@ -40,17 +39,21 @@ type FeedbackMessage = string[]
 interface IFieldActions {
   [key: string]: (...args: any[]) => any
 }
-interface IFieldRequests {
-  validate?: NodeJS.Timeout
-  submit?: NodeJS.Timeout
-  loading?: NodeJS.Timeout
-  batch?: () => void
-}
 
 export abstract class BaseField<Component extends JSXComponent = any, ValueType = any> {
   private _display: FieldDisplayTypes = 'visible'
 
   private _pattern: FieldPatternTypes = 'editable'
+
+  private _loading: boolean = false
+
+  private _validating: boolean = false
+
+  private _submitting: boolean = false
+
+  path!: FormPath
+
+  form: Form
 
   initialized: boolean = false
 
@@ -64,25 +67,20 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
 
   componentProps: Record<string, any> = undefined as any
 
-  loading: boolean = false
+  /** 字段自身是否被手动修改过 */
+  selfModified: boolean = false
 
-  validating: boolean = false
+  /** 字段子树是否被手动修改过 */
+  modified: boolean = false
 
-  submitting: boolean = false
-
-  active: boolean = false
-
-  visited: boolean = false
+  /** 字段校验是否只校验第一个非法规则 */
+  validateFirst?: boolean = undefined
 
   dataSource?: FieldDataSource = undefined
 
   validator: FieldValidator = undefined as any
 
   feedbacks: IFieldFeedback[] = []
-
-  path!: FormPath
-
-  form: Form
 
   /**
    * reaction 的 dispose 函数会缓存在这里，派生类注册 reaction 时需要把 dispose 函数缓存进来
@@ -92,9 +90,6 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
 
   /** 字段模型注入的可执行方法，目前没啥用 */
   #actions: IFieldActions = {}
-
-  /** 仅用来标记状态变更 */
-  requests: IFieldRequests = {}
 
   constructor(path: FormPathPattern, props: IBaseFieldProps<Component, ValueType>, form: Form) {
     this.form = form
@@ -147,6 +142,20 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
       this.value = props.value
     } else if (props.initialValue !== undefined) {
       this.value = props.initialValue
+    }
+    if (isValid(props.validateFirst)) {
+      this.validateFirst = props.validateFirst
+    }
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const that = this
+    if (isValid(props.reactions)) {
+      if (isArr(props.reactions)) {
+        props.reactions.forEach((fn) => {
+          this.disposers.push(autorun(() => fn(that as any)))
+        })
+      } else {
+        this.disposers.push(autorun(() => (props.reactions as FieldReaction)(that as any)))
+      }
     }
   }
 
@@ -265,6 +274,30 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
     }
   }
 
+  get loading() {
+    return this._loading
+  }
+
+  set loading(loading: boolean) {
+    this.setLoading(loading)
+  }
+
+  get validating() {
+    return this._validating
+  }
+
+  set validating(validating: boolean) {
+    this.setValidating(validating)
+  }
+
+  get submitting() {
+    return this._submitting
+  }
+
+  set submitting(submiting: boolean) {
+    this.setSubmitting(submiting)
+  }
+
   get selfErrors(): FeedbackMessage {
     return queryFeedbackMessages(this, {
       type: 'error',
@@ -272,11 +305,7 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
   }
 
   set selfErrors(messages: FeedbackMessage) {
-    this.setFeedback({
-      type: 'error',
-      code: 'EffectError',
-      messages,
-    })
+    this.setSelfErrors(messages)
   }
 
   get errors(): IFormFeedback[] {
@@ -290,11 +319,7 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
   }
 
   set selfWarnings(messages: FeedbackMessage) {
-    this.setFeedback({
-      type: 'warning',
-      code: 'EffectWarning',
-      messages,
-    })
+    this.setSelfWarnings(messages)
   }
 
   get warnings(): IFormFeedback[] {
@@ -308,11 +333,7 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
   }
 
   set selfSuccesses(messages: FeedbackMessage) {
-    this.setFeedback({
-      type: 'success',
-      code: 'EffectSuccess',
-      messages,
-    })
+    this.setSelfSuccesses(messages)
   }
 
   get successes(): IFormFeedback[] {
@@ -383,7 +404,7 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
   }
 
   setInitialValue(initialValue?: ValueType) {
-    if (this.destroyed || this.initialValue || initialValue === undefined) return
+    if (this.destroyed) return
     this.form.setInitialValuesIn(this.path, initialValue)
   }
 
@@ -410,15 +431,18 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
   }
 
   setLoading(loading: boolean) {
-    setLoading(this, loading)
+    if (!isValid(loading)) return
+    this._loading = loading
   }
 
   setValidating(validating: boolean) {
-    setValidating(this, validating)
+    if (!isValid(validating)) return
+    this._validating = validating
   }
 
   setSubmitting(submitting: boolean) {
-    setSubmitting(this, submitting)
+    if (!isValid(submitting)) return
+    this._submitting = submitting
   }
 
   setComponent<C extends JSXComponent, ComponentProps extends object = object>(component: C, props?: ComponentProps) {
@@ -443,7 +467,6 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
   }
 
   setDataSource(dataSource: FieldDataSource) {
-    if (!isValid(dataSource)) return
     this.dataSource = dataSource
   }
 
@@ -454,17 +477,29 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
 
   setSelfErrors(messages: FeedbackMessage) {
     if (!isValid(messages)) return
-    this.selfErrors = messages
+    this.setFeedback({
+      type: 'error',
+      code: 'EffectError',
+      messages,
+    })
   }
 
   setSelfWarnings(messages: FeedbackMessage) {
     if (!isValid(messages)) return
-    this.selfWarnings = messages
+    this.setFeedback({
+      type: 'warning',
+      code: 'EffectWarning',
+      messages,
+    })
   }
 
   setSelfSuccesses(messages: FeedbackMessage) {
     if (!isValid(messages)) return
-    this.selfSuccesses = messages
+    this.setFeedback({
+      type: 'success',
+      code: 'EffectSuccess',
+      messages,
+    })
   }
 
   setValidator(validator: FieldValidator) {

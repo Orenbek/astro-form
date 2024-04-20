@@ -20,43 +20,26 @@ const output = (field: Field, taker: (field: Field, path: FormPath) => any) => {
   return field
 }
 
-const takeMatchPattern = (form: Form, pattern: FormPath) => {
-  const identifier = pattern.toString()
-  const indexIdentifier = form.indexes[identifier]
-  const absoluteField = form.fields[identifier]
-  const indexField = form.fields[indexIdentifier]
-  if (absoluteField) {
-    return identifier
-  }
-  if (indexField) {
-    return indexIdentifier
-  }
-  return undefined
-}
-
 export class Query {
-  private pattern: FormPath
+  #pattern: FormPath
 
-  private paths: string[] = []
+  #paths: string[] = []
 
-  private form: Form
+  #form: Form
 
   constructor(props: IQueryProps) {
-    this.pattern = FormPath.parse(props.pattern, props.base)
-    this.form = props.form
-    if (!this.pattern.isMatchPattern) {
-      const matched = takeMatchPattern(this.form, this.pattern)
+    this.#pattern = FormPath.parse(props.pattern, props.base)
+    this.#form = props.form
+    if (!this.#pattern.isMatchPattern) {
+      const identifier = this.#pattern.toString()
+      const matched = this.#form.fields[identifier]
       if (matched) {
-        this.paths = [matched]
+        this.#paths = [identifier]
       }
     } else {
-      Object.entries(this.form.fields).forEach(([path, field]) => {
-        if (!field) {
-          delete this.form.fields[path]
-          return
-        }
-        if (field.match(this.pattern)) {
-          this.paths.push(path)
+      Object.entries(this.#form.fields).forEach(([path, field]) => {
+        if (field.match(this.#pattern)) {
+          this.#paths.push(path)
         }
       })
     }
@@ -65,22 +48,22 @@ export class Query {
   take(): GeneralField | undefined
   take<Result>(getter: (field: GeneralField, path: FormPath) => Result): Result
   take(taker?: any): any {
-    return output(this.form.fields[this.paths[0]], taker)
+    return output(this.#form.fields[this.#paths[0]], taker)
   }
 
   map(): GeneralField[]
   map<Result>(iterator?: (field: GeneralField, path: FormPath) => Result): Result[]
   map(iterator?: any): any {
-    return this.paths.map((path) => output(this.form.fields[path], iterator))
+    return this.#paths.map((path) => output(this.#form.fields[path], iterator))
   }
 
   forEach<Result>(iterator: (field: GeneralField, path: FormPath) => Result) {
-    this.paths.forEach((path) => output(this.form.fields[path], iterator))
+    this.#paths.forEach((path) => output(this.#form.fields[path], iterator))
   }
 
   reduce<Result>(reducer: (value: Result, field: GeneralField, path: FormPath) => Result, initial?: Result): Result {
-    return this.paths.reduce(
-      (value, path) => output(this.form.fields[path], (field, _path) => reducer(value!, field, _path)),
+    return this.#paths.reduce(
+      (value, path) => output(this.#form.fields[path], (field, _path) => reducer(value!, field, _path)),
       initial
     ) as any
   }

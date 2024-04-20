@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Path as FormPath, Pattern as FormPathPattern } from '@formily/path'
 import { merge } from '@formily/shared/esm/merge'
-import { isValid, isObj, isArr, isPlainObj } from '@astro-form/shared'
+import { isValid, isPlainObj } from '@astro-form/shared'
 import structuredClone from '@ungap/structured-clone'
 import { reaction, makeObservable, observable, computed, action, toJS } from 'mobx'
 
@@ -20,7 +20,7 @@ import {
   FormLifeCycleUnion,
   FieldLifeCycleUnion,
 } from '../types'
-import { batchValidate, batchReset, batchSubmit, setValidating, setSubmitting, setLoading } from '../shared/internals'
+import { batchValidate, batchReset, batchSubmit } from '../shared/internals'
 
 import { Field } from './Field'
 import { ArrayField } from './ArrayField'
@@ -28,32 +28,30 @@ import { ObjectField } from './ObjectField'
 import { LifeCycle } from './LifeCycle'
 import { Query } from './Query'
 
-interface IFormRequests {
-  validate?: NodeJS.Timeout
-  submit?: NodeJS.Timeout
-  loading?: NodeJS.Timeout
-}
-
 type IFormMergeStrategy = 'overwrite' | 'merge' | 'shallowMerge'
 
 export class Form<ValueType extends object = any> {
   displayName = 'Form'
 
-  protected _pattern: FormPatternTypes = 'editable'
+  private _pattern: FormPatternTypes = 'editable'
 
-  protected _display: FormDisplayTypes = 'visible'
+  private _display: FormDisplayTypes = 'visible'
+
+  private _loading: boolean = false
+
+  private _validating: boolean = false
+
+  private _submitting: boolean = false
+
+  private _lifecycle = new LifeCycle()
+
+  private disposers: (() => void)[] = []
 
   initialized: boolean = false
 
   mounted: boolean = false
 
   unmounted: boolean = false
-
-  loading: boolean = false
-
-  validating: boolean = false
-
-  submitting: boolean = false
 
   modified: boolean = false
 
@@ -63,15 +61,9 @@ export class Form<ValueType extends object = any> {
 
   initialValues!: Partial<ValueType>
 
-  lifecycle = new LifeCycle()
-
   fields: IFormFields = {}
 
-  requests: IFormRequests = {}
-
   indexes: Record<string, string> = {}
-
-  disposers: (() => void)[] = []
 
   constructor(props: IFormProps<ValueType>) {
     this.initialize(props)
@@ -102,16 +94,18 @@ export class Form<ValueType extends object = any> {
   }
 
   #makeObservable() {
-    makeObservable<Form, '_display' | '_pattern'>(this, {
+    makeObservable<Form, '_display' | '_pattern' | '_loading' | '_validating' | '_submitting'>(this, {
       _display: observable.ref,
       _pattern: observable.ref,
+      _loading: observable.ref,
+      _validating: observable.ref,
+      _submitting: observable.ref,
+
       initialized: observable.ref,
       mounted: observable.ref,
       unmounted: observable.ref,
-      loading: observable.ref,
-      validating: observable.ref,
-      submitting: observable.ref,
       modified: observable.ref,
+      validateFirst: observable.ref,
       values: observable,
       initialValues: observable,
       fields: observable.shallow,
@@ -123,6 +117,9 @@ export class Form<ValueType extends object = any> {
       editable: computed,
       disabled: computed,
       readPretty: computed,
+      loading: computed,
+      validating: computed,
+      submitting: computed,
       errors: computed,
       warnings: computed,
       successes: computed,
@@ -164,6 +161,36 @@ export class Form<ValueType extends object = any> {
         () => {
           if (this.initialized) {
             this.notify(LifeCycles.ON_FORM_INITIAL_VALUES_CHANGE)
+          }
+        }
+      ),
+      reaction(
+        () => this.loading,
+        (loading) => {
+          if (loading) {
+            this.notify(LifeCycles.ON_FORM_LOADING)
+          }
+        }
+      ),
+      reaction(
+        () => this.validating,
+        (validating) => {
+          if (validating) {
+            this.notify(LifeCycles.ON_FORM_VALIDATE_START)
+            this.notify(LifeCycles.ON_FORM_VALIDATING)
+          } else {
+            this.notify(LifeCycles.ON_FORM_VALIDATE_END)
+          }
+        }
+      ),
+      reaction(
+        () => this.submitting,
+        (submitting) => {
+          if (submitting) {
+            this.notify(LifeCycles.ON_FORM_SUBMIT_START)
+            this.notify(LifeCycles.ON_FORM_SUBMITTING)
+          } else {
+            this.notify(LifeCycles.ON_FORM_SUBMIT_END)
           }
         }
       )
@@ -251,6 +278,30 @@ export class Form<ValueType extends object = any> {
     }
   }
 
+  get loading() {
+    return this._loading
+  }
+
+  set loading(loading: boolean) {
+    this.setLoading(loading)
+  }
+
+  get validating() {
+    return this._validating
+  }
+
+  set validating(validating: boolean) {
+    this.setValidating(validating)
+  }
+
+  get submitting() {
+    return this._submitting
+  }
+
+  set submitting(submiting: boolean) {
+    this.setSubmitting(submiting)
+  }
+
   get errors() {
     return this.queryFeedbacks({
       type: 'error',
@@ -299,14 +350,7 @@ export class Form<ValueType extends object = any> {
     const identifier = path.toString()
     if (!identifier) return undefined
     if (!this.fields[identifier]) {
-      new ArrayField(
-        path,
-        {
-          ...props,
-          value: isArr(props.value) ? props.value : [],
-        },
-        this
-      )
+      new ArrayField(path, props, this)
       this.notify(LifeCycles.ON_FORM_GRAPH_CHANGE)
     }
     return this.fields[identifier] as any
@@ -319,14 +363,7 @@ export class Form<ValueType extends object = any> {
     const identifier = path.toString()
     if (!identifier) return undefined
     if (!this.fields[identifier]) {
-      new ObjectField(
-        path,
-        {
-          ...props,
-          value: isObj(props.value) ? props.value : {},
-        },
-        this
-      )
+      new ObjectField(path, props, this)
       this.notify(LifeCycles.ON_FORM_GRAPH_CHANGE)
     }
     return this.fields[identifier] as any
@@ -419,15 +456,18 @@ export class Form<ValueType extends object = any> {
   }
 
   setLoading(loading: boolean) {
-    setLoading(this, loading)
+    if (!isValid(loading)) return
+    this._loading = loading
   }
 
   setValidating(validating: boolean) {
-    setValidating(this, validating)
+    if (!isValid(validating)) return
+    this._validating = validating
   }
 
   setSubmitting(submitting: boolean) {
-    setSubmitting(this, submitting)
+    if (!isValid(submitting)) return
+    this._submitting = submitting
   }
 
   clearErrors(pattern: FormPathPattern = '*') {
@@ -458,11 +498,11 @@ export class Form<ValueType extends object = any> {
   }
 
   addEffects(id: string, effects: (form: Form) => void) {
-    this.lifecycle.addEffects(id, () => effects(this))
+    this._lifecycle.addEffects(id, () => effects(this))
   }
 
   removeEffects(id: string) {
-    this.lifecycle.removeEffects(id)
+    this._lifecycle.removeEffects(id)
   }
 
   on(
@@ -496,7 +536,7 @@ export class Form<ValueType extends object = any> {
       case LifeCycles.ON_FORM_VALIDATE_END:
       case LifeCycles.ON_FORM_GRAPH_CHANGE:
       case LifeCycles.ON_FORM_LOADING:
-        this.lifecycle.registerLifeCycleSubscriber({
+        this._lifecycle.registerLifeCycleSubscriber({
           type: lifecycle,
           cb: () => args[1](this),
         })
@@ -524,7 +564,7 @@ export class Form<ValueType extends object = any> {
       case LifeCycles.ON_FIELD_RESET:
       case LifeCycles.ON_FIELD_MOUNT:
       case LifeCycles.ON_FIELD_UNMOUNT:
-        this.lifecycle.registerLifeCycleSubscriber({
+        this._lifecycle.registerLifeCycleSubscriber({
           type: lifecycle,
           cb: (field) => {
             if (FormPath.parse(args[1]).match(field.path)) {
@@ -561,7 +601,7 @@ export class Form<ValueType extends object = any> {
   }
 
   notify(type: string, payload?: Field | any) {
-    this.lifecycle.emit({ type, payload: payload ?? this })
+    this._lifecycle.emit({ type, payload: payload ?? this })
   }
 
   /** 事件钩子* */

@@ -154,19 +154,17 @@ export interface IBaseFieldProps<Component extends JSXComponent = any, ValueType
   visible?: boolean
   editable?: boolean
   disabled?: boolean
-  readOnly?: boolean
   readPretty?: boolean
   dataSource?: FieldDataSource
   validator?: FieldValidator
   component?: FieldComponent<Component>
   data?: any
-}
-
-export interface IFieldProps<Component extends JSXComponent = any, ValueType = any>
-  extends IBaseFieldProps<Component, ValueType> {
   validateFirst?: boolean
   reactions?: FieldReaction[] | FieldReaction
 }
+
+export interface IFieldProps<Component extends JSXComponent = any, ValueType = any>
+  extends IBaseFieldProps<Component, ValueType> {}
 
 export type FormPathPattern =
   | string

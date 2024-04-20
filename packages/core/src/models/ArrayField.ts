@@ -16,7 +16,15 @@ export class ArrayField<Component extends JSXComponent = any, ValueType extends 
   displayName = 'ArrayField'
 
   constructor(path: FormPathPattern, props: IFieldProps<Component>, form: Form) {
-    super(path, props, form)
+    super(
+      path,
+      {
+        ...props,
+        value: (isArr(props.value) ? props.value : isArr(props.initialValue) ? props.initialValue : []) as any,
+        initialValue: (isArr(props.initialValue) ? props.initialValue : []) as any,
+      },
+      form
+    )
     this.#makeObservable()
   }
 

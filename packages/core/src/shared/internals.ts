@@ -13,11 +13,9 @@ import {
   FieldFeedbackCodeTypes,
   IFieldResetOptions,
 } from '@/types'
-import type { ArrayField, Field, Form, ObjectField } from '@/models'
+import type { ArrayField, Field, Form } from '@/models'
 import { BaseField } from '@/models/BaseField'
 import { isArrayField, isForm, isObjectField } from '@/shared/checkers'
-
-import { RESPONSE_REQUEST_DURATION, NumberIndexReg } from './constants'
 
 const notify = (target: Form | BaseField, formType: LifeCycles, fieldType: LifeCycles) => {
   if (isForm(target)) {
@@ -64,56 +62,6 @@ export const setValidatorRule = (field: BaseField, name: string, value: any) => 
     field.validator = [rule].concat(validators)
   } else {
     field.validator = validators.concat(rule)
-  }
-}
-
-export const setValidating = (target: Form | BaseField, validating: boolean) => {
-  clearTimeout(target.requests.validate)
-  if (validating) {
-    target.requests.validate = setTimeout(() => {
-      runInAction(() => {
-        target.validating = validating
-        notify(target, LifeCycles.ON_FORM_VALIDATING, LifeCycles.ON_FIELD_VALIDATING)
-      })
-    }, RESPONSE_REQUEST_DURATION)
-    notify(target, LifeCycles.ON_FORM_VALIDATE_START, LifeCycles.ON_FIELD_VALIDATE_START)
-  } else {
-    if (target.validating !== validating) {
-      target.validating = validating
-    }
-    notify(target, LifeCycles.ON_FORM_VALIDATE_END, LifeCycles.ON_FIELD_VALIDATE_END)
-  }
-}
-
-export const setSubmitting = (target: Form | BaseField, submitting: boolean) => {
-  clearTimeout(target.requests.submit)
-  if (submitting) {
-    target.requests.submit = setTimeout(() => {
-      runInAction(() => {
-        target.submitting = submitting
-        notify(target, LifeCycles.ON_FORM_SUBMITTING, LifeCycles.ON_FIELD_SUBMITTING)
-      })
-    }, RESPONSE_REQUEST_DURATION)
-    notify(target, LifeCycles.ON_FORM_SUBMIT_START, LifeCycles.ON_FIELD_SUBMIT_START)
-  } else {
-    if (target.submitting !== submitting) {
-      target.submitting = submitting
-    }
-    notify(target, LifeCycles.ON_FORM_SUBMIT_END, LifeCycles.ON_FIELD_SUBMIT_END)
-  }
-}
-
-export const setLoading = (target: Form | BaseField, loading: boolean) => {
-  clearTimeout(target.requests.loading)
-  if (loading) {
-    target.requests.loading = setTimeout(() => {
-      runInAction(() => {
-        target.loading = loading
-        notify(target, LifeCycles.ON_FORM_LOADING, LifeCycles.ON_FIELD_LOADING)
-      })
-    }, RESPONSE_REQUEST_DURATION)
-  } else if (target.loading !== loading) {
-    target.loading = loading
   }
 }
 
@@ -252,7 +200,7 @@ export const validateToFeedbacks = async (field: Field, triggerType: ValidatorTr
 
 export const validateSelf = async (target: Field, triggerType?: ValidatorTriggerType, noEmit = false) => {
   const end = () => {
-    setValidating(target, false)
+    target.setValidating(false)
     if (noEmit) return
     if (target.selfValid) {
       target.notify(LifeCycles.ON_FIELD_VALIDATE_SUCCESS)
@@ -262,7 +210,7 @@ export const validateSelf = async (target: Field, triggerType?: ValidatorTrigger
   }
 
   if (target.pattern !== 'editable' || target.display !== 'visible') return {}
-  setValidating(target, true)
+  target.setValidating(true)
   if (!triggerType) {
     const allTriggerTypes = parseValidatorDescriptions(target.validator).reduce<ValidatorTriggerType[]>(
       (types, desc) => {
@@ -330,7 +278,6 @@ export const resetSelf = (target: Field, options?: IFieldResetOptions, noEmit = 
   target.visited = false
   target.feedbacks = []
   target.inputValue = typedDefaultValue
-  target.inputValues = []
   if (target.value !== undefined) {
     if (options?.forceClear) {
       target.value = typedDefaultValue
@@ -411,6 +358,7 @@ export const patchFieldStates = (target: Record<string, Field>, patches: INodePa
   })
 }
 
+const NumberIndexReg = /^\.(\d+)/
 export const spliceArrayState = (
   field: ArrayField,
   props?: {

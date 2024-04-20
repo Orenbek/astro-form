@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Pattern as FormPathPattern } from '@formily/path'
 import { ValidatorTriggerType } from '@formily/validator'
-import { makeObservable, observable, action, computed, reaction, autorun } from 'mobx'
-import { isValid, isArr } from '@astro-form/shared'
+import { makeObservable, observable, action, computed, reaction } from 'mobx'
+import { isValid } from '@astro-form/shared'
 
 import { LifeCycles } from '@/types'
 
-import type { JSXComponent, IFieldProps, IFieldResetOptions, FieldReaction } from '../types'
+import type { JSXComponent, IFieldProps, IFieldResetOptions } from '../types'
 import {
   getValuesFromEvent,
   isHTMLInputEvent,
@@ -15,7 +15,6 @@ import {
   batchReset,
   validateSelf,
   modifySelf,
-  locateNode,
 } from '../shared/internals'
 
 import type { Form } from './Form'
@@ -24,68 +23,44 @@ import { BaseField } from './BaseField'
 export class Field<Component extends JSXComponent = any, ValueType = any> extends BaseField<Component, ValueType> {
   displayName = 'Field'
 
-  /** 字段自身是否被手动修改过 */
-  selfModified: boolean = false
+  active: boolean = false
 
-  /** 字段子树是否被手动修改过 */
-  modified: boolean = false
+  visited: boolean = false
 
-  /** 字段输入值 */
+  /** 字段输入值, 给用户提供的冗余值，仅存储不消费 */
   // @ts-expect-error
   inputValue: ValueType = null
 
-  /** 字段输入值集合 */
-  inputValues: any[] = []
-
-  /** 字段校验是否只校验第一个非法规则 */
-  validateFirst?: boolean = undefined
-
   constructor(path: FormPathPattern, props: IFieldProps<Component, ValueType>, form: Form) {
     super(path, props, form)
-    this.#initialize(props)
     this.#makeObservable()
     this.#makeReactive()
   }
 
-  #initialize(props: IFieldProps<Component, ValueType>) {
-    if (isValid(props.validateFirst)) {
-      this.validateFirst = props.validateFirst
-    }
-    if (isValid(props.reactions)) {
-      if (isArr(props.reactions)) {
-        props.reactions.forEach((fn) => {
-          this.disposers.push(autorun(() => fn(this)))
-        })
-      } else {
-        this.disposers.push(autorun(() => (props.reactions as FieldReaction)(this)))
-      }
-    }
-  }
-
   #makeObservable() {
-    makeObservable<Field, '_display' | '_pattern'>(this, {
+    makeObservable<Field, '_display' | '_pattern' | '_loading' | '_validating' | '_submitting'>(this, {
       _display: observable.ref,
       _pattern: observable.ref,
+      _loading: observable.ref,
+      _validating: observable.ref,
+      _submitting: observable.ref,
+
       initialized: observable.ref,
       mounted: observable.ref,
       unmounted: observable.ref,
-      data: observable.shallow,
+      data: observable,
       componentType: observable.ref,
       componentProps: observable,
-      loading: observable.ref,
-      validating: observable.ref,
-      submitting: observable.ref,
       active: observable.ref,
       visited: observable.ref,
       dataSource: observable,
-      validator: observable.shallow,
+      validator: observable,
       feedbacks: observable,
       path: observable.ref,
       // Field defined states
       selfModified: observable.ref,
       modified: observable.ref,
       inputValue: observable.ref,
-      inputValues: observable,
       validateFirst: observable.ref,
       parent: computed,
       component: computed,
@@ -96,6 +71,9 @@ export class Field<Component extends JSXComponent = any, ValueType = any> extend
       editable: computed,
       disabled: computed,
       readPretty: computed,
+      loading: computed,
+      validating: computed,
+      submitting: computed,
       selfErrors: computed,
       errors: computed,
       selfWarnings: computed,
@@ -155,6 +133,36 @@ export class Field<Component extends JSXComponent = any, ValueType = any> extend
         () => {
           this.notify(LifeCycles.ON_FIELD_INITIAL_VALUE_CHANGE)
         }
+      ),
+      reaction(
+        () => this.loading,
+        (loading) => {
+          if (loading) {
+            this.notify(LifeCycles.ON_FIELD_LOADING)
+          }
+        }
+      ),
+      reaction(
+        () => this.validating,
+        (validating) => {
+          if (validating) {
+            this.notify(LifeCycles.ON_FIELD_VALIDATE_START)
+            this.notify(LifeCycles.ON_FIELD_VALIDATING)
+          } else {
+            this.notify(LifeCycles.ON_FIELD_VALIDATE_END)
+          }
+        }
+      ),
+      reaction(
+        () => this.submitting,
+        (submitting) => {
+          if (submitting) {
+            this.notify(LifeCycles.ON_FIELD_SUBMIT_START)
+            this.notify(LifeCycles.ON_FIELD_SUBMITTING)
+          } else {
+            this.notify(LifeCycles.ON_FIELD_SUBMIT_END)
+          }
+        }
       )
     )
   }
@@ -188,10 +196,8 @@ export class Field<Component extends JSXComponent = any, ValueType = any> extend
 
     if (!isHTMLInputEventFromSelf(args)) return
 
-    const values = getValues(args)
-    const value = values[0]
+    const value = getValues(args)[0]
     this.inputValue = value
-    this.inputValues = values
     this.value = value
     modifySelf(this)
     this.notify(LifeCycles.ON_FIELD_INPUT_VALUE_CHANGE)
