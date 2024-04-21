@@ -30,28 +30,34 @@ import { Query } from './Query'
 
 type IFormMergeStrategy = 'overwrite' | 'merge' | 'shallowMerge'
 
+type SelfField = {
+  initialized: boolean
+  mounted: boolean
+  unmounted: boolean
+  display: FormDisplayTypes
+  pattern: FormPatternTypes
+  loading: boolean
+  validating: boolean
+  submitting: boolean
+}
+
 export class Form<ValueType extends object = any> {
   displayName = 'Form'
 
-  private _pattern: FormPatternTypes = 'editable'
-
-  private _display: FormDisplayTypes = 'visible'
-
-  private _loading: boolean = false
-
-  private _validating: boolean = false
-
-  private _submitting: boolean = false
+  private _self: SelfField = {
+    initialized: false,
+    mounted: false,
+    unmounted: false,
+    display: 'visible',
+    pattern: 'editable',
+    loading: false,
+    validating: false,
+    submitting: false,
+  }
 
   private _lifecycle = new LifeCycle()
 
   private disposers: (() => void)[] = []
-
-  initialized: boolean = false
-
-  mounted: boolean = false
-
-  unmounted: boolean = false
 
   modified: boolean = false
 
@@ -66,13 +72,13 @@ export class Form<ValueType extends object = any> {
   indexes: Record<string, string> = {}
 
   constructor(props: IFormProps<ValueType>) {
-    this.initialize(props)
+    this.#initialize(props)
     this.#makeObservable()
-    this.makeReactive()
+    this.#makeReactive()
     this.onInit()
   }
 
-  protected initialize(props: IFormProps<ValueType>) {
+  #initialize(props: IFormProps<ValueType>) {
     /** 下面一串值可以是空，函数内部有冗余判空逻辑 */
     // @ts-expect-error
     this.setDisplay(props.display)
@@ -94,22 +100,17 @@ export class Form<ValueType extends object = any> {
   }
 
   #makeObservable() {
-    makeObservable<Form, '_display' | '_pattern' | '_loading' | '_validating' | '_submitting'>(this, {
-      _display: observable.ref,
-      _pattern: observable.ref,
-      _loading: observable.ref,
-      _validating: observable.ref,
-      _submitting: observable.ref,
-
-      initialized: observable.ref,
-      mounted: observable.ref,
-      unmounted: observable.ref,
+    makeObservable<Form, '_self'>(this, {
+      _self: observable,
       modified: observable.ref,
       validateFirst: observable.ref,
       values: observable,
       initialValues: observable,
       fields: observable.shallow,
       indexes: observable.shallow,
+      initialized: computed,
+      mounted: computed,
+      unmounted: computed,
       pattern: computed,
       display: computed,
       hidden: computed,
@@ -146,7 +147,7 @@ export class Form<ValueType extends object = any> {
     })
   }
 
-  protected makeReactive() {
+  #makeReactive() {
     this.disposers.push(
       reaction(
         () => this.values,
@@ -197,8 +198,20 @@ export class Form<ValueType extends object = any> {
     )
   }
 
+  get initialized() {
+    return this._self.initialized
+  }
+
+  get mounted() {
+    return this._self.mounted
+  }
+
+  get unmounted() {
+    return this._self.unmounted
+  }
+
   get display() {
-    return this._display
+    return this._self.display
   }
 
   set display(type: FormDisplayTypes) {
@@ -206,7 +219,7 @@ export class Form<ValueType extends object = any> {
   }
 
   get pattern() {
-    return this._pattern
+    return this._self.pattern
   }
 
   set pattern(type: FormPatternTypes) {
@@ -279,7 +292,7 @@ export class Form<ValueType extends object = any> {
   }
 
   get loading() {
-    return this._loading
+    return this._self.loading
   }
 
   set loading(loading: boolean) {
@@ -287,7 +300,7 @@ export class Form<ValueType extends object = any> {
   }
 
   get validating() {
-    return this._validating
+    return this._self.validating
   }
 
   set validating(validating: boolean) {
@@ -295,7 +308,7 @@ export class Form<ValueType extends object = any> {
   }
 
   get submitting() {
-    return this._submitting
+    return this._self.submitting
   }
 
   set submitting(submiting: boolean) {
@@ -430,12 +443,13 @@ export class Form<ValueType extends object = any> {
   }
 
   getInitialValuesIn(pattern: FormPathPattern) {
+    console.log(pattern, this.initialValues, '@@@')
     return toJS(FormPath.getIn(this.initialValues, pattern))
   }
 
   setDisplay(display: FormDisplayTypes) {
     if (!isValid(display)) return
-    this._display = display
+    this._self.display = display
     const actualDisplay = this.display
     if (actualDisplay === 'none') {
       // 当前节点及子节点value清空
@@ -448,7 +462,7 @@ export class Form<ValueType extends object = any> {
 
   setPattern(pattern: FormPatternTypes) {
     if (!isValid(pattern)) return
-    this._pattern = pattern
+    this._self.pattern = pattern
     const actualPattern = this.pattern
     if (actualPattern !== 'editable') {
       this.clearErrors()
@@ -457,17 +471,17 @@ export class Form<ValueType extends object = any> {
 
   setLoading(loading: boolean) {
     if (!isValid(loading)) return
-    this._loading = loading
+    this._self.loading = loading
   }
 
   setValidating(validating: boolean) {
     if (!isValid(validating)) return
-    this._validating = validating
+    this._self.validating = validating
   }
 
   setSubmitting(submitting: boolean) {
     if (!isValid(submitting)) return
-    this._submitting = submitting
+    this._self.submitting = submitting
   }
 
   clearErrors(pattern: FormPathPattern = '*') {
@@ -607,12 +621,12 @@ export class Form<ValueType extends object = any> {
   /** 事件钩子* */
 
   onInit() {
-    this.initialized = true
+    this._self.initialized = true
     this.notify(LifeCycles.ON_FORM_INIT)
   }
 
   onMount() {
-    this.mounted = true
+    this._self.mounted = true
     this.notify(LifeCycles.ON_FORM_MOUNT)
   }
 
@@ -620,7 +634,7 @@ export class Form<ValueType extends object = any> {
     this.notify(LifeCycles.ON_FORM_UNMOUNT)
     this.query('*').forEach((field) => field.destroy(false))
     this.disposers.forEach((dispose) => dispose())
-    this.unmounted = true
+    this._self.unmounted = true
     this.indexes = {}
   }
 

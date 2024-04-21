@@ -40,26 +40,32 @@ interface IFieldActions {
   [key: string]: (...args: any[]) => any
 }
 
+type SelfField = {
+  form: Form
+  initialized: boolean
+  mounted: boolean
+  unmounted: boolean
+  display: FieldDisplayTypes
+  pattern: FieldPatternTypes
+  loading: boolean
+  validating: boolean
+  submitting: boolean
+}
+
 export abstract class BaseField<Component extends JSXComponent = any, ValueType = any> {
-  private _display: FieldDisplayTypes = 'visible'
-
-  private _pattern: FieldPatternTypes = 'editable'
-
-  private _loading: boolean = false
-
-  private _validating: boolean = false
-
-  private _submitting: boolean = false
+  private _self: SelfField = {
+    form: undefined as any,
+    initialized: false,
+    mounted: false,
+    unmounted: false,
+    display: 'visible',
+    pattern: 'editable',
+    loading: false,
+    validating: false,
+    submitting: false,
+  }
 
   path!: FormPath
-
-  form: Form
-
-  initialized: boolean = false
-
-  mounted: boolean = false
-
-  unmounted: boolean = false
 
   data: any = undefined
 
@@ -92,7 +98,7 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
   #actions: IFieldActions = {}
 
   constructor(path: FormPathPattern, props: IBaseFieldProps<Component, ValueType>, form: Form) {
-    this.form = form
+    this._self.form = form
     this.#locate(path)
     this.#initialize(props)
     this.onInit()
@@ -159,6 +165,22 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
     }
   }
 
+  get form() {
+    return this._self.form
+  }
+
+  get initialized() {
+    return this._self.initialized
+  }
+
+  get mounted() {
+    return this._self.mounted
+  }
+
+  get unmounted() {
+    return this._self.unmounted
+  }
+
   get parent(): Field | ArrayField | ObjectField | undefined {
     let parent = this.path.parent()
     let identifier = parent.toString()
@@ -170,25 +192,14 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
     return this.form.fields[identifier]
   }
 
-  get component() {
-    return [this.componentType, this.componentProps]
-  }
-
-  set component(component: FieldComponent<Component>) {
-    if (!isValid(component)) return
-    // eslint-disable-next-line prefer-destructuring
-    this.componentType = component[0]
-    this.componentProps = component[1] || {}
-  }
-
   get display() {
     const parentDisplay = this.parent ? this.parent.display : this.form.display
     if (parentDisplay === 'none') return 'none'
     if (parentDisplay === 'hidden') {
-      if (this._display === 'none') return 'none'
+      if (this._self.display === 'none') return 'none'
       return 'hidden'
     }
-    return this._display
+    return this._self.display
   }
 
   set display(type: FieldDisplayTypes) {
@@ -199,10 +210,10 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
     const parentPattern = this.parent ? this.parent.pattern : this.form.pattern
     if (parentPattern === 'disabled') return 'disabled'
     if (parentPattern === 'readPretty') {
-      if (this._pattern === 'disabled') return 'disabled'
+      if (this._self.pattern === 'disabled') return 'disabled'
       return 'readPretty'
     }
-    return this._pattern
+    return this._self.pattern
   }
 
   set pattern(type: FieldPatternTypes) {
@@ -275,7 +286,7 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
   }
 
   get loading() {
-    return this._loading
+    return this._self.loading
   }
 
   set loading(loading: boolean) {
@@ -283,7 +294,7 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
   }
 
   get validating() {
-    return this._validating
+    return this._self.validating
   }
 
   set validating(validating: boolean) {
@@ -291,7 +302,7 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
   }
 
   get submitting() {
-    return this._submitting
+    return this._self.submitting
   }
 
   set submitting(submiting: boolean) {
@@ -372,6 +383,17 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
     this.setInitialValue(initialValue)
   }
 
+  get component() {
+    return [this.componentType, this.componentProps]
+  }
+
+  set component(component: FieldComponent<Component>) {
+    if (!isValid(component)) return
+    // eslint-disable-next-line prefer-destructuring
+    this.componentType = component[0]
+    this.componentProps = component[1] || {}
+  }
+
   get required() {
     const validators = isArr(this.validator) ? this.validator : parseValidatorDescriptions(this.validator)
     // @ts-expect-error TS(2339)
@@ -410,7 +432,8 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
 
   setDisplay(type: FieldDisplayTypes) {
     if (!isValid(type)) return
-    this._display = type
+    const oldDisplay = this.display
+    this._self.display = type
     const actualDisplay = this.display
     if (actualDisplay === 'none') {
       // 当前节点及子节点value清空
@@ -423,7 +446,7 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
 
   setPattern(type: FieldPatternTypes) {
     if (!isValid(type)) return
-    this._pattern = type
+    this._self.pattern = type
     const actualPattern = this.pattern
     if (actualPattern !== 'editable') {
       clearAllSubErrors(this)
@@ -432,17 +455,17 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
 
   setLoading(loading: boolean) {
     if (!isValid(loading)) return
-    this._loading = loading
+    this._self.loading = loading
   }
 
   setValidating(validating: boolean) {
     if (!isValid(validating)) return
-    this._validating = validating
+    this._self.validating = validating
   }
 
   setSubmitting(submitting: boolean) {
     if (!isValid(submitting)) return
-    this._submitting = submitting
+    this._self.submitting = submitting
   }
 
   setComponent<C extends JSXComponent, ComponentProps extends object = object>(component: C, props?: ComponentProps) {
@@ -517,19 +540,19 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
   }
 
   onInit() {
-    this.initialized = true
+    this._self.initialized = true
     this.notify(LifeCycles.ON_FIELD_INIT)
   }
 
   onMount() {
-    this.mounted = true
-    this.unmounted = false
+    this._self.mounted = true
+    this._self.unmounted = false
     this.notify(LifeCycles.ON_FIELD_MOUNT)
   }
 
   onUnmount() {
-    this.mounted = false
-    this.unmounted = true
+    this._self.mounted = false
+    this._self.unmounted = true
     this.notify(LifeCycles.ON_FIELD_UNMOUNT)
   }
 

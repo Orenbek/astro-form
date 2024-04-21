@@ -38,16 +38,8 @@ export class Field<Component extends JSXComponent = any, ValueType = any> extend
   }
 
   #makeObservable() {
-    makeObservable<Field, '_display' | '_pattern' | '_loading' | '_validating' | '_submitting'>(this, {
-      _display: observable.ref,
-      _pattern: observable.ref,
-      _loading: observable.ref,
-      _validating: observable.ref,
-      _submitting: observable.ref,
-
-      initialized: observable.ref,
-      mounted: observable.ref,
-      unmounted: observable.ref,
+    makeObservable<Field, '_self'>(this, {
+      _self: observable,
       data: observable,
       componentType: observable.ref,
       componentProps: observable,
@@ -62,8 +54,10 @@ export class Field<Component extends JSXComponent = any, ValueType = any> extend
       modified: observable.ref,
       inputValue: observable.ref,
       validateFirst: observable.ref,
+      initialized: computed,
+      mounted: computed,
+      unmounted: computed,
       parent: computed,
-      component: computed,
       display: computed,
       pattern: computed,
       hidden: computed,
@@ -86,6 +80,7 @@ export class Field<Component extends JSXComponent = any, ValueType = any> extend
       invalid: computed,
       value: computed,
       initialValue: computed,
+      component: computed,
       required: computed,
       validateStatus: computed,
       destroyed: computed,
