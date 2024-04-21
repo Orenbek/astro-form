@@ -29,22 +29,21 @@ import { LifeCycle } from './LifeCycle'
 import { Query } from './Query'
 
 type IFormMergeStrategy = 'overwrite' | 'merge' | 'shallowMerge'
-
-type SelfField = {
-  initialized: boolean
-  mounted: boolean
-  unmounted: boolean
-  display: FormDisplayTypes
-  pattern: FormPatternTypes
-  loading: boolean
-  validating: boolean
-  submitting: boolean
-}
-
 export class Form<ValueType extends object = any> {
   displayName = 'Form'
 
-  private _self: SelfField = {
+  private _self: {
+    initialized: boolean
+    mounted: boolean
+    unmounted: boolean
+    display: FormDisplayTypes
+    pattern: FormPatternTypes
+    loading: boolean
+    validating: boolean
+    submitting: boolean
+    values: ValueType
+    initialValues: Partial<ValueType>
+  } = {
     initialized: false,
     mounted: false,
     unmounted: false,
@@ -53,6 +52,8 @@ export class Form<ValueType extends object = any> {
     loading: false,
     validating: false,
     submitting: false,
+    values: {} as any,
+    initialValues: {},
   }
 
   private _lifecycle = new LifeCycle()
@@ -61,11 +62,8 @@ export class Form<ValueType extends object = any> {
 
   modified: boolean = false
 
-  validateFirst?: boolean
-
-  values!: ValueType
-
-  initialValues!: Partial<ValueType>
+  // 直接修改即可，无需劫持 因此无需定义 getter setter
+  validateFirst?: boolean = undefined
 
   fields: IFormFields = {}
 
@@ -94,7 +92,9 @@ export class Form<ValueType extends object = any> {
     this.visible = props.visible
     // @ts-expect-error
     this.hidden = props.hidden
-    this.validateFirst = props.validateFirst
+    if (isValid(props.validateFirst)) {
+      this.validateFirst = props.validateFirst
+    }
     this.values = structuredClone(props.values || {})
     this.initialValues = structuredClone(props.initialValues || {})
   }
@@ -104,8 +104,6 @@ export class Form<ValueType extends object = any> {
       _self: observable,
       modified: observable.ref,
       validateFirst: observable.ref,
-      values: observable,
-      initialValues: observable,
       fields: observable.shallow,
       indexes: observable.shallow,
       initialized: computed,
@@ -121,6 +119,8 @@ export class Form<ValueType extends object = any> {
       loading: computed,
       validating: computed,
       submitting: computed,
+      values: computed,
+      initialValues: computed,
       errors: computed,
       warnings: computed,
       successes: computed,
@@ -341,6 +341,22 @@ export class Form<ValueType extends object = any> {
     return this.errors.length > 0
   }
 
+  get values() {
+    return this._self.values
+  }
+
+  set values(values: any) {
+    this.setValues(values)
+  }
+
+  get initialValues() {
+    return this._self.initialValues
+  }
+
+  set initialValues(initialValues: any) {
+    this.setInitialValues(initialValues)
+  }
+
   /** 创建字段 * */
 
   createField<Component extends JSXComponent, T = any>(
@@ -349,7 +365,24 @@ export class Form<ValueType extends object = any> {
     const path = FormPath.parse(props.basePath).concat(props.name)
     const identifier = path.toString()
     if (!identifier) return undefined
+
     if (!this.fields[identifier]) {
+      const v = this.getValuesIn(path)
+      const initialV = this.getInitialValuesIn(path)
+      const value = (() => {
+        if (props.value !== undefined) return props.value
+        if (v !== undefined) return v
+        return undefined
+      })()
+      const initialValue = (() => {
+        if (props.initialValue !== undefined) return props.initialValue
+        if (initialV !== undefined) return initialV
+        return undefined
+      })()
+      // eslint-disable-next-line no-param-reassign
+      props.value = value
+      // eslint-disable-next-line no-param-reassign
+      props.initialValue = initialValue
       new Field(path, props, this)
       this.notify(LifeCycles.ON_FORM_GRAPH_CHANGE)
     }
@@ -387,43 +420,43 @@ export class Form<ValueType extends object = any> {
   setValues(values: any, strategy: IFormMergeStrategy = 'merge') {
     if (!isPlainObj(values)) return
     if (strategy === 'merge') {
-      merge(this.values, values, {
+      merge(this._self.values, values, {
         // never reach
         arrayMerge: (target, source) => source,
         assign: true,
       })
     } else if (strategy === 'shallowMerge') {
-      Object.assign(this.values, values)
+      Object.assign(this._self.values, values)
     } else {
-      this.values = values as any
+      this._self.values = values as any
     }
   }
 
   setValuesIn(pattern: FormPathPattern, value: any) {
-    FormPath.setIn(this.values, pattern, value)
+    FormPath.setIn(this._self.values, pattern, value)
   }
 
   setInitialValues(initialValues: any, strategy: IFormMergeStrategy = 'merge') {
     if (!isPlainObj(initialValues)) return
     if (strategy === 'merge') {
-      merge(this.initialValues, initialValues, {
+      merge(this._self.initialValues, initialValues, {
         // never reach
         arrayMerge: (target, source) => source,
         assign: true,
       })
     } else if (strategy === 'shallowMerge') {
-      Object.assign(this.initialValues, initialValues)
+      Object.assign(this._self.initialValues, initialValues)
     } else {
-      this.initialValues = initialValues as any
+      this._self.initialValues = initialValues as any
     }
   }
 
   setInitialValuesIn(pattern: FormPathPattern, initialValue: any) {
-    FormPath.setIn(this.initialValues, pattern, initialValue)
+    FormPath.setIn(this._self.initialValues, pattern, initialValue)
   }
 
   deleteValuesIn(pattern: FormPathPattern) {
-    FormPath.deleteIn(this.values, pattern)
+    FormPath.deleteIn(this._self.values, pattern)
   }
 
   existValuesIn(pattern: FormPathPattern) {
@@ -435,7 +468,7 @@ export class Form<ValueType extends object = any> {
   }
 
   deleteInitialValuesIn(pattern: FormPathPattern) {
-    FormPath.deleteIn(this.initialValues, pattern)
+    FormPath.deleteIn(this._self.initialValues, pattern)
   }
 
   existInitialValuesIn(pattern: FormPathPattern) {
@@ -443,7 +476,6 @@ export class Form<ValueType extends object = any> {
   }
 
   getInitialValuesIn(pattern: FormPathPattern) {
-    console.log(pattern, this.initialValues, '@@@')
     return toJS(FormPath.getIn(this.initialValues, pattern))
   }
 

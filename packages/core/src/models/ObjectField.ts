@@ -12,12 +12,26 @@ export class ObjectField<Component extends JSXComponent = any, ValueType extends
   displayName = 'ObjectField'
 
   constructor(path: FormPathPattern, props: IFieldProps<Component>, form: Form) {
+    const v = form.getValuesIn(path)
+    const initialV = form.getInitialValuesIn(path)
+    const value = (() => {
+      if (isObj(props.value)) return props.value
+      if (isObj(v)) return v
+      if (isObj(props.initialValue)) return props.initialValue
+      if (isObj(initialV)) return initialV
+      return {}
+    })()
+    const initialValue = (() => {
+      if (isObj(props.initialValue)) return props.initialValue
+      if (isObj(initialV)) return initialV
+      return {}
+    })()
     super(
       path,
       {
         ...props,
-        value: (isObj(props.value) ? props.value : isObj(props.initialValue) ? props.initialValue : {}) as any,
-        initialValue: (isObj(props.initialValue) ? props.initialValue : {}) as any,
+        value: value as any,
+        initialValue: initialValue as any,
       },
       form
     )

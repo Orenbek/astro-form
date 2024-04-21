@@ -16,12 +16,26 @@ export class ArrayField<Component extends JSXComponent = any, ValueType extends 
   displayName = 'ArrayField'
 
   constructor(path: FormPathPattern, props: IFieldProps<Component>, form: Form) {
+    const v = form.getValuesIn(path)
+    const initialV = form.getInitialValuesIn(path)
+    const value = (() => {
+      if (isArr(props.value)) return props.value
+      if (isArr(v)) return v
+      if (isArr(props.initialValue)) return props.initialValue
+      if (isArr(initialV)) return initialV
+      return []
+    })()
+    const initialValue = (() => {
+      if (isArr(props.initialValue)) return props.initialValue
+      if (isArr(initialV)) return initialV
+      return []
+    })()
     super(
       path,
       {
         ...props,
-        value: (isArr(props.value) ? props.value : isArr(props.initialValue) ? props.initialValue : []) as any,
-        initialValue: (isArr(props.initialValue) ? props.initialValue : []) as any,
+        value: value as any,
+        initialValue: initialValue as any,
       },
       form
     )
