@@ -47,7 +47,7 @@ export const destroy = (target: Record<string, Field>, path: string, forceClear 
 const { hasOwnProperty } = Object.prototype
 export const setValidatorRule = (field: BaseField, name: string, value: any) => {
   if (!isValid(value)) return
-  const validators = parseValidatorDescriptions(field.validator)
+  const validators = field.validator ? parseValidatorDescriptions(field.validator) : []
   const hasRule = validators.some((desc) => name in desc)
   const rule = { [name]: value }
   if (hasRule) {
@@ -176,11 +176,11 @@ export const batchSubmit = async <T>(
   return results
 }
 
-export const validateToFeedbacks = async (field: Field, triggerType: ValidatorTriggerType = 'onInput') => {
+export const validateToFeedbacks = async (field: Field, triggerType?: ValidatorTriggerType) => {
   function capitalize(string: string) {
     return string.charAt(0).toUpperCase() + string.slice(1)
   }
-  const results = await validate(field.value, field.validator, {
+  const results = await validate(field.value, field.validator!, {
     triggerType,
     validateFirst: field.validateFirst ?? field.form.validateFirst,
     context: { field, form: field.form },
@@ -209,32 +209,8 @@ export const validateSelf = async (target: Field, triggerType?: ValidatorTrigger
     }
   }
 
-  if (target.pattern !== 'editable' || target.display !== 'visible') return {}
+  if (target.pattern !== 'editable' || target.display !== 'visible' || !target.validator) return {}
   target.setValidating(true)
-  if (!triggerType) {
-    const allTriggerTypes = parseValidatorDescriptions(target.validator).reduce<ValidatorTriggerType[]>(
-      (types, desc) => {
-        if (!desc.triggerType || types.indexOf(desc.triggerType) > -1) {
-          return types
-        }
-        return types.concat(desc.triggerType)
-      },
-      []
-    )
-    const results: IValidateResults = {}
-    // eslint-disable-next-line no-plusplus
-    for (let i = 0; i < allTriggerTypes.length; i++) {
-      // eslint-disable-next-line no-await-in-loop
-      const payload = await validateToFeedbacks(target, allTriggerTypes[i])
-      Object.entries(payload)
-      ;(Object.entries(results) as [FieldFeedbackTypes, string[]][]).forEach(([type, messages]) => {
-        results[type] = results[type] || []
-        results[type] = results[type]!.concat(messages)
-      })
-    }
-    end()
-    return results
-  }
   const results = await validateToFeedbacks(target, triggerType)
   end()
   return results

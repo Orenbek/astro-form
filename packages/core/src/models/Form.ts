@@ -481,11 +481,21 @@ export class Form<ValueType extends object = any> {
 
   setDisplay(display: FormDisplayTypes) {
     if (!isValid(display)) return
+    const oldDisplay = this.display
     this._self.display = display
     const actualDisplay = this.display
     if (actualDisplay === 'none') {
       // 当前节点及子节点value清空
       this.deleteValuesIn('*')
+    }
+
+    if (oldDisplay !== actualDisplay && oldDisplay === 'none') {
+      this.query('*').forEach((field) => {
+        if (!field.selfModified) {
+          // eslint-disable-next-line no-param-reassign
+          field.value = field.initialValue
+        }
+      })
     }
     if (actualDisplay === 'hidden' || actualDisplay === 'none') {
       this.clearErrors()

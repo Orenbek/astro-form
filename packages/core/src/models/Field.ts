@@ -46,7 +46,7 @@ export class Field<Component extends JSXComponent = any, ValueType = any> extend
       active: observable.ref,
       visited: observable.ref,
       dataSource: observable,
-      validator: observable,
+      validator: observable.ref,
       feedbacks: observable,
       path: observable.ref,
       // Field defined states

@@ -15,7 +15,6 @@ import type {
   IFormFeedback,
   ISearchFeedback,
   IBaseFieldProps,
-  GeneralField,
   FieldReaction,
 } from '../types'
 import { LifeCycles } from '../types'
@@ -84,7 +83,7 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
 
   dataSource?: FieldDataSource = undefined
 
-  validator: FieldValidator = undefined as any
+  validator?: FieldValidator = undefined
 
   feedbacks: IFieldFeedback[] = []
 
@@ -134,13 +133,15 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
     this.hidden = props.hidden
     // @ts-expect-error
     this.setDataSource(props.dataSource)
+    // setValidator 需要在 setRequired 之前
+    // @ts-expect-error
+    this.setValidator(props.validator)
     // @ts-expect-error
     this.setRequired(props.required)
     // @ts-expect-error
     this.component = props.component
     this.setData(props.data)
-    // @ts-expect-error
-    this.setValidator(props.validator)
+
     if (props.initialValue !== undefined) {
       this.initialValue = props.initialValue
     }
@@ -395,6 +396,7 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
   }
 
   get required() {
+    if (!this.validator) return false
     const validators = isArr(this.validator) ? this.validator : parseValidatorDescriptions(this.validator)
     // @ts-expect-error TS(2339)
     return validators.some((desc) => !!desc?.required)
@@ -416,6 +418,14 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
   get destroyed() {
     return !this.form.fields[this.path.toString()]
   }
+
+  // get index() {
+  //   if (this.parent instanceof ArrayField) {
+  //     const path = FormPath.parse(this.path)
+  //     return Number(path.segments[path.segments.length - 1])
+  //   }
+  //   return -1
+  // }
 
   setValue(value: ValueType) {
     if (this.destroyed) return
@@ -439,6 +449,21 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
       // 当前节点及子节点value清空
       this.form.deleteValuesIn(this.path)
     }
+
+    if (oldDisplay !== actualDisplay && oldDisplay === 'none') {
+      // 恢复 display 为非 none 时，需要设置当前节点及子节点默认值
+      // 需要将当前节点及子节点 initialValue 都赋值给 value
+      if (!this.selfModified) {
+        this.value = this.initialValue
+      }
+      this.query(`${this.path}.*`).forEach((field) => {
+        if (!field.selfModified) {
+          // eslint-disable-next-line no-param-reassign
+          field.setValue(field.initialValue)
+        }
+      })
+    }
+
     if (actualDisplay === 'hidden' || actualDisplay === 'none') {
       clearAllSubErrors(this)
     }
@@ -526,7 +551,6 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
   }
 
   setValidator(validator: FieldValidator) {
-    if (!isValid(validator)) return
     this.validator = validator
   }
 
