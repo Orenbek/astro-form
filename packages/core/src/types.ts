@@ -222,6 +222,7 @@ export interface IFormProps<ValueType extends object = any> {
   readOnly?: boolean
   readPretty?: boolean
   validateFirst?: boolean
+  effects?: (form: Form<ValueType>) => void
 }
 
 export interface IFieldFactoryProps<Component extends JSXComponent, ValueType = any>

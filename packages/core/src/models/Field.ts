@@ -19,6 +19,10 @@ export class Field<Component extends JSXComponent = any, ValueType = any> extend
   private _private = {
     active: false,
     visited: false,
+    // syncedValue 以及 _self.valueUnchanged 存在的原因是因为这里有一个比较hack的逻辑
+    // 没有更好的办法解决，只能这么解决了
+    // 为什么会有这种逻辑可查看单元测试中 onFormValuesChange/onFormInitialValuesChange 部分
+    syncedValue: undefined as any,
   }
 
   /** 字段输入值, 给用户提供的冗余值，仅存储不消费 */
@@ -140,10 +144,19 @@ export class Field<Component extends JSXComponent = any, ValueType = any> extend
            * 若 field 没有值且没有被修改过，则修改 value 值
            * 这种处理方式下 初始化的时候这里会多触发一次
            */
-          if (this.value === undefined && !this.selfModified && initialValue !== undefined) {
-            // arrayField 和 ObjectField 怎么办，他们的 value 不可能是 undefiend
+          if (this._self.valueUnchanged && !this.selfModified && initialValue !== undefined) {
             this.value = initialValue
+            this._private.syncedValue = initialValue
           }
+        }
+      ),
+      reaction(
+        () => this.value,
+        () => {
+          if (this.value !== this._private.syncedValue) {
+            this._self.valueUnchanged = false
+          }
+          this.notify(LifeCycles.ON_FIELD_VALUE_CHANGE)
         }
       )
     )
@@ -204,7 +217,7 @@ export class Field<Component extends JSXComponent = any, ValueType = any> extend
     await Promise.all(tasks)
   }
 
-  async resetSelf(options?: IFieldResetOptions, noEmit = false) {
+  async resetSelf(options?: IFieldResetOptions, noEmit = false): Promise<any> {
     this._self.selfModified = false
     this._private.visited = false
     /** clear feedbacks */
@@ -235,7 +248,7 @@ export class Field<Component extends JSXComponent = any, ValueType = any> extend
     return null
   }
 
-  *onInput(...args: any[]) {
+  *onInput(...args: any[]): Generator<Promise<any>, void, unknown> {
     const isHTMLInputEventFromSelf = (_args: any[]) =>
       isHTMLInputEvent(_args[0]) && 'currentTarget' in _args[0] ? _args[0]?.target === _args[0]?.currentTarget : true
     const getValues = (_args: any[]) => {
@@ -257,7 +270,7 @@ export class Field<Component extends JSXComponent = any, ValueType = any> extend
     yield validateSelf(this, 'onInput')
   }
 
-  *onFocus(...args: any[]) {
+  *onFocus(...args: any[]): Generator<Promise<any>, void, unknown> {
     if (args[0]?.target) {
       if (!isHTMLInputEvent(args[0], false)) return
     }
@@ -266,7 +279,7 @@ export class Field<Component extends JSXComponent = any, ValueType = any> extend
     yield validateSelf(this, 'onFocus')
   }
 
-  *onBlur(...args: any[]) {
+  *onBlur(...args: any[]): Generator<Promise<any>, void, unknown> {
     if (args[0]?.target) {
       if (!isHTMLInputEvent(args[0], false)) return
     }

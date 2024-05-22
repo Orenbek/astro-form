@@ -30,6 +30,8 @@ import { LifeCycle } from './LifeCycle'
 import { Query } from './Query'
 
 type IFormMergeStrategy = 'overwrite' | 'merge' | 'shallowMerge'
+
+const EffectId = '__initial_effect__'
 export class Form<ValueType extends object = any> {
   displayName = 'Form'
 
@@ -73,8 +75,11 @@ export class Form<ValueType extends object = any> {
   constructor(props: IFormProps<ValueType>) {
     this.#initialize(props)
     this.#makeObservable()
-    this.#makeReactive()
-    this.onInit()
+    this._self.initialized = true
+    if (props.effects) {
+      this.addEffects(EffectId, props.effects)
+    }
+    this.notify(LifeCycles.ON_FORM_INIT)
   }
 
   #initialize(props: IFormProps<ValueType>) {
@@ -142,61 +147,9 @@ export class Form<ValueType extends object = any> {
       clearErrors: action,
       clearWarnings: action,
       clearSuccesses: action,
-      onInit: action,
       onMount: action,
       onUnmount: action,
     })
-  }
-
-  #makeReactive() {
-    this.disposers.push(
-      reaction(
-        () => this.values,
-        () => {
-          if (this.initialized) {
-            this.notify(LifeCycles.ON_FORM_VALUES_CHANGE)
-          }
-        }
-      ),
-      reaction(
-        () => this.initialValues,
-        () => {
-          if (this.initialized) {
-            this.notify(LifeCycles.ON_FORM_INITIAL_VALUES_CHANGE)
-          }
-        }
-      ),
-      reaction(
-        () => this.loading,
-        (loading) => {
-          if (loading) {
-            this.notify(LifeCycles.ON_FORM_LOADING)
-          }
-        }
-      ),
-      reaction(
-        () => this.validating,
-        (validating) => {
-          if (validating) {
-            this.notify(LifeCycles.ON_FORM_VALIDATE_START)
-            this.notify(LifeCycles.ON_FORM_VALIDATING)
-          } else {
-            this.notify(LifeCycles.ON_FORM_VALIDATE_END)
-          }
-        }
-      ),
-      reaction(
-        () => this.submitting,
-        (submitting) => {
-          if (submitting) {
-            this.notify(LifeCycles.ON_FORM_SUBMIT_START)
-            this.notify(LifeCycles.ON_FORM_SUBMITTING)
-          } else {
-            this.notify(LifeCycles.ON_FORM_SUBMIT_END)
-          }
-        }
-      )
-    )
   }
 
   get initialized() {
@@ -431,10 +384,17 @@ export class Form<ValueType extends object = any> {
     } else {
       this._self.values = values as any
     }
+    if (this.initialized) {
+      this.notify(LifeCycles.ON_FORM_VALUES_CHANGE)
+    }
   }
 
   setValuesIn(pattern: FormPathPattern, value: any) {
+    const preVal = this.getValuesIn(pattern)
     FormPath.setIn(this._self.values, pattern, value)
+    if (this.initialized && preVal !== this.getValuesIn(pattern)) {
+      this.notify(LifeCycles.ON_FORM_VALUES_CHANGE)
+    }
   }
 
   setInitialValues(initialValues: any, strategy: IFormMergeStrategy = 'merge') {
@@ -450,10 +410,17 @@ export class Form<ValueType extends object = any> {
     } else {
       this._self.initialValues = initialValues as any
     }
+    if (this.initialized) {
+      this.notify(LifeCycles.ON_FORM_INITIAL_VALUES_CHANGE)
+    }
   }
 
   setInitialValuesIn(pattern: FormPathPattern, initialValue: any) {
+    const preInitialVal = this.getInitialValuesIn(pattern)
     FormPath.setIn(this._self.initialValues, pattern, initialValue)
+    if (this.initialized && preInitialVal !== this.getInitialValuesIn(pattern)) {
+      this.notify(LifeCycles.ON_FORM_INITIAL_VALUES_CHANGE)
+    }
   }
 
   deleteValuesIn(pattern: FormPathPattern) {
@@ -514,17 +481,39 @@ export class Form<ValueType extends object = any> {
 
   setLoading(loading: boolean) {
     if (!isValid(loading)) return
+    const preloading = this.loading
     this._self.loading = loading
+    if (preloading !== this.loading) {
+      this.notify(LifeCycles.ON_FORM_LOADING)
+    }
   }
 
   setValidating(validating: boolean) {
     if (!isValid(validating)) return
+    const prevalidating = this.validating
     this._self.validating = validating
+    if (prevalidating !== this.validating) {
+      if (this.validating) {
+        this.notify(LifeCycles.ON_FORM_VALIDATE_START)
+        this.notify(LifeCycles.ON_FORM_VALIDATING)
+      } else {
+        this.notify(LifeCycles.ON_FORM_VALIDATE_END)
+      }
+    }
   }
 
   setSubmitting(submitting: boolean) {
     if (!isValid(submitting)) return
+    const presubmitting = this.submitting
     this._self.submitting = submitting
+    if (presubmitting !== this.submitting) {
+      if (this.submitting) {
+        this.notify(LifeCycles.ON_FORM_SUBMIT_START)
+        this.notify(LifeCycles.ON_FORM_SUBMITTING)
+      } else {
+        this.notify(LifeCycles.ON_FORM_SUBMIT_END)
+      }
+    }
   }
 
   clearErrors(pattern: FormPathPattern = '*') {
@@ -674,11 +663,6 @@ export class Form<ValueType extends object = any> {
 
   /** 事件钩子* */
 
-  onInit() {
-    this._self.initialized = true
-    this.notify(LifeCycles.ON_FORM_INIT)
-  }
-
   onMount() {
     this._self.mounted = true
     this.notify(LifeCycles.ON_FORM_MOUNT)
@@ -688,6 +672,7 @@ export class Form<ValueType extends object = any> {
     this.notify(LifeCycles.ON_FORM_UNMOUNT)
     this.query('*').forEach((field) => field.destroy(false))
     this.disposers.forEach((dispose) => dispose())
+    this.removeEffects(EffectId)
     this._self.unmounted = true
     this.indexes = {}
   }

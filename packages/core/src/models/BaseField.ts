@@ -43,6 +43,9 @@ type SelfField = {
   validating: boolean
   submitting: boolean
   feedbacks: IFieldFeedback[]
+
+  // 为了实现同步修改 value 的逻辑，具体原因可查看 Field.ts 文件
+  valueUnchanged: boolean
 }
 
 export class BaseField<Component extends JSXComponent = any, ValueType = any> {
@@ -59,6 +62,7 @@ export class BaseField<Component extends JSXComponent = any, ValueType = any> {
     validating: false,
     submitting: false,
     feedbacks: [],
+    valueUnchanged: true,
   }
 
   data: any = undefined
@@ -92,6 +96,10 @@ export class BaseField<Component extends JSXComponent = any, ValueType = any> {
       this.form.indexes[_path.toString()] = _path.toString()
     })
     this.#initialize(props)
+
+    if (props.value === undefined) {
+      this._self.valueUnchanged = true
+    }
   }
 
   #initialize(props: IBaseFieldProps<Component, ValueType>) {
@@ -416,6 +424,7 @@ export class BaseField<Component extends JSXComponent = any, ValueType = any> {
     if (this.display === 'none') {
       return
     }
+    this._self.valueUnchanged = false
     this.form.setValuesIn(this.path, value)
   }
 
