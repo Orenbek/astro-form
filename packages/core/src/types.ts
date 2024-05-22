@@ -192,7 +192,6 @@ export type FieldFeedbackCodeTypes =
   | 'EffectError'
   | 'EffectSuccess'
   | 'EffectWarning'
-  | (string & object)
 
 export type ISearchFeedback = {
   triggerType?: ValidatorTriggerType

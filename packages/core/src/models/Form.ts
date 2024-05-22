@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Path as FormPath, Pattern as FormPathPattern } from '@formily/path'
 import { merge } from '@formily/shared/esm/merge'
-import { isValid, isPlainObj } from '@astro-form/shared'
+import { isValid, isPlainObj, isFn } from '@astro-form/shared'
 import structuredClone from '@ungap/structured-clone'
 import { reaction, makeObservable, observable, computed, action, toJS } from 'mobx'
 
@@ -19,8 +19,9 @@ import {
   FormDisplayTypes,
   FormLifeCycleUnion,
   FieldLifeCycleUnion,
+  FieldFeedbackTypes,
 } from '../types'
-import { batchValidate, batchReset, batchSubmit } from '../shared/internals'
+import { batchValidate } from '../shared/internals'
 
 import { Field } from './Field'
 import { ArrayField } from './ArrayField'
@@ -656,6 +657,17 @@ export class Form<ValueType extends object = any> {
     }, [])
   }
 
+  /** 清空所有 field 的 feedback */
+  clearFeedback(type: FieldFeedbackTypes) {
+    if (!isValid(type)) return
+    this.query('*').forEach((_field) => {
+      _field.setFeedback({
+        type,
+        messages: [],
+      })
+    })
+  }
+
   notify(type: string, payload?: Field | any) {
     this._lifecycle.emit({ type, payload: payload ?? this })
   }
@@ -685,10 +697,45 @@ export class Form<ValueType extends object = any> {
   }
 
   async submit<T>(onSubmit?: (values: ValueType) => Promise<T> | void): Promise<T> {
-    return batchSubmit(this, onSubmit)
+    this.setSubmitting(true)
+    try {
+      this.notify(LifeCycles.ON_FORM_SUBMIT_VALIDATE_START)
+      await this.validate()
+      this.notify(LifeCycles.ON_FORM_SUBMIT_VALIDATE_SUCCESS)
+    } catch (e) {
+      this.notify(LifeCycles.ON_FORM_SUBMIT_VALIDATE_FAILED)
+    }
+    this.notify(LifeCycles.ON_FORM_SUBMIT_VALIDATE_END)
+    let results: any
+    try {
+      if (this.invalid) {
+        // eslint-disable-next-line @typescript-eslint/no-throw-literal
+        throw this.errors
+      }
+      if (isFn(onSubmit)) {
+        results = await onSubmit(toJS(this.values))
+      } else {
+        results = toJS(this.values)
+      }
+      this.notify(LifeCycles.ON_FORM_SUBMIT_SUCCESS)
+    } catch (e) {
+      this.setSubmitting(false)
+      this.notify(LifeCycles.ON_FORM_SUBMIT_FAILED)
+      this.notify(LifeCycles.ON_FORM_SUBMIT)
+      throw e
+    }
+    this.setSubmitting(false)
+    this.notify(LifeCycles.ON_FORM_SUBMIT)
+    return results
   }
 
   async reset(pattern: FormPathPattern = '*', options?: IFieldResetOptions) {
-    await batchReset(this, pattern, options)
+    const tasks: Array<Promise<any>> = []
+    this.query(pattern).forEach((field) => {
+      tasks.push(field.resetSelf(options))
+    })
+    this.modified = false
+    this.notify(LifeCycles.ON_FORM_RESET)
+    await Promise.all(tasks)
   }
 }

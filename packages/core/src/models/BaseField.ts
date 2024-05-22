@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { isValid, isFn, isArr } from '@astro-form/shared'
+import { isValid, isFn, isArr, isEmpty } from '@astro-form/shared'
 import { Path as FormPath, Pattern as FormPathPattern } from '@formily/path'
 import { parseValidatorDescriptions } from '@formily/validator'
-import { autorun, type IReactionDisposer } from 'mobx'
+import { type IReactionDisposer } from 'mobx'
 
 import type {
   JSXComponent,
@@ -15,19 +15,10 @@ import type {
   IFormFeedback,
   ISearchFeedback,
   IBaseFieldProps,
-  FieldReaction,
+  FieldFeedbackTypes,
 } from '../types'
 import { LifeCycles } from '../types'
-import {
-  destroy,
-  updateFeedback,
-  queryFeedbackMessages,
-  setValidatorRule,
-  createChildrenFeedbackFilter,
-  queryFeedbacks,
-  clearAllSubErrors,
-  locateNode,
-} from '../shared/internals'
+import { updateFeedback, setValidatorRule, createChildrenFeedbackFilter, queryFeedbacks } from '../shared/internals'
 
 import type { Form } from './Form'
 import { Query } from './Query'
@@ -41,30 +32,34 @@ interface IFieldActions {
 
 type SelfField = {
   form: Form
+  path: FormPath
   initialized: boolean
   mounted: boolean
   unmounted: boolean
+  selfModified: boolean
   display: FieldDisplayTypes
   pattern: FieldPatternTypes
   loading: boolean
   validating: boolean
   submitting: boolean
+  feedbacks: IFieldFeedback[]
 }
 
-export abstract class BaseField<Component extends JSXComponent = any, ValueType = any> {
-  private _self: SelfField = {
+export class BaseField<Component extends JSXComponent = any, ValueType = any> {
+  protected _self: SelfField = {
     form: undefined as any,
+    path: undefined as any,
     initialized: false,
     mounted: false,
     unmounted: false,
+    selfModified: false,
     display: 'visible',
     pattern: 'editable',
     loading: false,
     validating: false,
     submitting: false,
+    feedbacks: [],
   }
-
-  path!: FormPath
 
   data: any = undefined
 
@@ -72,20 +67,12 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
 
   componentProps: Record<string, any> = undefined as any
 
-  /** 字段自身是否被手动修改过 */
-  selfModified: boolean = false
-
-  /** 字段子树是否被手动修改过 */
-  modified: boolean = false
-
   /** 字段校验是否只校验第一个非法规则 */
   validateFirst?: boolean = undefined
 
   dataSource?: FieldDataSource = undefined
 
   validator?: FieldValidator = undefined
-
-  feedbacks: IFieldFeedback[] = []
 
   /**
    * reaction 的 dispose 函数会缓存在这里，派生类注册 reaction 时需要把 dispose 函数缓存进来
@@ -98,21 +85,11 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
 
   constructor(path: FormPathPattern, props: IBaseFieldProps<Component, ValueType>, form: Form) {
     this._self.form = form
-    this.#locate(path)
+    const _path = FormPath.parse(path)
+    this._self.path = _path
+    this.form.fields[_path.toString()] = this as any
+    this.form.indexes[_path.toString()] = _path.toString()
     this.#initialize(props)
-    this.onInit()
-  }
-
-  /** form 中挂载 field */
-  #locate(path: FormPathPattern) {
-    /** 在基类中直接挂载 this 是没有问题的。这里的 this 实际指向的是 Field | ObjectField | ArrayField */
-    /**
-     * 这里的关键点是，super() 调用的是父类 Parent 的构造器，但是在这个构造器执行的上下文中（即 this 指向的上下文），
-     * this 实际上指向的是子类 Child 的实例。这是因为当创建一个 Child 类的实例时，JavaScript 的类继承机制确保了 this
-     * 在整个继承链中正确地指向正在被构造的对象，即使是在父类的构造函数中。
-     */
-    this.form.fields[path.toString()] = this as any
-    locateNode(this as any, path)
   }
 
   #initialize(props: IBaseFieldProps<Component, ValueType>) {
@@ -153,21 +130,17 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
     if (isValid(props.validateFirst)) {
       this.validateFirst = props.validateFirst
     }
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const that = this
-    if (isValid(props.reactions)) {
-      if (isArr(props.reactions)) {
-        props.reactions.forEach((fn) => {
-          this.disposers.push(autorun(() => fn(that as any)))
-        })
-      } else {
-        this.disposers.push(autorun(() => (props.reactions as FieldReaction)(that as any)))
-      }
-    }
+
+    this._self.initialized = true
+    this.notify(LifeCycles.ON_FIELD_INIT)
   }
 
   get form() {
     return this._self.form
+  }
+
+  get path() {
+    return this._self.path
   }
 
   get initialized() {
@@ -180,6 +153,17 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
 
   get unmounted() {
     return this._self.unmounted
+  }
+
+  /** 字段自身是否被手动修改过 */
+  get selfModified() {
+    return this._self.selfModified
+  }
+
+  /** 字段子树是否被手动修改过 */
+  get modified() {
+    if (this.selfModified) return true
+    return this.query(`${this.path}.*`).reduce<boolean>((_modified, _field) => _modified || _field.selfModified, false)
   }
 
   get parent(): Field | ArrayField | ObjectField | undefined {
@@ -310,10 +294,12 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
     this.setSubmitting(submiting)
   }
 
+  get feedbacks() {
+    return this._self.feedbacks
+  }
+
   get selfErrors(): FeedbackMessage {
-    return queryFeedbackMessages(this, {
-      type: 'error',
-    })
+    return this.queryFeedbackMessages({ type: 'error' })
   }
 
   set selfErrors(messages: FeedbackMessage) {
@@ -325,9 +311,7 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
   }
 
   get selfWarnings(): FeedbackMessage {
-    return queryFeedbackMessages(this, {
-      type: 'warning',
-    })
+    return this.queryFeedbackMessages({ type: 'warning' })
   }
 
   set selfWarnings(messages: FeedbackMessage) {
@@ -339,9 +323,7 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
   }
 
   get selfSuccesses(): FeedbackMessage {
-    return queryFeedbackMessages(this, {
-      type: 'success',
-    })
+    return this.queryFeedbackMessages({ type: 'success' })
   }
 
   set selfSuccesses(messages: FeedbackMessage) {
@@ -465,7 +447,7 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
     }
 
     if (actualDisplay === 'hidden' || actualDisplay === 'none') {
-      clearAllSubErrors(this)
+      this.clearFeedback('error')
     }
   }
 
@@ -474,7 +456,7 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
     this._self.pattern = type
     const actualPattern = this.pattern
     if (actualPattern !== 'editable') {
-      clearAllSubErrors(this)
+      this.clearFeedback('error')
     }
   }
 
@@ -520,7 +502,22 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
 
   setFeedback(feedback: IFieldFeedback) {
     if (!isValid(feedback)) return
-    updateFeedback(this, feedback)
+    this._self.feedbacks = updateFeedback(this, feedback)
+  }
+
+  /** 清空本 field 以及所有子 field 的 feedback */
+  clearFeedback(type: FieldFeedbackTypes) {
+    if (!isValid(type)) return
+    this.setFeedback({
+      type,
+      messages: [],
+    })
+    this.query(`${this.path}.*`).forEach((_field) => {
+      _field.setFeedback({
+        type,
+        messages: [],
+      })
+    })
   }
 
   setSelfErrors(messages: FeedbackMessage) {
@@ -563,11 +560,6 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
     this.required = required
   }
 
-  onInit() {
-    this._self.initialized = true
-    this.notify(LifeCycles.ON_FIELD_INIT)
-  }
-
   onMount() {
     this._self.mounted = true
     this._self.unmounted = false
@@ -592,19 +584,34 @@ export abstract class BaseField<Component extends JSXComponent = any, ValueType 
     return queryFeedbacks(this, search)
   }
 
+  private queryFeedbackMessages(search: ISearchFeedback) {
+    if (!this.feedbacks.length) return []
+    return this.queryFeedbacks(search).reduce<string[]>(
+      (buf, info) => (isEmpty(info.messages) ? buf : buf.concat(info.messages)),
+      []
+    )
+  }
+
   match = (pattern: FormPathPattern) => {
     return FormPath.parse(pattern).match(this.path)
   }
 
-  // 父组件负责实现，因为需要在 notify 执行时上报 field 实例
-  abstract notify(type: LifeCycles, payload?: any): void
+  notify(type: LifeCycles, payload?: any): void {
+    this.form.notify(type, payload ?? this)
+  }
 
-  dispose() {
+  private dispose() {
     this.disposers.forEach((dispose) => dispose())
   }
 
   destroy(forceClear = true) {
-    destroy(this.form.fields, this.path.toString(), forceClear)
+    this.dispose()
+    if (forceClear) {
+      this.form.deleteValuesIn(this.path)
+      this.form.deleteInitialValuesIn(this.path)
+    }
+    delete this.form.fields[this.path.toString()]
+    delete this.form.indexes[this.path.toString()]
   }
 
   inject(actions: IFieldActions) {

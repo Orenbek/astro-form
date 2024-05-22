@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import { isPlainObj, isValid, isEmpty, isFn } from '@astro-form/shared'
+import { isPlainObj, isValid } from '@astro-form/shared'
 import { Path as FormPath, Pattern as FormPathPattern } from '@formily/path'
 import { parseValidatorDescriptions, ValidatorTriggerType, validate, IValidateResults } from '@formily/validator'
 import { runInAction, toJS } from 'mobx'
@@ -11,11 +11,10 @@ import {
   IFieldFeedback,
   FieldFeedbackTypes,
   FieldFeedbackCodeTypes,
-  IFieldResetOptions,
 } from '@/types'
 import type { ArrayField, Field, Form } from '@/models'
 import { BaseField } from '@/models/BaseField'
-import { isArrayField, isForm, isObjectField } from '@/shared/checkers'
+import { isForm } from '@/shared/checkers'
 
 const notify = (target: Form | BaseField, formType: LifeCycles, fieldType: LifeCycles) => {
   if (isForm(target)) {
@@ -25,7 +24,8 @@ const notify = (target: Form | BaseField, formType: LifeCycles, fieldType: LifeC
   }
 }
 
-export const locateNode = (field: Field, path: FormPathPattern) => {
+// related
+const locateNode = (field: Field, path: FormPathPattern) => {
   runInAction(() => {
     field.path = FormPath.parse(path)
     field.form.indexes[field.path.toString()] = field.path.toString()
@@ -33,7 +33,8 @@ export const locateNode = (field: Field, path: FormPathPattern) => {
   return field
 }
 
-export const destroy = (target: Record<string, Field>, path: string, forceClear = true) => {
+// related
+const destroy = (target: Record<string, Field>, path: string, forceClear = true) => {
   const field = target[path]
   field?.dispose()
   if (forceClear) {
@@ -72,58 +73,34 @@ export const createChildrenFeedbackFilter = (field: BaseField) => {
   }
 }
 
-export const matchFeedback = (search: ISearchFeedback, feedback: IFormFeedback) => {
-  if (search.type && search.type !== feedback.type) return false
-  if (search.code && search.code !== feedback.code) return false
-  if (search.path && feedback.path) {
-    if (!FormPath.parse(search.path).match(feedback.path)) return false
-  }
-  if (search.triggerType && search.triggerType !== feedback.triggerType) return false
-  return true
-}
-
 export const queryFeedbacks = (field: BaseField, search: ISearchFeedback) => {
   const feedbacks = field.feedbacks.filter((feedback) => {
-    if (!feedback.messages.length) return false
-    return matchFeedback(search, {
-      ...feedback,
-      path: field.path?.toString(),
-    })
+    if (search.type && search.type !== feedback.type) return false
+    if (search.code && search.code !== feedback.code) return false
+    if (search.path) {
+      if (!FormPath.parse(search.path).match(field.path.toString())) return false
+    }
+    if (search.triggerType && search.triggerType !== feedback.triggerType) return false
+    return true
   })
   return toJS(feedbacks)
 }
 
-export const queryFeedbackMessages = (field: BaseField, search: ISearchFeedback) => {
-  if (!field.feedbacks.length) return []
-  return queryFeedbacks(field, search).reduce<string[]>(
-    (buf, info) => (isEmpty(info.messages) ? buf : buf.concat(info.messages)),
-    []
-  )
-}
-
-export const updateFeedback = (field: BaseField, feedback: IFieldFeedback) => {
+export const updateFeedback = (field: BaseField, feedback: IFieldFeedback): Array<IFieldFeedback> => {
   if (!field.feedbacks.length) {
-    if (!feedback.messages.length) {
-      return
-    }
-    field.feedbacks = [feedback]
-  } else {
-    const searched = queryFeedbacks(field, feedback)
-    if (searched.length) {
-      field.feedbacks = field.feedbacks.reduce<IFieldFeedback[]>((buf, item) => {
-        if (searched.includes(item)) {
-          if (feedback.messages.length) {
-            item.messages = feedback.messages
-            return buf.concat(item)
-          }
-          return buf
-        }
-        return buf.concat(item)
-      }, [])
-    } else if (feedback.messages.length) {
-      field.feedbacks = field.feedbacks.concat(feedback)
-    }
+    return [feedback]
   }
+  const searched = queryFeedbacks(field, feedback)
+  if (searched.length) {
+    return field.feedbacks.reduce<IFieldFeedback[]>((buf, item) => {
+      if (searched.includes(item)) {
+        item.messages = feedback.messages
+        return buf.concat(item)
+      }
+      return buf.concat(item)
+    }, [])
+  }
+  return field.feedbacks.concat(feedback)
 }
 
 export const isHTMLInputEvent = (event: any, stopPropagation = true) => {
@@ -134,85 +111,58 @@ export const isHTMLInputEvent = (event: any, stopPropagation = true) => {
   return false
 }
 
-export const batchSubmit = async <T>(
-  target: Form | Field,
-  onSubmit?: (values: any) => Promise<T> | void
-): Promise<T> => {
-  const getValues = (_target: Form | Field) => {
-    if (isForm(_target)) {
-      return toJS(_target.values)
-    }
-    return toJS(_target.value)
-  }
-  target.setSubmitting(true)
-  try {
-    notify(target, LifeCycles.ON_FORM_SUBMIT_VALIDATE_START, LifeCycles.ON_FIELD_SUBMIT_VALIDATE_START)
-    await target.validate()
-    notify(target, LifeCycles.ON_FORM_SUBMIT_VALIDATE_SUCCESS, LifeCycles.ON_FIELD_SUBMIT_VALIDATE_SUCCESS)
-  } catch (e) {
-    notify(target, LifeCycles.ON_FORM_SUBMIT_VALIDATE_FAILED, LifeCycles.ON_FIELD_SUBMIT_VALIDATE_FAILED)
-  }
-  notify(target, LifeCycles.ON_FORM_SUBMIT_VALIDATE_END, LifeCycles.ON_FIELD_SUBMIT_VALIDATE_END)
-  let results: any
-  try {
-    if (target.invalid) {
-      // eslint-disable-next-line @typescript-eslint/no-throw-literal
-      throw target.errors
-    }
-    if (isFn(onSubmit)) {
-      results = await onSubmit(getValues(target))
-    } else {
-      results = getValues(target)
-    }
-    notify(target, LifeCycles.ON_FORM_SUBMIT_SUCCESS, LifeCycles.ON_FIELD_SUBMIT_SUCCESS)
-  } catch (e) {
-    target.setSubmitting(false)
-    notify(target, LifeCycles.ON_FORM_SUBMIT_FAILED, LifeCycles.ON_FIELD_SUBMIT_FAILED)
-    notify(target, LifeCycles.ON_FORM_SUBMIT, LifeCycles.ON_FIELD_SUBMIT)
-    throw e
-  }
-  target.setSubmitting(false)
-  notify(target, LifeCycles.ON_FORM_SUBMIT, LifeCycles.ON_FIELD_SUBMIT)
-  return results
-}
-
-export const validateToFeedbacks = async (field: Field, triggerType?: ValidatorTriggerType) => {
+export const validateSelf = async (target: Field, triggerType?: ValidatorTriggerType, noEmit = false) => {
   function capitalize(string: string) {
     return string.charAt(0).toUpperCase() + string.slice(1)
   }
-  const results = await validate(field.value, field.validator!, {
-    triggerType,
-    validateFirst: field.validateFirst ?? field.form.validateFirst,
-    context: { field, form: field.form },
-  })
-  runInAction(() => {
-    ;(Object.entries(results) as [FieldFeedbackTypes, string[]][]).forEach(([type, messages]) => {
-      field.setFeedback({
-        triggerType,
-        type,
-        code: `validate${capitalize(type)}` as FieldFeedbackCodeTypes,
-        messages,
+  if (target.pattern !== 'editable' || target.display !== 'visible' || !target.validator) return {}
+  target.setValidating(true)
+  let results: any = {}
+  if (!triggerType) {
+    const allTriggerTypes = parseValidatorDescriptions(target.validator).reduce(
+      (types, desc) => (types.indexOf(desc.triggerType) > -1 ? types : types.concat(desc.triggerType)),
+      []
+    )
+    // eslint-disable-next-line no-plusplus
+    for (let i = 0; i < allTriggerTypes.length; i++) {
+      // eslint-disable-next-line no-await-in-loop
+      const payload = await validate(target.value, target.validator!, {
+        triggerType: allTriggerTypes[i] || 'onInput',
+        validateFirst: target.validateFirst ?? target.form.validateFirst,
+        context: { field: target, form: target.form },
       })
+      // eslint-disable-next-line @typescript-eslint/no-loop-func
+      Object.keys(payload).forEach((key) => {
+        results[key] = results[key] || []
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        results[key] = results[key].concat(payload[key])
+      })
+    }
+  } else {
+    results = await validate(target.value, target.validator!, {
+      triggerType: triggerType || 'onInput',
+      validateFirst: target.validateFirst ?? target.form.validateFirst,
+      context: { field: target, form: target.form },
+    })
+  }
+  ;(Object.entries(results) as [FieldFeedbackTypes, string[]][]).forEach(([type, messages]) => {
+    target.setFeedback({
+      triggerType: triggerType || 'onInput',
+      type,
+      code: `validate${capitalize(type)}` as FieldFeedbackCodeTypes,
+      messages,
     })
   })
-  return results
-}
 
-export const validateSelf = async (target: Field, triggerType?: ValidatorTriggerType, noEmit = false) => {
-  const end = () => {
-    target.setValidating(false)
-    if (noEmit) return
+  target.setValidating(false)
+  if (!noEmit) {
     if (target.selfValid) {
       target.notify(LifeCycles.ON_FIELD_VALIDATE_SUCCESS)
     } else {
       target.notify(LifeCycles.ON_FIELD_VALIDATE_FAILED)
     }
   }
-
-  if (target.pattern !== 'editable' || target.display !== 'visible' || !target.validator) return {}
-  target.setValidating(true)
-  const results = await validateToFeedbacks(target, triggerType)
-  end()
   return results
 }
 
@@ -240,60 +190,6 @@ export const batchValidate = async (
     throw target.errors
   }
   notify(target, LifeCycles.ON_FORM_VALIDATE_SUCCESS, LifeCycles.ON_FIELD_VALIDATE_SUCCESS)
-}
-
-export const resetSelf = (target: Field, options?: IFieldResetOptions, noEmit = false) => {
-  const getTypedDefaultValue = (field: Field) => {
-    if (isArrayField(field)) return []
-    if (isObjectField(field)) return {}
-    return undefined
-  }
-  const typedDefaultValue = getTypedDefaultValue(target)
-  target.modified = false
-  target.selfModified = false
-  target.visited = false
-  target.feedbacks = []
-  target.inputValue = typedDefaultValue
-  if (target.value !== undefined) {
-    if (options?.forceClear) {
-      target.value = typedDefaultValue
-    } else {
-      const { initialValue } = target
-      target.value = toJS(initialValue !== undefined ? initialValue : typedDefaultValue)
-    }
-  }
-  if (!noEmit) {
-    target.notify(LifeCycles.ON_FIELD_RESET)
-  }
-  if (options?.validate) {
-    return validateSelf(target)
-  }
-  return Promise.resolve(null)
-}
-
-export const batchReset = async (target: Form | Field, pattern: FormPathPattern, options?: IFieldResetOptions) => {
-  const tasks: Array<Promise<any>> = []
-  target.query(pattern).forEach((field) => {
-    tasks.push(resetSelf(field, options, target === field))
-  })
-  if (isForm(target)) {
-    target.modified = false
-  }
-  notify(target, LifeCycles.ON_FORM_RESET, LifeCycles.ON_FIELD_RESET)
-  await Promise.all(tasks)
-}
-
-export const modifySelf = (target: Field) => {
-  if (target.selfModified) return
-  target.selfModified = true
-  target.modified = true
-  let { parent } = target
-  while (parent) {
-    if (parent.modified) return
-    parent.modified = true
-    parent = parent.parent
-  }
-  target.form.modified = true
 }
 
 export const getValuesFromEvent = (args: any[]) => {
@@ -483,14 +379,4 @@ export const exchangeArrayState = (
   })
   patchFieldStates(fields, fieldPatches)
   field.form.notify(LifeCycles.ON_FORM_GRAPH_CHANGE)
-}
-
-/** 清空本 field 以及所有子 field 的 error */
-export const clearAllSubErrors = (field: BaseField) => {
-  field.query('*').forEach((_field) => {
-    _field.setFeedback({
-      type: 'error',
-      messages: [],
-    })
-  })
 }
