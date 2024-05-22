@@ -2,7 +2,7 @@
 import { isValid, isFn, isArr, isEmpty } from '@astro-form/shared'
 import { Path as FormPath, Pattern as FormPathPattern } from '@formily/path'
 import { parseValidatorDescriptions } from '@formily/validator'
-import { type IReactionDisposer } from 'mobx'
+import { runInAction, type IReactionDisposer } from 'mobx'
 
 import type {
   JSXComponent,
@@ -87,8 +87,10 @@ export class BaseField<Component extends JSXComponent = any, ValueType = any> {
     this._self.form = form
     const _path = FormPath.parse(path)
     this._self.path = _path
-    this.form.fields[_path.toString()] = this as any
-    this.form.indexes[_path.toString()] = _path.toString()
+    runInAction(() => {
+      this.form.fields[_path.toString()] = this as any
+      this.form.indexes[_path.toString()] = _path.toString()
+    })
     this.#initialize(props)
   }
 
@@ -462,17 +464,39 @@ export class BaseField<Component extends JSXComponent = any, ValueType = any> {
 
   setLoading(loading: boolean) {
     if (!isValid(loading)) return
+    const preloading = this.loading
     this._self.loading = loading
+    if (preloading !== this.loading) {
+      this.notify(LifeCycles.ON_FIELD_LOADING)
+    }
   }
 
   setValidating(validating: boolean) {
     if (!isValid(validating)) return
+    const prevalidating = this.validating
     this._self.validating = validating
+    if (prevalidating !== this.validating) {
+      if (this.validating) {
+        this.notify(LifeCycles.ON_FIELD_VALIDATE_START)
+        this.notify(LifeCycles.ON_FIELD_VALIDATING)
+      } else {
+        this.notify(LifeCycles.ON_FIELD_VALIDATE_END)
+      }
+    }
   }
 
   setSubmitting(submitting: boolean) {
     if (!isValid(submitting)) return
+    const presubmitting = this.submitting
     this._self.submitting = submitting
+    if (presubmitting !== this.submitting) {
+      if (this.submitting) {
+        this.notify(LifeCycles.ON_FIELD_SUBMIT_START)
+        this.notify(LifeCycles.ON_FIELD_SUBMITTING)
+      } else {
+        this.notify(LifeCycles.ON_FIELD_SUBMIT_END)
+      }
+    }
   }
 
   setComponent<C extends JSXComponent, ComponentProps extends object = object>(component: C, props?: ComponentProps) {

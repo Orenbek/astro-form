@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 // import { createForm } from '@astro-form/core'
-import { autorun } from 'mobx'
+import { autorun, observable, runInAction } from 'mobx'
 
 import { createForm } from '../src/index'
 
@@ -1413,29 +1413,29 @@ test('custom validator to get ctx.field', async () => {
   expect(!!ctxForm).toBeTruthy()
 })
 
-// test('single direction linkage effect', async () => {
-//   const form = attach(createForm())
+test('single direction linkage effect', async () => {
+  const form = attach(createForm())
 
-//   const input2 = form.createField({
-//     name: 'input2',
-//   })!
+  const input2 = form.createField({
+    name: 'input2',
+  })!
 
-//   const input1 = form.createField({
-//     name: 'input1',
-//     reactions: (field) => {
-//       // selfModified 明明是 observable 为什么不重新触发？ 需要调试
-//       if (!field.selfModified) {
-//         return
-//       }
-//       input2.value = field.value
-//     },
-//   })!
+  const input1 = form.createField({
+    name: 'input1',
+    reactions: (field) => {
+      // selfModified 明明是 observable 为什么不重新触发？ 需要调试
+      if (!field.selfModified) {
+        return
+      }
+      input2.value = field.value
+    },
+  })!
 
-//   await input1.onInput('123')
-//   expect(input2.value).toBe('123')
-//   await input2.onInput('321')
-//   expect(input2.value).toBe('321')
-// })
+  await input1.onInput('123')
+  expect(input2.value).toBe('123')
+  await input2.onInput('321')
+  expect(input2.value).toBe('321')
+})
 
 test('path change will update computed value', () => {
   const form = attach(createForm())
@@ -1476,4 +1476,388 @@ test('object field reset', async () => {
     },
   })
   expect(input.value).toBe('123')
+})
+
+test('query value with sibling path syntax', () => {
+  const form = attach(createForm())
+  const fn = jest.fn()
+  attach(
+    form.createObjectField({
+      name: 'obj',
+      basePath: 'void',
+    })!
+  )
+  attach(
+    form.createField({
+      name: 'input',
+      basePath: 'void.obj',
+      reactions: [
+        (field) => {
+          fn(field.query('.textarea').take()?.value, field.query('.textarea').take()?.initialValue)
+        },
+      ],
+    })!
+  )
+  const textarea = attach(
+    form.createField({
+      name: 'textarea',
+      basePath: 'void.obj',
+      initialValue: 'aaa',
+    })!
+  )
+  textarea.value = '123'
+  expect(fn).toBeCalledWith('123', 'aaa')
+})
+
+test('relative query with field', () => {
+  const form = attach(createForm())
+  const aa = attach(
+    form.createField({
+      name: 'aa',
+      basePath: 'void',
+    })!
+  )
+  attach(
+    form.createField({
+      name: 'mm',
+    })!
+  )
+  const bb = attach(
+    form.createField({
+      name: 'bb',
+      basePath: 'mm',
+    })!
+  )
+  expect(bb.query('..void.aa').take()).toBe(aa)
+})
+
+test('empty string or number or null value need rewrite default value', () => {
+  const form = attach(
+    createForm<any>({
+      values: {
+        aa: '',
+        bb: 0,
+        ee: null,
+      },
+    })
+  )
+  attach(
+    form.createField({
+      name: 'aa',
+      initialValue: 'test',
+    })!
+  )
+  attach(
+    form.createField({
+      name: 'bb',
+      initialValue: 123,
+    })!
+  )
+  attach(
+    form.createField({
+      name: 'cc',
+      initialValue: 'test',
+    })!
+  )
+  attach(
+    form.createField({
+      name: 'dd',
+      initialValue: 123,
+    })!
+  )
+  attach(
+    form.createField({
+      name: 'ee',
+      initialValue: 'test',
+    })!
+  )
+  expect(form.values.aa).toEqual('')
+  expect(form.values.bb).toEqual(0)
+  expect(form.values.cc).toEqual('test')
+  expect(form.values.dd).toEqual(123)
+  expect(form.values.ee).toEqual(null)
+})
+
+test('destroy field need auto remove initialValues', () => {
+  const form = attach(createForm<any>())
+  const aa = attach(
+    form.createField({
+      name: 'aa',
+      initialValue: 'test',
+    })!
+  )
+  expect(form.initialValues.aa).toEqual('test')
+  expect(form.values.aa).toEqual('test')
+  aa.destroy()
+  expect(form.initialValues.aa).toBeUndefined()
+  expect(form.values.aa).toBeUndefined()
+})
+
+test('validateFirst', async () => {
+  const form = attach(
+    createForm<any>({
+      validateFirst: false,
+    })
+  )
+  const aaValidate = jest.fn(() => 'aaError')
+  const aa = attach(
+    form.createField({
+      name: 'aa',
+      validateFirst: true,
+      validator: [aaValidate, aaValidate],
+    })!
+  )
+  await aa.onInput('aa')
+  const bbValidate = jest.fn(() => 'bbError')
+  const bb = attach(
+    form.createField({
+      name: 'bb',
+      validator: [bbValidate, bbValidate],
+      validateFirst: false,
+    })!
+  )
+  await bb.onInput('bb')
+  const ccValidate = jest.fn(() => 'ccError')
+  const cc = attach(
+    form.createField({
+      name: 'cc',
+      validator: [ccValidate, ccValidate],
+    })!
+  )
+  await cc.onInput('cc')
+
+  expect(aaValidate).toBeCalledTimes(1)
+  expect(bbValidate).toBeCalledTimes(2)
+  expect(ccValidate).toBeCalledTimes(2)
+})
+
+test('reactions should not be triggered when field destroyed', () => {
+  const form = attach(createForm<any>())
+  const handler = jest.fn()
+  const obs = observable({ bb: 123 })
+  const aa = attach(
+    form.createField({
+      name: 'aa',
+      initialValue: 'test',
+      reactions() {
+        handler(obs.bb)
+      },
+    })!
+  )
+  runInAction(() => {
+    obs.bb = 321
+  })
+  aa.destroy()
+  runInAction(() => {
+    obs.bb = 111
+  })
+  expect(handler).toBeCalledTimes(2)
+})
+
+test('parent readPretty will overwrite self editable', () => {
+  const form = attach(
+    createForm<any>({
+      readPretty: true,
+    })
+  )
+  const aa = attach(
+    form.createField({
+      name: 'aa',
+      initialValue: 'test',
+      disabled: true,
+    })!
+  )
+  const bb = attach(
+    form.createField({
+      name: 'bb',
+      initialValue: 'test',
+      editable: true,
+    })!
+  )
+  expect(aa.pattern).toBe('disabled')
+  expect(bb.pattern).toBe('readPretty')
+})
+
+test('conflict name for errors filter', async () => {
+  const form = attach(createForm<any>())
+  const aa = attach(
+    form.createField({
+      name: 'aa',
+      required: true,
+    })!
+  )
+  const aa1 = attach(
+    form.createField({
+      name: 'aa1',
+      required: true,
+    })!
+  )
+
+  await aa1.onInput('')
+  expect(aa.invalid).toBe(false)
+})
+
+test('field destroyed can not be assign value', () => {
+  const form = attach(createForm<any>())
+  const aa = attach(
+    form.createField({
+      name: 'aa',
+    })!
+  )
+  aa.destroy()
+  aa.initialValue = 222
+  aa.value = 111
+  expect(form.values).toEqual({})
+  expect(form.initialValues).toEqual({})
+})
+
+test('onInput could pass value with target', async () => {
+  const form = attach(createForm<any>())
+  const aa = attach(
+    form.createField({
+      name: 'aa',
+    })!
+  )
+  await aa.onInput({
+    target: '123',
+  })
+  expect(aa.value).toEqual({ target: '123' })
+})
+
+test('field destroyed or display none should not be assign value from patch initialValues', () => {
+  const form = attach(createForm())
+  const aa = attach(
+    form.createField({
+      name: 'aa',
+      display: 'none',
+    })!
+  )
+
+  aa.initialValue = '123'
+
+  expect(form.values).toEqual({})
+
+  aa.display = 'visible'
+
+  expect(aa.value).toBe('123')
+  expect(form.values).toEqual({ aa: '123' })
+})
+
+test('field actions', () => {
+  const form = attach(createForm())
+  const aa = attach(
+    form.createField({
+      name: 'aa',
+    })!
+  )
+  aa.inject({
+    test: () => 123,
+  })
+  expect(aa.invoke('test')).toEqual(123)
+  aa.inject({
+    test: () => 321,
+  })
+  expect(aa.invoke('test')).toEqual(321)
+})
+
+test('field hidden value', () => {
+  const form = attach(createForm())
+  const aa = attach(
+    form.createField({
+      name: 'aa',
+      hidden: true,
+      initialValue: '123',
+    })!
+  )
+  expect(form.values).toEqual({ aa: '123' })
+
+  const objectField = attach(
+    form.createObjectField({
+      name: 'object',
+      hidden: true,
+    })!
+  )
+  const arrayField = attach(
+    form.createArrayField({
+      name: 'array',
+      hidden: true,
+    })!
+  )
+
+  aa.setDisplay('none')
+  objectField.setDisplay('none')
+  arrayField.setDisplay('none')
+  expect(aa.value).toBeUndefined()
+  expect(objectField.value).toBeUndefined()
+  expect(arrayField.value).toBeUndefined()
+
+  aa.setDisplay('hidden')
+  objectField.setDisplay('hidden')
+  arrayField.setDisplay('hidden')
+  expect(aa.value).toEqual('123')
+  expect(objectField.value).toEqual({})
+  expect(arrayField.value).toEqual([])
+})
+
+test('field destructor path with display none', () => {
+  const form = attach(createForm())
+  const aa = attach(
+    form.createArrayField({
+      name: '[aa,bb]',
+    })!
+  )
+  aa.setDisplay('none')
+  expect(form.values).toEqual({})
+  expect(aa.value).toEqual([])
+})
+
+test('onInput should ignore HTMLInputEvent propagation', async () => {
+  const form = attach(createForm<any>())
+  const mockHTMLInput = { value: '321' }
+  const mockDomEvent = { target: mockHTMLInput, currentTarget: mockHTMLInput }
+  const aa = attach(
+    form.createField({
+      name: 'aa',
+    })!
+  )
+  await aa.onInput(mockDomEvent)
+  expect(aa.value).toEqual('321')
+
+  await aa.onInput({ target: { value: '2' }, currentTarget: { value: '4' } })
+  expect(aa.value).toEqual('321')
+
+  // currentTarget is undefined, skip ignore
+  await aa.onInput({ target: { value: '123' } })
+  expect(aa.value).toEqual('123')
+})
+
+test('onFocus and onBlur with invalid target value', async () => {
+  const form = attach(createForm<any>())
+  const field = attach(
+    form.createField({
+      name: 'aa',
+      validateFirst: true,
+      value: '111',
+      validator: [
+        {
+          triggerType: 'onFocus',
+          format: 'date',
+        },
+        {
+          triggerType: 'onBlur',
+          format: 'url',
+        },
+      ],
+    })!
+  )
+
+  await field.onFocus({ target: {} })
+  expect(field.selfErrors).toEqual([])
+  await field.onBlur({ target: {} })
+  expect(field.selfErrors).toEqual([])
+
+  await field.onFocus()
+  expect(field.selfErrors).toEqual(['The field value is not a valid date format'])
+  await field.onBlur()
+  expect(field.selfErrors).toEqual(['The field value is not a valid date format', 'The field value is a invalid url'])
 })
