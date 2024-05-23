@@ -1,10 +1,9 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { Pattern as FormPathPattern } from '@formily/path'
 import { ValidatorTriggerType } from '@formily/validator'
 import { makeObservable, observable, action, computed, reaction, autorun, toJS, flow } from 'mobx'
 import { isArr, isFn, isValid } from '@astro-form/shared'
 
-import { LifeCycles } from '@/types'
+import { LifeCycles, FormPathPattern } from '@/types'
 
 import type { JSXComponent, IFieldProps, IFieldResetOptions, FieldReaction } from '../types'
 import { getValuesFromEvent, isHTMLInputEvent, batchValidate, validateSelf } from '../shared/internals'

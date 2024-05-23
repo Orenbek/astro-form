@@ -3,8 +3,8 @@ import { makeObservable, action } from 'mobx'
 
 import { move } from '@/utils'
 
-import { spliceArrayState, exchangeArrayState } from '../shared/internals'
-import { JSXComponent, IFieldProps, FormPathPattern } from '../types'
+import { spliceArrayState, exchangeArrayState, INodePatch } from '../shared/internals'
+import { JSXComponent, IFieldProps, FormPathPattern, FormPath, LifeCycles } from '../types'
 
 import { Field } from './Field'
 import type { Form } from './Form'
@@ -43,7 +43,7 @@ export class ArrayField<Component extends JSXComponent = any, ValueType extends 
   }
 
   #makeObservable() {
-    makeObservable(this, {
+    makeObservable<ArrayField, 'patchFieldStates'>(this, {
       push: action,
       pop: action,
       insert: action,
@@ -51,11 +51,35 @@ export class ArrayField<Component extends JSXComponent = any, ValueType extends 
       shift: action,
       unshift: action,
       move: action,
+      patchFieldStates: action,
     })
   }
 
   get indexes(): number[] {
     return this.path.transform(/^\d+$/, (...args) => args.map((index) => Number(index))) as number[]
+  }
+
+  private patchFieldStates(patches: INodePatch<Field>[]) {
+    const { fields } = this.form
+    patches.forEach(({ type, path, oldPath, payload }) => {
+      if (type === 'remove') {
+        fields[path].destroy()
+      } else if (type === 'update') {
+        if (payload) {
+          fields[path] = payload
+          if (oldPath && fields[oldPath] === payload) {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-expect-error
+            fields[oldPath] = undefined
+          }
+        }
+        if (path && payload) {
+          const _path = FormPath.parse(path)
+          this._self.path = _path
+          this.form.indexes[_path.toString()] = _path.toString()
+        }
+      }
+    })
   }
 
   async push(...items: any[]) {
@@ -69,10 +93,12 @@ export class ArrayField<Component extends JSXComponent = any, ValueType extends 
   async pop() {
     if (!isArr(this.value)) return
     const index = this.value.length - 1
-    spliceArrayState(this, {
+    const fieldPatches = spliceArrayState(this, {
       startIndex: index,
       deleteCount: 1,
     })
+    this.patchFieldStates(fieldPatches)
+    this.form.notify(LifeCycles.ON_FORM_GRAPH_CHANGE)
     this.value.pop()
     await this.onInput(this.value)
   }
@@ -84,20 +110,26 @@ export class ArrayField<Component extends JSXComponent = any, ValueType extends 
     if (items.length === 0) {
       return
     }
-    spliceArrayState(this, {
+    const fieldPatches = spliceArrayState(this, {
       startIndex: index,
       insertCount: items.length,
     })
+    this.patchFieldStates(fieldPatches)
+    this.form.notify(LifeCycles.ON_FORM_GRAPH_CHANGE)
+
     this.value.splice(index, 0, ...items)
     await this.onInput(this.value)
   }
 
   async remove(index: number) {
     if (!isArr(this.value)) return
-    spliceArrayState(this, {
+    const fieldPatches = spliceArrayState(this, {
       startIndex: index,
       deleteCount: 1,
     })
+    this.patchFieldStates(fieldPatches)
+    this.form.notify(LifeCycles.ON_FORM_GRAPH_CHANGE)
+
     this.value.splice(index, 1)
     await this.onInput(this.value)
   }
@@ -112,10 +144,13 @@ export class ArrayField<Component extends JSXComponent = any, ValueType extends 
     if (!isArr(this.value)) {
       this.value = [] as unknown as ValueType
     }
-    spliceArrayState(this, {
+    const fieldPatches = spliceArrayState(this, {
       startIndex: 0,
       insertCount: items.length,
     })
+    this.patchFieldStates(fieldPatches)
+    this.form.notify(LifeCycles.ON_FORM_GRAPH_CHANGE)
+
     this.value.unshift(...items)
     await this.onInput(this.value)
   }
@@ -124,10 +159,13 @@ export class ArrayField<Component extends JSXComponent = any, ValueType extends 
     if (!isArr(this.value)) return
     if (fromIndex === toIndex) return
     move(this.value, fromIndex, toIndex)
-    exchangeArrayState(this, {
+    const fieldPatches = exchangeArrayState(this, {
       fromIndex,
       toIndex,
     })
+    this.patchFieldStates(fieldPatches)
+    this.form.notify(LifeCycles.ON_FORM_GRAPH_CHANGE)
+
     await this.onInput(this.value)
   }
 

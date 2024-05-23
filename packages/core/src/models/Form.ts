@@ -1,10 +1,9 @@
 /* eslint-disable no-new */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { Path as FormPath, Pattern as FormPathPattern } from '@formily/path'
 import { merge } from '@formily/shared/esm/merge'
 import { isValid, isPlainObj, isFn } from '@astro-form/shared'
 import structuredClone from '@ungap/structured-clone'
-import { reaction, makeObservable, observable, computed, action, toJS } from 'mobx'
+import { makeObservable, observable, computed, action, toJS } from 'mobx'
 
 import {
   JSXComponent,
@@ -20,6 +19,8 @@ import {
   FormLifeCycleUnion,
   FieldLifeCycleUnion,
   FieldFeedbackTypes,
+  FormPath,
+  FormPathPattern,
 } from '../types'
 import { batchValidate } from '../shared/internals'
 

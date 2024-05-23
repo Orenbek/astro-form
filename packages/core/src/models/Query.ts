@@ -1,7 +1,6 @@
-import { Path as FormPath, Pattern as FormPathPattern } from '@formily/path'
 import { isFn } from '@astro-form/shared'
 
-import { GeneralField } from '../types'
+import { GeneralField, FormPath, FormPathPattern } from '../types'
 
 import type { Form } from './Form'
 import type { Field } from '.'

@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { isValid, isFn, isArr, isEmpty } from '@astro-form/shared'
-import { Path as FormPath, Pattern as FormPathPattern } from '@formily/path'
 import { parseValidatorDescriptions } from '@formily/validator'
 import { runInAction, type IReactionDisposer } from 'mobx'
 
@@ -16,8 +15,9 @@ import type {
   ISearchFeedback,
   IBaseFieldProps,
   FieldFeedbackTypes,
+  FormPathPattern,
 } from '../types'
-import { LifeCycles } from '../types'
+import { LifeCycles, FormPath } from '../types'
 import { updateFeedback, setValidatorRule, createChildrenFeedbackFilter, queryFeedbacks } from '../shared/internals'
 
 import type { Form } from './Form'

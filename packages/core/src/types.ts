@@ -1,7 +1,10 @@
-import { Path as FormPath } from '@formily/path'
+import { Path as FormPath, Pattern as FormPathPattern } from '@formily/path'
 import { IValidatorRules, Validator, ValidatorTriggerType } from '@formily/validator'
 
+import type { FieldPlugin } from './plugins/type'
 import type { Form, Field, ArrayField, ObjectField } from './models'
+
+export { FormPath, type FormPathPattern }
 
 export type JSXComponent = any
 
@@ -164,17 +167,11 @@ export interface IBaseFieldProps<Component extends JSXComponent = any, ValueType
 }
 
 export interface IFieldProps<Component extends JSXComponent = any, ValueType = any>
-  extends IBaseFieldProps<Component, ValueType> {}
-
-export type FormPathPattern =
-  | string
-  | number
-  | Array<string | number>
-  | FormPath
-  | RegExp
-  | (((path: Array<string | number>) => boolean) & {
-      path: FormPath
-    })
+  extends IBaseFieldProps<Component, ValueType> {
+  plugins?: {
+    new (field: Field): FieldPlugin
+  }[]
+}
 
 export type FieldReaction = (field: Field) => void
 

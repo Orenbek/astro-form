@@ -1,4 +1,3 @@
-import { FormPath } from '@formily/shared'
 import {
   getValidateLocaleIOSCode,
   getLocaleByPath,
@@ -19,7 +18,6 @@ const createForm = <T extends object = any>(options?: IFormProps<T>) => {
 }
 
 export {
-  FormPath,
   createForm,
   isArrayField,
   isField,

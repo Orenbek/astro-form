@@ -1,8 +1,7 @@
 /* eslint-disable no-param-reassign */
 import { isPlainObj, isValid } from '@astro-form/shared'
-import { Path as FormPath, Pattern as FormPathPattern } from '@formily/path'
 import { parseValidatorDescriptions, ValidatorTriggerType, validate, IValidateResults } from '@formily/validator'
-import { runInAction, toJS } from 'mobx'
+import { toJS } from 'mobx'
 
 import {
   LifeCycles,
@@ -11,6 +10,8 @@ import {
   IFieldFeedback,
   FieldFeedbackTypes,
   FieldFeedbackCodeTypes,
+  FormPathPattern,
+  FormPath,
 } from '@/types'
 import type { ArrayField, Field, Form } from '@/models'
 import { BaseField } from '@/models/BaseField'
@@ -22,27 +23,6 @@ const notify = (target: Form | BaseField, formType: LifeCycles, fieldType: LifeC
   } else {
     target.notify(fieldType)
   }
-}
-
-// related
-const locateNode = (field: Field, path: FormPathPattern) => {
-  runInAction(() => {
-    field.path = FormPath.parse(path)
-    field.form.indexes[field.path.toString()] = field.path.toString()
-  })
-  return field
-}
-
-// related
-const destroy = (target: Record<string, Field>, path: string, forceClear = true) => {
-  const field = target[path]
-  field?.dispose()
-  if (forceClear) {
-    const { form } = field
-    form.deleteValuesIn(field.path)
-    form.deleteInitialValuesIn(field.path)
-  }
-  delete target[path]
 }
 
 const { hasOwnProperty } = Object.prototype
@@ -210,26 +190,6 @@ export interface INodePatch<T> {
   payload?: T
 }
 
-export const patchFieldStates = (target: Record<string, Field>, patches: INodePatch<Field>[]) => {
-  patches.forEach(({ type, path, oldPath, payload }) => {
-    if (type === 'remove') {
-      destroy(target, path, false)
-    } else if (type === 'update') {
-      if (payload) {
-        target[path] = payload
-        if (oldPath && target[oldPath] === payload) {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-expect-error
-          target[oldPath] = undefined
-        }
-      }
-      if (path && payload) {
-        locateNode(payload, path)
-      }
-    }
-  })
-}
-
 const NumberIndexReg = /^\.(\d+)/
 export const spliceArrayState = (
   field: ArrayField,
@@ -238,7 +198,7 @@ export const spliceArrayState = (
     deleteCount?: number
     insertCount?: number
   }
-) => {
+): INodePatch<Field<any, any>>[] => {
   const { startIndex, deleteCount, insertCount } = {
     startIndex: 0,
     deleteCount: 0,
@@ -247,8 +207,7 @@ export const spliceArrayState = (
   }
   const path = field.path.toString()
   const addrLength = path.length
-  const { form } = field
-  const { fields } = form
+  const { fields } = field.form
   const fieldPatches: INodePatch<Field>[] = []
   const offset = insertCount - deleteCount
   const isArrayChildren = (identifier: string) => {
@@ -305,8 +264,7 @@ export const spliceArrayState = (
       }
     }
   })
-  patchFieldStates(fields, fieldPatches)
-  field.form.notify(LifeCycles.ON_FORM_GRAPH_CHANGE)
+  return fieldPatches
 }
 
 export const exchangeArrayState = (
@@ -315,7 +273,7 @@ export const exchangeArrayState = (
     fromIndex?: number
     toIndex?: number
   }
-) => {
+): INodePatch<Field<any, any>>[] => {
   const { fromIndex, toIndex } = {
     fromIndex: 0,
     toIndex: 0,
@@ -377,6 +335,5 @@ export const exchangeArrayState = (
       }
     }
   })
-  patchFieldStates(fields, fieldPatches)
-  field.form.notify(LifeCycles.ON_FORM_GRAPH_CHANGE)
+  return fieldPatches
 }
