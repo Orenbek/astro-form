@@ -9,6 +9,7 @@ import { LifeCycles } from '@/types'
 import type { JSXComponent, IFieldProps, IFieldResetOptions, FieldReaction } from '../types'
 import { getValuesFromEvent, isHTMLInputEvent, batchValidate, validateSelf } from '../shared/internals'
 import { isArrayField, isObjectField } from '../shared/checkers'
+import type { FieldPlugin } from '../plugins/type'
 
 import type { Form } from './Form'
 import { BaseField } from './BaseField'
@@ -19,10 +20,7 @@ export class Field<Component extends JSXComponent = any, ValueType = any> extend
   private _private = {
     active: false,
     visited: false,
-    // syncedValue 以及 _self.valueUnchanged 存在的原因是因为这里有一个比较hack的逻辑
-    // 没有更好的办法解决，只能这么解决了
-    // 为什么会有这种逻辑可查看单元测试中 onFormValuesChange/onFormInitialValuesChange 部分
-    syncedValue: undefined as any,
+    plugins: [] as FieldPlugin[],
   }
 
   /** 字段输入值, 给用户提供的冗余值，仅存储不消费 */
@@ -35,6 +33,12 @@ export class Field<Component extends JSXComponent = any, ValueType = any> extend
     // 得放在 makeObservable 执行之后，不然 this 中标注的 observable.ref 并不会生效
     this.#initialize(props)
     this.#makeReactive()
+    if (props.plugins) {
+      props.plugins.forEach((Plugin) => {
+        const plugin = new Plugin(this)
+        this._private.plugins.push(plugin)
+      })
+    }
   }
 
   #initialize(props: IFieldProps<Component, ValueType>) {
@@ -132,30 +136,13 @@ export class Field<Component extends JSXComponent = any, ValueType = any> extend
     this.disposers.push(
       reaction(
         () => this.initialValue,
-        (initialValue) => {
+        () => {
           this.notify(LifeCycles.ON_FIELD_INITIAL_VALUE_CHANGE)
-          /**
-           * 这个地方写一点额外的 action 逻辑，写在这里是为了方便
-           * 修改 initialValue 时需要根据当前 field 的状态决定要不要赋值给 value。
-           * 由于用户可能会在 field.setInitialValue 中操作 也有可能在 form.setInitialValues, form.setInitialValuesIn
-           * 中修改 initialValue，因此需要这些地方都做好处理。特别是 setInitialValues setInitialValuesIn 中得先 diff 出
-           * 哪些部分有修改，然后遍历所有相关 field，太麻烦
-           *
-           * 若 field 没有值且没有被修改过，则修改 value 值
-           * 这种处理方式下 初始化的时候这里会多触发一次
-           */
-          if (this._self.valueUnchanged && !this.selfModified && initialValue !== undefined) {
-            this.value = initialValue
-            this._private.syncedValue = initialValue
-          }
         }
       ),
       reaction(
         () => this.value,
         () => {
-          if (this.value !== this._private.syncedValue) {
-            this._self.valueUnchanged = false
-          }
           this.notify(LifeCycles.ON_FIELD_VALUE_CHANGE)
         }
       )
@@ -168,6 +155,17 @@ export class Field<Component extends JSXComponent = any, ValueType = any> extend
 
   get visited() {
     return this._private.visited
+  }
+
+  destroy(forceClear = true) {
+    this.disposers.forEach((dispose) => dispose())
+    this._private.plugins.forEach((plugin) => plugin.destroy())
+    if (forceClear) {
+      this.form.deleteValuesIn(this.path)
+      this.form.deleteInitialValuesIn(this.path)
+    }
+    delete this.form.fields[this.path.toString()]
+    delete this.form.indexes[this.path.toString()]
   }
 
   // 这几个不需要标注是 action，因为内部都是调用的 action 函数

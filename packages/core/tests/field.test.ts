@@ -247,13 +247,13 @@ test('setValue/setInitialValue', () => {
     })!
   )
   ccc.setInitialValue('123')
-  expect(ccc.value).toEqual('123')
+  expect(ccc.value).toEqual(undefined)
   expect(ccc.initialValue).toEqual('123')
-  expect(form.values.ccc).toEqual('123')
+  expect(form.values.ccc).toEqual(undefined)
   ccc.setInitialValue('222')
-  expect(ccc.value).toEqual('123')
+  expect(ccc.value).toEqual(undefined)
   expect(ccc.initialValue).toEqual('222')
-  expect(form.values.ccc).toEqual('123')
+  expect(form.values.ccc).toEqual(undefined)
 })
 
 test('setLoading/setValidating', async () => {
@@ -1344,7 +1344,7 @@ test('field name is length in dynamic assign', async () => {
     })!
   )
   field.initialValue = 123
-  expect(field.value).toEqual(123)
+  expect(field.value).toEqual(undefined)
 })
 
 test('nested field modified', async () => {
