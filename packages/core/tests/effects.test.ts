@@ -33,9 +33,7 @@ test('onFormValuesChange/onFormInitialValuesChange', async () => {
   })
   expect(valuesChange).not.toBeCalled()
   expect(initialValuesChange).not.toBeCalled()
-  form.setValues({
-    aa: '123',
-  })
+  form.setValues({ aa: '123' })
   expect(form.values.aa).toEqual('123')
   expect(valuesChange).toBeCalled()
   form.setInitialValues({

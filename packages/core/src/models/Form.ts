@@ -3,7 +3,7 @@
 import { merge } from '@formily/shared/esm/merge'
 import { isValid, isPlainObj, isFn } from '@astro-form/shared'
 import structuredClone from '@ungap/structured-clone'
-import { makeObservable, observable, computed, action, toJS } from 'mobx'
+import { makeObservable, observable, computed, action, toJS, reaction } from 'mobx'
 
 import {
   JSXComponent,
@@ -76,7 +76,7 @@ export class Form<ValueType extends object = any> {
   constructor(props: IFormProps<ValueType>) {
     this.#initialize(props)
     this.#makeObservable()
-    this._self.initialized = true
+    this.#makeReactive()
     if (props.effects) {
       this.addEffects(EffectId, props.effects)
     }
@@ -104,6 +104,7 @@ export class Form<ValueType extends object = any> {
     }
     this.values = structuredClone(props.values || {})
     this.initialValues = structuredClone(props.initialValues || {})
+    this._self.initialized = true
   }
 
   #makeObservable() {
@@ -151,6 +152,35 @@ export class Form<ValueType extends object = any> {
       onMount: action,
       onUnmount: action,
     })
+  }
+
+  #makeReactive() {
+    /**
+     * 为啥不在 setValues setInitialValues 等函数体内触发这里的hook
+     * 是因为用户可能通过 form.values.a = 123 这种方式修改 values，而这种情况下是没有办法触发 setValue 的。
+     * 因此必须监听 values 变化。
+     * 其实 field 中的 ON_FIELD_VALUES_CHANGE 和 ON_FIELD_INITIAL_VALUES_CHANGE 也应该采用这种方式
+     * 但目前先不改了，这种情况应该属于少数case
+     */
+    this.disposers.push(
+      reaction(
+        // 必须调用 toJS，否则 values 中某个属性变化时 reaction 函数并不会触发执行
+        () => toJS(this.values),
+        () => {
+          if (this.initialized) {
+            this.notify(LifeCycles.ON_FORM_VALUES_CHANGE)
+          }
+        }
+      ),
+      reaction(
+        () => toJS(this.initialValues),
+        () => {
+          if (this.initialized) {
+            this.notify(LifeCycles.ON_FORM_INITIAL_VALUES_CHANGE)
+          }
+        }
+      )
+    )
   }
 
   get initialized() {
@@ -385,17 +415,10 @@ export class Form<ValueType extends object = any> {
     } else {
       this._self.values = values as any
     }
-    if (this.initialized) {
-      this.notify(LifeCycles.ON_FORM_VALUES_CHANGE)
-    }
   }
 
   setValuesIn(pattern: FormPathPattern, value: any) {
-    const preVal = this.getValuesIn(pattern)
     FormPath.setIn(this._self.values, pattern, value)
-    if (this.initialized && preVal !== this.getValuesIn(pattern)) {
-      this.notify(LifeCycles.ON_FORM_VALUES_CHANGE)
-    }
   }
 
   setInitialValues(initialValues: any, strategy: IFormMergeStrategy = 'merge') {
@@ -411,17 +434,10 @@ export class Form<ValueType extends object = any> {
     } else {
       this._self.initialValues = initialValues as any
     }
-    if (this.initialized) {
-      this.notify(LifeCycles.ON_FORM_INITIAL_VALUES_CHANGE)
-    }
   }
 
   setInitialValuesIn(pattern: FormPathPattern, initialValue: any) {
-    const preInitialVal = this.getInitialValuesIn(pattern)
     FormPath.setIn(this._self.initialValues, pattern, initialValue)
-    if (this.initialized && preInitialVal !== this.getInitialValuesIn(pattern)) {
-      this.notify(LifeCycles.ON_FORM_INITIAL_VALUES_CHANGE)
-    }
   }
 
   deleteValuesIn(pattern: FormPathPattern) {

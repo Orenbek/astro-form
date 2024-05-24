@@ -130,7 +130,7 @@ export const validateSelf = async (target: Field, triggerType?: ValidatorTrigger
     target.setFeedback({
       triggerType: triggerType || 'onInput',
       type,
-      code: `validate${capitalize(type)}` as FieldFeedbackCodeTypes,
+      code: `Validate${capitalize(type)}` as FieldFeedbackCodeTypes,
       messages,
     })
   })

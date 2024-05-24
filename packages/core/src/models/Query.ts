@@ -37,7 +37,7 @@ export class Query {
       }
     } else {
       Object.entries(this.#form.fields).forEach(([path, field]) => {
-        if (field.match(this.#pattern)) {
+        if (field?.match(this.#pattern)) {
           this.#paths.push(path)
         }
       })
