@@ -4,7 +4,7 @@ import { makeObservable, action } from 'mobx'
 import { move } from '@/utils'
 
 import { spliceArrayState, exchangeArrayState, INodePatch } from '../shared/internals'
-import { JSXComponent, IFieldProps, FormPathPattern, FormPath, LifeCycles } from '../types'
+import { JSXComponent, IFieldProps, FormPathPattern, LifeCycles } from '../types'
 
 import { Field } from './Field'
 import type { Form } from './Form'
@@ -63,24 +63,19 @@ export class ArrayField<Component extends JSXComponent = any, ValueType extends 
     const { fields } = this.form
     patches.forEach(({ type, path, oldPath, payload }) => {
       if (type === 'remove') {
-        fields[path].destroy()
+        fields[path]?.destroy(false)
       } else if (type === 'update') {
-        if (payload) {
-          fields[path] = payload
-          if (oldPath && fields[oldPath] === payload) {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-expect-error
-            fields[oldPath] = undefined
-          }
-        }
-        if (path && payload) {
-          const _path = FormPath.parse(path)
-          this._self.path = _path
-          this.form.indexes[_path.toString()] = _path.toString()
+        payload!.__updateFieldPath(path)
+        if (oldPath && fields[oldPath] === payload) {
+          delete fields[oldPath]
         }
       }
     })
   }
+
+  //  insert 如果需要移动 field 则移动，并新增 value 不新建子 field
+  // move 移动 field
+  // delete 删除 field 但保留初始值
 
   async push(...items: any[]) {
     if (!isArr(this.value)) {
@@ -136,6 +131,12 @@ export class ArrayField<Component extends JSXComponent = any, ValueType extends 
 
   async shift() {
     if (!isArr(this.value)) return
+    const fieldPatches = spliceArrayState(this, {
+      startIndex: 0,
+      deleteCount: 1,
+    })
+    this.patchFieldStates(fieldPatches)
+    this.form.notify(LifeCycles.ON_FORM_GRAPH_CHANGE)
     this.value.shift()
     await this.onInput(this.value)
   }

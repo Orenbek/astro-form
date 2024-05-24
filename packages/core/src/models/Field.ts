@@ -3,7 +3,7 @@ import { ValidatorTriggerType } from '@formily/validator'
 import { makeObservable, observable, action, computed, reaction, autorun, toJS, flow } from 'mobx'
 import { isArr, isFn, isValid } from '@astro-form/shared'
 
-import { LifeCycles, FormPathPattern } from '@/types'
+import { LifeCycles, FormPathPattern, FormPath } from '@/types'
 
 import type { JSXComponent, IFieldProps, IFieldResetOptions, FieldReaction } from '../types'
 import { getValuesFromEvent, isHTMLInputEvent, batchValidate, validateSelf } from '../shared/internals'
@@ -124,6 +124,7 @@ export class Field<Component extends JSXComponent = any, ValueType = any> extend
       onMount: action,
       onUnmount: action,
       destroy: action,
+      __updateFieldPath: action,
 
       onInput: flow,
       onFocus: flow,
@@ -165,6 +166,13 @@ export class Field<Component extends JSXComponent = any, ValueType = any> extend
     }
     delete this.form.fields[this.path.toString()]
     delete this.form.indexes[this.path.toString()]
+  }
+
+  __updateFieldPath(path: string) {
+    const _path = FormPath.parse(path)
+    this._self.path = _path
+    this.form.indexes[_path.toString()] = _path.toString()
+    this.form.fields[_path.toString()] = this
   }
 
   // 这几个不需要标注是 action，因为内部都是调用的 action 函数
