@@ -1,0 +1,16 @@
+---
+const { name, title, childNodes } = AstroForm.props
+const ref = useRef()
+const childNode = childNodes[0]
+
+const fieldError = $(`.${name}`)?.errors
+
+// slot 的好处：更声明式，直观，不再需要传递 ReactNode 到组建内
+// slot 必须声明 slot-type name
+---
+<Item errors={ref.errors} errors={$(`.${name}`).errors} $errors={$(`.${name}`).errors} error={fieldError}>
+  <f.string {...childNode.ComponentProps} name={name} as={childNode.Component} x-ref={ref}></f.string>
+  <f.slot slot-type="string" slot-name="header" name={name} x-ref={ref} />
+  <f.string name={name} x-slot={true || "header"} /> // 更喜欢这种表达
+  <slot name="extra" slot="extra" />
+<Item/>

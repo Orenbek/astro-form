@@ -4,8 +4,8 @@
     "jsx": "react",
     "baseUrl": "../",
     "paths": {
-      "@astro-form/core": ["."],
-      "@astro-form/core/*": ["./*"]
+      "@astro-form/core": ["./src"],
+      "@astro-form/core/*": ["./src/*"]
     }
   },
   "include": ["**/*"]

@@ -1,0 +1,32 @@
+<form>
+  <li>
+    <label>name</label>
+    <input name="name" />
+  </li>
+  <li>
+    <label>age</label>
+    <input name="age" type="checkbox" />
+  </li>
+</form>
+
+<f.object>
+  <li>
+    <label>name</label>
+    <f.string as="input" name="name" />
+  </li>
+  <li>
+    <label>age</label>
+    <f.string as="input" name="name" type="checkbox" />
+  </li>
+</f.object>
+
+<f.object>
+  <li>
+    <label>name</label>
+    <f.string as="input" name="name" x-visible={$('age').value === true} />
+  </li>
+  <li>
+    <label>age</label>
+    <f.string as="input" name="name" type="checkbox" x-reaction={reactionFn} />
+  </li>
+</f.object>

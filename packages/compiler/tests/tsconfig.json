@@ -1,0 +1,12 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": "../",
+    "paths": {
+      "@astro-form/compiler": ["./src"],
+      "@astro-form/compiler/*": ["./src/*"]
+    }
+  },
+  "include": ["**/*", "../src"],
+  "exclude": ["**/node_modules"]
+}

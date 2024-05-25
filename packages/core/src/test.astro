@@ -1,0 +1,14 @@
+<f.object>
+  <f.string name="test" as={Input} x:required x:hidden />
+  <f.string as={Input} name="test" x:required={!!$('test').value} />
+  <li>
+    <label>name</label>
+    <f.string as="input" name="name1" />
+  </li>
+  <li>
+    <label>age</label>
+    <f.string as="input" name="name2" type="checkbox" />
+  </li>
+  {$form.values.test ? <div>sss</div> : null}
+  <div>extra content</div>
+</f.object>

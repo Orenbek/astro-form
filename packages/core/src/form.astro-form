@@ -1,0 +1,48 @@
+<f.object>
+  <f.string name="test" as={Input} x:required x:hidden />
+  <f.string as={Input} name="test" x:required={!!$('test').value} />
+  {$form.values.test ? <div>sss</div> : null}
+  <div>extra content</div>
+  <FormItem title="这些都不是必须的 field 上不需要这些字段" name="">
+    <Input  />
+  </FormItem>
+  {arr.map(item  => <><div>title</div><f.object name={index}><f.string name={item.name} ...></f.string></f.object></>)}
+  <FormItem.number name="" ></FormItem.number>
+
+  <!-- If `isRed` is truthy, class will be "box red". -->
+  <!-- If `isRed` is falsy, class will be "box". -->
+  <div class:list={['box', { red: isRed }]}><slot /></div>
+
+  <FormItem extra={<div>extra</div>}> 这种是不合法的，应该使用slot来实现
+  <FormItem>
+    <Fragment slot="extra">extra</Fragment>
+    <div slot="extra">extra</div> 或者是这样
+  </FormItem>
+
+   查看区别
+   <f.array name={"arr"}>
+    {arrayField => {
+      return arrayField.value.map((_, index) => {
+        return <f.string name={index} />
+      })
+    }}
+   </f.array>
+
+  <f.array name={"arr"}>
+  {arrValue.map((_, index) => {
+    return <f.string name={index} />
+   })}
+  </f.array>
+</f.object>
+
+dynamic tags
+---
+import MyComponent from "./MyComponent.astro";
+const Element = 'div'
+const Component = MyComponent;
+---
+<Element>Hello!</Element> <!-- renders as <div>Hello!</div> -->
+<Component /> <!-- renders as <MyComponent /> -->
+
+x:visible
+x:hidden

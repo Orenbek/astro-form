@@ -1,8 +1,15 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import React from 'react'
+import { Path as FormPath } from '@formily/path'
+import { autorun, toJS } from 'mobx'
+
+import { LifeCycles, createForm, isArrayField, isField, isObjectField } from '../src'
+import { Field } from '../src/models/Field'
+
+import { attach } from './shared'
 
 const Component: React.FC<any> = ({ backgroundColor, color }) => (
-  <button type="button" style={{ backgroundColor, color }}>
+  <button type="button" style={{ backgroundColor, color }} onClick={async () => {}}>
     this is a Story Component
   </button>
 )
