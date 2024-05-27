@@ -1,5 +1,5 @@
 {
-  "name": "@astro-form/compiler",
+  "name": "@astro-form/react",
   "version": "0.1.0",
   "types": "./dist/types/index.d.ts",
   "main": "./dist/lib/index.js",
@@ -22,8 +22,10 @@
     "test": "modern test"
   },
   "dependencies": {
-    "@astrojs/compiler": "^2.8.0",
-    "change-case": "^5.4.4"
+    "@astro-form/core": "workspace:^",
+    "mobx": "^6.12.3",
+    "mobx-react-lite": "^4.0.7",
+    "react": "^17"
   },
   "devDependencies": {
     "@modern-js/module-tools": "2.50.0",
