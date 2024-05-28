@@ -1,22 +1,55 @@
+/* eslint-disable consistent-return */
 import React from 'react'
 import { FieldComponent, Field as FieldType, IFieldFactoryProps } from '@astro-form/core'
 import { observer } from 'mobx-react-lite'
 import { runInAction } from 'mobx'
 
-import type { FieldProps } from './types'
+import { ValueType, type FieldProps, type IFieldProps } from './types'
 import { useForceUpdate } from './hooks/useForceUpdate'
 import { useForm } from './FormContext'
+import { FieldProvider, useBasePath } from './FieldContext'
 
-const Field: React.FC<FieldProps> = (props) => {
-  const [fieldFactoryProps, compoenntProps] = Object.entries(props).reduce<
-    [IFieldFactoryProps<any> & Pick<FieldProps, '$$fieldType' | '$$as'>, Record<string | number | symbol, any>]
+const FieldRender: React.FC<{ path?: string; field?: FieldType; as: string | React.FC<any> }> = observer(
+  function _FieldRender(props) {
+    const { field } = props
+    const onChange = (...args: any[]) => {
+      field?.onInput(...args)
+      field?.componentProps.onChange?.(...args)
+    }
+    const onFocus = (...args: any[]) => {
+      field?.onFocus(...args)
+      field?.componentProps.onFocus?.(...args)
+    }
+    const onBlur = (...args: any[]) => {
+      field?.onBlur(...args)
+      field?.componentProps.onBlur?.(...args)
+    }
+    if (field && field.display !== 'visible') return null
+    const children = React.createElement(
+      props.as,
+      {
+        pattern: field?.pattern,
+        ...field?.componentProps,
+        value: field?.value,
+        onChange,
+        onFocus,
+        onBlur,
+      },
+      field?.componentProps.children || null
+    )
+    return <FieldProvider basePath={props.path}>{children}</FieldProvider>
+  }
+)
+
+const Field = React.forwardRef<FieldType | undefined, FieldProps>((props, fieldRef) => {
+  const basePath = useBasePath()
+  const [fieldProps, compoenntProps] = Object.entries(props).reduce<
+    [IFieldFactoryProps<any> & Pick<FieldProps, 'x-valueType' | 'x-as'>, Record<string | number | symbol, any>]
   >(
     (acc, [key, val]) => {
-      if (key.startsWith('$$')) {
-        if (key === '$$fieldType') {
-          acc[0].$$fieldType = val
-        } else if (key === '$$as') {
-          acc[0].$$as = val
+      if (key.startsWith('x-')) {
+        if (key === 'x-valueType' || key === 'x-as') {
+          acc[0][key] = val
         } else {
           Object.assign(acc[0], { [key.slice(2)]: val })
         }
@@ -28,79 +61,78 @@ const Field: React.FC<FieldProps> = (props) => {
     [{} as any, {}]
   )
   const $$form = useForm()
-  const { $$fieldType, $$as, ...rest } = fieldFactoryProps
   const ref = React.useRef<FieldType>()
   const forceUpdate = useForceUpdate()
 
   React.useEffect(() => {
-    const fieldProps = { ...rest, component: [$$as, compoenntProps] as FieldComponent<any> }
-    if ($$fieldType === 'object') {
-      ref.current = $$form.createObjectField(fieldProps)
-    } else if ($$fieldType === 'array') {
-      ref.current = $$form.createArrayField(fieldProps)
+    if (basePath === undefined) return
+    const { 'x-valueType': valueType, 'x-as': as, ...rest } = fieldProps
+    const fprops = { ...rest, basePath, component: [as, compoenntProps] as FieldComponent<any> }
+    if (valueType === 'object') {
+      ref.current = $$form.createObjectField(fprops)
+    } else if (valueType === 'array') {
+      ref.current = $$form.createArrayField(fprops)
     } else {
-      ref.current = $$form.createField(fieldProps)
+      ref.current = $$form.createField(fprops)
     }
     ref.current!.onMount()
     forceUpdate()
     return () => {
       ref.current!.onUnmount()
     }
-  }, [rest.basePath, rest.name])
+  }, [basePath, fieldProps.name])
+
+  React.useImperativeHandle(fieldRef, () => ref.current)
 
   React.useEffect(() => {
     if (!ref.current) return
-    ref.current.component = [$$as, compoenntProps] as FieldComponent<any>
-  }, [$$as, compoenntProps])
+    ref.current.component = [fieldProps['x-as'], compoenntProps] as FieldComponent<any>
+  }, [fieldProps['x-as'], compoenntProps])
 
   React.useEffect(() => {
     runInAction(() => {
       if (!ref.current) return
-      ref.current.value = rest.value
-      ref.current.initialValue = rest.initialValue
-      ref.current.required = rest.required!
-      ref.current.display = rest.display!
-      ref.current.pattern = rest.pattern!
-      ref.current.hidden = rest.hidden!
-      ref.current.visible = rest.visible!
-      ref.current.editable = rest.editable!
-      ref.current.disabled = rest.disabled!
-      ref.current.readPretty = rest.readPretty!
-      ref.current.dataSource = rest.dataSource!
-      ref.current.validator = rest.validator!
-      ref.current.validateFirst = rest.validateFirst!
-      ref.current.data = rest.data!
+      ref.current.initialValue = fieldProps.initialValue
+      ref.current.required = fieldProps.required!
+      ref.current.display = fieldProps.display!
+      ref.current.pattern = fieldProps.pattern!
+      ref.current.hidden = fieldProps.hidden!
+      ref.current.visible = fieldProps.visible!
+      ref.current.editable = fieldProps.editable!
+      ref.current.disabled = fieldProps.disabled!
+      ref.current.readPretty = fieldProps.readPretty!
+      ref.current.dataSource = fieldProps.dataSource!
+      ref.current.validator = fieldProps.validator!
+      ref.current.validateFirst = fieldProps.validateFirst!
+      ref.current.data = fieldProps.data!
     })
-  }, [rest])
+  }, [fieldProps])
 
-  const onChange = (...args: any[]) => {
-    ref.current?.onInput(...args)
-    compoenntProps.onChange?.(...args)
-  }
-  const onFocus = (...args: any[]) => {
-    ref.current?.onFocus(...args)
-    compoenntProps.onFocus?.(...args)
-  }
-  const onBlur = (...args: any[]) => {
-    ref.current?.onBlur(...args)
-    compoenntProps.onBlur?.(...args)
-  }
-  if (ref.current && ref.current.display !== 'visible') return null
+  return <FieldRender path={ref.current?.path.toString()} field={ref.current!} as={fieldProps['x-as']} />
+})
+export const BaseField = observer(Field)
 
-  return React.createElement(
-    $$as,
-    {
-      editable: ref.current?.editable,
-      disabled: ref.current?.disabled,
-      readPretty: ref.current?.readPretty,
-      ...ref.current?.componentProps,
-      value: ref.current?.value,
-      onChange,
-      onFocus,
-      onBlur,
-    },
-    compoenntProps.children || null
-  )
+const StringField = React.forwardRef<FieldType | undefined, IFieldProps>((props, ref) => {
+  return <BaseField {...props} x-valueType={ValueType.String} ref={ref} />
+})
+const NumberField = React.forwardRef<FieldType | undefined, IFieldProps>((props, ref) => {
+  return <BaseField {...props} x-valueType={ValueType.Number} ref={ref} />
+})
+
+const BooleanField = React.forwardRef<FieldType | undefined, IFieldProps>((props, ref) => {
+  return <BaseField {...props} x-valueType={ValueType.Boolean} ref={ref} />
+})
+const ObjectField = React.forwardRef<FieldType | undefined, IFieldProps>((props, ref) => {
+  return <BaseField {...props} x-valueType={ValueType.Object} ref={ref} />
+})
+const ArrayField = React.forwardRef<FieldType | undefined, IFieldProps>((props, ref) => {
+  return <BaseField {...props} x-valueType={ValueType.Array} ref={ref} />
+})
+
+export const f = {
+  String: StringField,
+  Number: NumberField,
+  Boolean: BooleanField,
+  Object: ObjectField,
+  Array: ArrayField,
 }
-
-export default observer(Field)
