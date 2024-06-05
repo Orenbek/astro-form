@@ -21,9 +21,10 @@
     "noFallthroughCasesInSwitch": true,
     "pretty": true,
     "declaration": true,
+    "composite": true,
     "declarationMap": true,
     "noEmitOnError": true,
-    "incremental": false,
+    "incremental": true,
     "isolatedModules": true,
     "emitDeclarationOnly": true
   }
