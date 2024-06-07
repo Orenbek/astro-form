@@ -616,7 +616,7 @@ export class BaseField<Component extends JSXComponent = any, ValueType = any> {
     )
   }
 
-  match = (pattern: FormPathPattern) => {
+  match(pattern: FormPathPattern) {
     return FormPath.parse(pattern).match(this.path)
   }
 

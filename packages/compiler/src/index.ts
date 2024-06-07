@@ -1,11 +1,13 @@
+/* eslint-disable no-fallthrough */
 /* eslint-disable no-restricted-syntax */
 import * as changeCase from 'change-case'
 import { parse } from '@astrojs/compiler/sync'
 import type { Node, TagLikeNode } from '@astrojs/compiler/types'
 import { is } from '@astrojs/compiler/utils'
 
-import { TransformResult } from '@/shared/types'
+import { TransformResult, ValueType } from '@/shared/types'
 import { DiagnosticCode } from '@/shared/const'
+import { printSlotNode } from '@/printer/slot'
 
 export function transform(source: string): TransformResult {
   const result = parse(source, undefined)
@@ -21,18 +23,16 @@ export function transform(source: string): TransformResult {
   ) {
     return { code: '', map: '', diagnostics: result.diagnostics }
   }
-  return { code: serialize(result.ast, { filename: '' }), map: '', diagnostics: [] }
+  return { code: serialize(result.ast, { filename: 'test' }), map: '', diagnostics: [] }
 }
 
 export interface SerializeOptions {
-  selfClose?: boolean
   filename: string
 }
 
 export function serialize(root: Node, opts: SerializeOptions): string {
   let output = ''
   let frontmatter = ''
-  const selfClose = opts.selfClose ?? true
   function visitor(node: Node) {
     if (is.root(node)) {
       node.children.forEach((child) => visitor(child))
@@ -43,25 +43,40 @@ export function serialize(root: Node, opts: SerializeOptions): string {
       node.children.forEach((child) => visitor(child))
       output += `}`
     } else if (is.literal(node)) {
+      if (is.comment(node)) {
+        // 注释节点不输出
+        return
+      }
       output += node.value
     } else if (is.tag(node)) {
       if (node.name === 'slot') {
-        output += serializeSlot(node)
+        output += printSlotNode(node)
         return
       }
-
-      output += `<${node.name}`
+      const [elementName, valType] = getElementName(node.name)
+      output += `<${elementName}`
       output += serializeAttributes(node)
-      if (node.children.length === 0 && selfClose) {
+      if (valType) {
+        output += ` $$valueType="${valType}"`
+      }
+      if (node.children.length === 0) {
         output += ` />`
       } else {
         const normalChild: Node[] = []
+        // 把 slot node 过滤出来
+        const appendedSlotNames: string[] = []
         node.children.forEach((child) => {
           if (is.tag(child) && child.attributes.some((a) => a.name === 'slot')) {
             const slotAttr = child.attributes.find((a) => a.name === 'slot')!
             if (slotAttr.kind !== 'quoted') {
               throw new Error(`[astro-form-compiler] slot value must be a string`)
             }
+            if (appendedSlotNames.includes(slotAttr.value)) {
+              throw new Error(`[astro-form-compiler] multiple slot name detected: ${slotAttr.value}`)
+            }
+            appendedSlotNames.push(slotAttr.value)
+            // eslint-disable-next-line no-param-reassign
+            child.attributes = child.attributes.filter((a) => a.name !== 'slot')
             output += ` ${genSlotName(slotAttr.value)}=${child.name === 'slot' ? '' : '{'}`
             visitor(child)
             output += `${child.name === 'slot' ? '' : '}'}`
@@ -71,15 +86,19 @@ export function serialize(root: Node, opts: SerializeOptions): string {
         })
         output += `>`
         normalChild.forEach((child) => visitor(child))
-        output += `</${node.name}>`
+        output += `</${elementName}>`
       }
     }
   }
   visitor(root)
-  output = `import {} from '@astro-form/react'
-
-  export default function ${changeCase.pascalCase(opts.filename)}(props) {
+  output = `import * as $$React from 'react'
+import { useForm as useForm$$, Field as $$Field, passRefToChild, useRef as useRef$$ } from '@astro-form/react'
+const $Form = {}
+export default function ${changeCase.pascalCase(opts.filename)}(props) {
+  const form = useForm$$()
   $Form.props = props
+  $Form.form = form
+  $Form.useRef = useRef$$
   ${frontmatter}
   return <>
     ${output}
@@ -88,18 +107,38 @@ export function serialize(root: Node, opts: SerializeOptions): string {
   return output
 }
 
+function getElementName(elemName: string): [string, ValueType | undefined] {
+  if (elemName.startsWith('f.')) {
+    let valType: ValueType
+    switch (elemName) {
+      case 'f.string':
+        valType = ValueType.String
+        break
+      case 'f.number':
+        valType = ValueType.Number
+        break
+      case 'f.boolean':
+        valType = ValueType.Boolean
+        break
+      case 'f.object':
+        valType = ValueType.Object
+        break
+      case 'f.array':
+        valType = ValueType.Array
+        break
+      default:
+        throw new Error(`[astro-form-compiler] unknown field type: ${elemName}`)
+    }
+    return ['$$Field', valType]
+  }
+  if (elemName === 'Fragment') {
+    return ['$$React.Fragment', undefined]
+  }
+  return [elemName, undefined]
+}
+
 function genSlotName(name: string) {
   return `$${changeCase.camelCase(`slot-${name}`)}`
-}
-function serializeSlot(node: TagLikeNode) {
-  const slotNameAttribute = node.attributes.find((i) => i.name === 'name')
-  if (!slotNameAttribute) {
-    return `{children}`
-  }
-  if (slotNameAttribute.kind !== 'quoted') {
-    throw new Error(`[astro-form-compiler] slot name must be a string`)
-  }
-  return `{${genSlotName(slotNameAttribute.value)}}`
 }
 
 function getFormPropsName(name: string) {
