@@ -7,13 +7,15 @@
     "lint": "eslint .",
     "prepare": "husky .git-hooks",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "lint:fix": "eslint --fix"
+    "lint:fix": "eslint --fix",
+    "create": "create"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.1",
     "@commitlint/cli": "^19.1.0",
     "@commitlint/config-conventional": "^19.1.0",
     "@ies/eslint-config-standard": "^1.1.0",
+    "@modern-js/create": "^2.52.0",
     "@repo/eslint-config-standard": "workspace:^",
     "@rushstack/eslint-patch": "^1.7.2",
     "husky": "^9.0.11",

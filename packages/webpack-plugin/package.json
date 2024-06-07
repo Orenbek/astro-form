@@ -1,17 +1,14 @@
 {
-  "name": "@astro-form/core",
+  "name": "@astro-form/webpack-plugin",
   "version": "0.1.0",
   "repository": {
     "type": "git",
     "url": "",
-    "directory": "packages/core"
+    "directory": "packages/webpack-plugin"
   },
-  "exports": {
-    ".": {
-      "types": "./dist/types/index.d.ts",
-      "default": "./dist/es/index.js"
-    }
-  },
+  "types": "./dist/types/index.d.ts",
+  "main": "./dist/lib/index.js",
+  "module": "./dist/es/index.js",
   "scripts": {
     "build-storybook": "storybook build",
     "storybook": "storybook dev -p 6006",
@@ -20,6 +17,7 @@
     "build": "modern build",
     "build:watch": "modern build -w",
     "reset": "rimraf ./**/node_modules",
+    "lint": "modern lint",
     "change": "modern change",
     "bump": "modern bump",
     "pre": "modern pre",
@@ -30,25 +28,14 @@
     "upgrade": "modern upgrade",
     "test": "modern test"
   },
-  "dependencies": {
-    "@astro-form/shared": "workspace:*",
-    "@formily/path": "^2.3.1",
-    "@formily/shared": "^2.3.1",
-    "@formily/validator": "^2.3.1",
-    "@ungap/structured-clone": "^1.2.0",
-    "mobx": "^6.12.3"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@modern-js/module-tools": "2.50.0",
-    "@modern-js/storybook": "2.50.0",
-    "@storybook/addon-essentials": "^7",
-    "@types/node": "~16.11.7",
-    "react": "^17",
-    "react-dom": "^17",
-    "rimraf": "~3.0.2",
-    "typescript": "~5.0.4",
     "@modern-js/plugin-testing": "2.50.0",
-    "@types/jest": "~29.2.4"
+    "@types/jest": "~29.2.4",
+    "@types/node": "~16.11.7",
+    "rimraf": "~3.0.2",
+    "typescript": "~5.0.4"
   },
   "sideEffects": [],
   "publishConfig": {

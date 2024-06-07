@@ -30,7 +30,7 @@
     "upgrade": "modern upgrade"
   },
   "devDependencies": {
-    "@modern-js/module-tools": "2.48.0",
+    "@modern-js/module-tools": "2.50.0",
     "@types/node": "~16.11.7",
     "@typescript-eslint/eslint-plugin": "^7.2.0",
     "@typescript-eslint/parser": "^7.2.0",

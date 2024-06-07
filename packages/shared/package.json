@@ -30,8 +30,8 @@
     "upgrade": "modern upgrade"
   },
   "devDependencies": {
-    "@modern-js/module-tools": "2.48.0",
-    "@modern-js/storybook": "2.48.0",
+    "@modern-js/module-tools": "2.50.0",
+    "@modern-js/storybook": "2.50.0",
     "@storybook/addon-essentials": "^7",
     "@types/node": "~16.11.7",
     "rimraf": "~3.0.2",
