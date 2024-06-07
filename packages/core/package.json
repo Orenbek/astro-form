@@ -1,6 +1,11 @@
 {
   "name": "@astro-form/core",
   "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "",
+    "directory": "packages/core"
+  },
   "exports": {
     ".": {
       "types": "./dist/types/index.d.ts",

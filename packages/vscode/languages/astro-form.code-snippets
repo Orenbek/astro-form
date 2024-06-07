@@ -1,0 +1,9 @@
+{
+  "component": {
+    "prefix": "component",
+    "isFileTemplate": true,
+    "scope": "astro-form",
+    "body": ["---", "$1", "---", "", "$0"],
+    "description": "Component",
+  },
+}

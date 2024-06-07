@@ -1,49 +1,62 @@
 {
-	"private": true,
-	"name": "vscode-html1",
-	"version": "0.0.1",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/volarjs/starter.git",
-		"directory": "packages/vscode"
-	},
-	"categories": [
-		"Programming Languages"
-	],
-	"displayName": "HTML1 Language Features",
-	"description": "HTML1 Language Features",
-	"author": "volarjs",
-	"publisher": "volarjs",
-	"engines": {
-		"vscode": "^1.82.0"
-	},
-	"activationEvents": [
-		"onLanguage:html1"
-	],
-	"main": "./dist/client.js",
-	"contributes": {
-		"languages": [
-			{
-				"id": "html1",
-				"extensions": [
-					".html1"
-				]
-			}
-		]
-	},
-	"scripts": {
-		"build": "node scripts/build -- --minify",
-		"watch": "npm run build -- --watch",
-		"pack": "npm run build && vsce package --pre-release",
-		"release": "npm run build && vsce publish --pre-release"
-	},
-	"devDependencies": {
-		"@html1/language-server": "workspace:*",
-		"@types/vscode": "^1.82.0",
-		"@volar/language-server": "~2.3.0-alpha.7",
-		"@volar/vscode": "~2.3.0-alpha.7",
-		"esbuild": "latest",
-		"vsce": "latest",
-		"vscode-languageclient": "^9.0.1"
-	}
+  "private": true,
+  "name": "@astro-form/vscode",
+  "version": "0.0.1",
+  "repository": {
+    "type": "git",
+    "url": "",
+    "directory": "packages/vscode"
+  },
+  "activationEvents": [
+    "onLanguage:astro-form"
+  ],
+  "main": "./dist/client.js",
+  "files": [
+    "dist/",
+    "languages/",
+    "syntaxes/",
+    "assets/"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "astro-form",
+        "extensions": [
+          ".aform"
+        ],
+        "aliases": [
+          "aform"
+        ],
+        "configuration": "./languages/astro-form-language-configuration.json",
+        "icon": {
+          "light": "./assets/lang-icon-light.svg",
+          "dark": "./assets/lang-icon-dark.svg"
+        }
+      }
+    ],
+    "snippets": [
+      {
+        "scope": "astro-form",
+        "path": "./languages/astro-form.code-snippets"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "node scripts/build -- --minify",
+    "watch": "npm run build -- --watch",
+    "pack": "npm run build && vsce package --pre-release",
+    "release": "npm run build && vsce publish --pre-release"
+  },
+  "devDependencies": {
+    "@astro-form/language-server": "workspace:*",
+    "@types/vscode": "^1.82.0",
+    "@volar/language-server": "~2.3.0-alpha.7",
+    "@volar/vscode": "~2.3.0-alpha.7",
+    "esbuild": "latest",
+    "vsce": "latest",
+    "vscode-languageclient": "^9.0.1"
+  },
+  "engines": {
+    "vscode": "^1.82.0"
+  }
 }

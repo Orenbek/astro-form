@@ -10,24 +10,32 @@ import type * as ts from 'typescript'
 import * as html from 'vscode-html-languageservice'
 import { URI } from 'vscode-uri'
 
-export const html1LanguagePlugin: LanguagePlugin<URI> = {
+export const html1LanguagePlugin: LanguagePlugin<URI, Html1VirtualCode> = {
   getLanguageId(uri) {
-    if (uri.path.endsWith('.html1')) {
-      return 'html1'
+    if (uri.path.endsWith('.aform')) {
+      return 'astro-form'
     }
+    return undefined
   },
   createVirtualCode(_uri, languageId, snapshot) {
-    if (languageId === 'html1') {
+    if (languageId === 'astro-form') {
+      const fileName = _uri.toString()
       return new Html1VirtualCode(snapshot)
     }
+    return undefined
+  },
+  updateVirtualCode(_scriptId, astroCode, snapshot) {
+    astroCode.update(snapshot)
+    return astroCode
   },
   typescript: {
-    extraFileExtensions: [{ extension: 'html1', isMixedContent: true, scriptKind: 7 satisfies ts.ScriptKind.Deferred }],
+    extraFileExtensions: [{ extension: 'aform', isMixedContent: true, scriptKind: 7 satisfies ts.ScriptKind.Deferred }],
     getServiceScript() {
       return undefined
     },
     getExtraServiceScripts(fileName, root) {
       const scripts: TypeScriptExtraServiceScript[] = []
+      // eslint-disable-next-line no-restricted-syntax
       for (const code of forEachEmbeddedCode(root)) {
         if (code.languageId === 'javascript') {
           scripts.push({
@@ -55,21 +63,31 @@ const htmlLs = html.getLanguageService()
 export class Html1VirtualCode implements VirtualCode {
   id = 'root'
 
-  languageId = 'html'
+  languageId = 'astro-form'
 
-  mappings: CodeMapping[]
+  mappings!: CodeMapping[]
 
   embeddedCodes: VirtualCode[] = []
 
   // Reuse in custom language service plugin
-  htmlDocument: html.HTMLDocument
+  htmlDocument!: html.HTMLDocument
 
   constructor(public snapshot: ts.IScriptSnapshot) {
+    this.onSnapshotUpdated()
+  }
+
+  public update(newSnapshot: ts.IScriptSnapshot) {
+    this.snapshot = newSnapshot
+    this.onSnapshotUpdated()
+  }
+
+  public onSnapshotUpdated() {
+    // Do something with the snapshot
     this.mappings = [
       {
         sourceOffsets: [0],
         generatedOffsets: [0],
-        lengths: [snapshot.getLength()],
+        lengths: [this.snapshot.getLength()],
         data: {
           completion: true,
           format: true,
@@ -81,9 +99,9 @@ export class Html1VirtualCode implements VirtualCode {
       },
     ]
     this.htmlDocument = htmlLs.parseHTMLDocument(
-      html.TextDocument.create('', 'html', 0, snapshot.getText(0, snapshot.getLength()))
+      html.TextDocument.create('', 'html', 0, this.snapshot.getText(0, this.snapshot.getLength()))
     )
-    this.embeddedCodes = [...getHtml1EmbeddedCodes(snapshot, this.htmlDocument)]
+    this.embeddedCodes = [...getHtml1EmbeddedCodes(this.snapshot, this.htmlDocument)]
   }
 }
 

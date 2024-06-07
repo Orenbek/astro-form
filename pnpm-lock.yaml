@@ -193,6 +193,9 @@ importers:
       volar-service-html:
         specifier: volar-2.3
         version: 0.0.50(@volar/language-service@2.3.0-alpha.7)
+      volar-service-prettier:
+        specifier: ^0.0.47
+        version: 0.0.47(@volar/language-service@2.3.0-alpha.7)(prettier@3.2.5)
       volar-service-typescript:
         specifier: volar-2.3
         version: 0.0.50(@volar/language-service@2.3.0-alpha.7)
@@ -269,7 +272,7 @@ importers:
 
   packages/vscode:
     devDependencies:
-      '@html1/language-server':
+      '@astro-form/language-server':
         specifier: workspace:*
         version: link:../language-server
       '@types/vscode':
@@ -18490,7 +18493,6 @@ packages:
   /prettier@3.2.5:
     resolution: {integrity: sha512-3/GWa9aOC0YeD7LUfvOG2NiDyhOWRvt1k+rcKhOuYnMY24iiCphgneUfJDyFXd6rZCAnuLBv6UeAULtrhT/F4A==}
     engines: {node: '>=14'}
-    dev: true
 
   /pretty-error@4.0.0:
     resolution: {integrity: sha512-AoJ5YMAcXKYxKhuJGdcvse+Voc6v1RgnsR3nWcYU7q4t6z0Q6T86sv5Zq8VIRbOWWFpvdGE83LtdSMNd+6Y0xw==}
@@ -21344,6 +21346,22 @@ packages:
       '@volar/language-service': 2.3.0-alpha.7
       vscode-html-languageservice: /@johnsoncodehk/vscode-html-languageservice@5.2.0-34a5462
       vscode-languageserver-textdocument: 1.0.11
+      vscode-uri: 3.0.8
+    dev: false
+
+  /volar-service-prettier@0.0.47(@volar/language-service@2.3.0-alpha.7)(prettier@3.2.5):
+    resolution: {integrity: sha512-BTpryt+KUfQ4kVL1RDwWHSRlgl4c7bdPaAEXlcdY5jkbBudQVA9DRNb3df/BRcSZggccw+wih8D45X/mvErUPg==}
+    peerDependencies:
+      '@volar/language-service': ~2.2.3
+      prettier: ^2.2 || ^3.0
+    peerDependenciesMeta:
+      '@volar/language-service':
+        optional: true
+      prettier:
+        optional: true
+    dependencies:
+      '@volar/language-service': 2.3.0-alpha.7
+      prettier: 3.2.5
       vscode-uri: 3.0.8
     dev: false
 

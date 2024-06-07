@@ -1,6 +1,11 @@
 {
   "name": "@astro-form/compiler",
   "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "",
+    "directory": "packages/compiler"
+  },
   "types": "./dist/types/index.d.ts",
   "main": "./dist/lib/index.js",
   "module": "./dist/es/index.js",

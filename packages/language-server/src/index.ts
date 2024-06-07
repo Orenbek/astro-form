@@ -6,10 +6,10 @@ import {
   Diagnostic,
   loadTsdkByPath,
 } from '@volar/language-server/node'
-import { create as createCssService } from 'volar-service-css'
 import { create as createEmmetService } from 'volar-service-emmet'
 import { create as createHtmlService } from 'volar-service-html'
 import { create as createTypeScriptServices } from 'volar-service-typescript'
+import { create as createPrettierService } from 'volar-service-prettier'
 import { URI } from 'vscode-uri'
 
 import { html1LanguagePlugin, Html1VirtualCode } from './languagePlugin'
@@ -20,13 +20,19 @@ const server = createServer(connection)
 connection.listen()
 
 connection.onInitialize((params) => {
+  if (!params.initializationOptions?.typescript?.tsdk) {
+    throw new Error(
+      'The `typescript.tsdk` init option is required. It should point to a directory containing a `typescript.js` or `tsserverlibrary.js` file, such as `node_modules/typescript/lib`.'
+    )
+  }
   const tsdk = loadTsdkByPath(params.initializationOptions.typescript.tsdk, params.locale)
   return server.initialize(
     params,
+    // language plugin
     createTypeScriptProject(tsdk.typescript, tsdk.diagnosticMessages, () => [html1LanguagePlugin]),
+    // service plugins
     [
       createHtmlService(),
-      createCssService(),
       createEmmetService(),
       ...createTypeScriptServices(tsdk.typescript),
       {
@@ -61,6 +67,7 @@ connection.onInitialize((params) => {
                   message: 'Only one style tag is allowed.',
                 })
               }
+              // eslint-disable-next-line consistent-return
               return errors
             },
           }
@@ -70,6 +77,10 @@ connection.onInitialize((params) => {
   )
 })
 
-connection.onInitialized(server.initialized)
+connection.onInitialized(() => {
+  server.initialized()
+  // don't know if this is needed
+  server.watchFiles([`**/*.{${['aform'].join(',')}}`])
+})
 
 connection.onShutdown(server.shutdown)

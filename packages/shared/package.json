@@ -1,6 +1,11 @@
 {
   "name": "@astro-form/shared",
   "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "",
+    "directory": "packages/shared"
+  },
   "exports": {
     ".": {
       "types": "./dist/types/index.d.ts",

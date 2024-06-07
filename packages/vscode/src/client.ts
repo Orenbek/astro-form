@@ -22,18 +22,18 @@ export async function activate(context: vscode.ExtensionContext) {
     },
   }
   const clientOptions: lsp.LanguageClientOptions = {
-    documentSelector: [{ language: 'html1' }],
+    documentSelector: [{ language: 'astro-form' }],
     initializationOptions: {
       typescript: {
-        tsdk: (await getTsdk(context)).tsdk,
+        tsdk: (await getTsdk(context))?.tsdk,
       },
     },
   }
-  client = new lsp.LanguageClient('html1-language-server', 'HTML1 Language Server', serverOptions, clientOptions)
+  client = new lsp.LanguageClient('astro-form', 'Astro-Form Language Server', serverOptions, clientOptions)
   await client.start()
 
   // support for auto close tag
-  activateAutoInsertion('html1', client)
+  activateAutoInsertion('astro-form', client)
 
   // support for https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.volarjs-labs
   // ref: https://twitter.com/johnsoncodehk/status/1656126976774791168
