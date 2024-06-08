@@ -1,3 +1,5 @@
 module.exports = {
-  rules: {}
+  rules: {
+    'import/no-import-module-exports': 'off'
+  }
 }

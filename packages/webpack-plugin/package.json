@@ -17,7 +17,6 @@
     "build": "modern build",
     "build:watch": "modern build -w",
     "reset": "rimraf ./**/node_modules",
-    "lint": "modern lint",
     "change": "modern change",
     "bump": "modern bump",
     "pre": "modern pre",
@@ -28,14 +27,17 @@
     "upgrade": "modern upgrade",
     "test": "modern test"
   },
-  "dependencies": {},
+  "dependencies": {
+    "@astro-form/compiler": "workspace:^",
+    "typescript": "~5.0.4"
+  },
   "devDependencies": {
     "@modern-js/module-tools": "2.50.0",
     "@modern-js/plugin-testing": "2.50.0",
     "@types/jest": "~29.2.4",
-    "@types/node": "~16.11.7",
-    "rimraf": "~3.0.2",
-    "typescript": "~5.0.4"
+    "@types/node": "~16.11.68",
+    "@types/webpack": "^5.28.5",
+    "rimraf": "~3.0.2"
   },
   "sideEffects": [],
   "publishConfig": {

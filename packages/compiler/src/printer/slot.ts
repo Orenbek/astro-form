@@ -1,4 +1,4 @@
-import * as changeCase from 'change-case'
+import changeCase from 'change-case-all'
 import type { TagLikeNode } from '@astrojs/compiler/types'
 
 function genSlotName(name: string) {

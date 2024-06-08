@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@astrojs/compiler": "^2.8.0",
-    "change-case": "^5.4.4"
+    "change-case-all": "^2.1.0"
   },
   "devDependencies": {
     "@modern-js/module-tools": "2.50.0",

@@ -1,6 +1,6 @@
 /* eslint-disable no-fallthrough */
 /* eslint-disable no-restricted-syntax */
-import * as changeCase from 'change-case'
+import changeCase from 'change-case-all'
 import { parse } from '@astrojs/compiler/sync'
 import type { Node, TagLikeNode } from '@astrojs/compiler/types'
 import { is } from '@astrojs/compiler/utils'
@@ -9,7 +9,7 @@ import { TransformResult, ValueType } from '@/shared/types'
 import { DiagnosticCode } from '@/shared/const'
 import { printSlotNode } from '@/printer/slot'
 
-export function transform(source: string): TransformResult {
+export function transform(source: string, filename: string): TransformResult {
   const result = parse(source, undefined)
   if (
     result.diagnostics.some((diagnostic) =>
@@ -23,7 +23,7 @@ export function transform(source: string): TransformResult {
   ) {
     return { code: '', map: '', diagnostics: result.diagnostics }
   }
-  return { code: serialize(result.ast, { filename: 'test' }), map: '', diagnostics: [] }
+  return { code: serialize(result.ast, { filename }), map: '', diagnostics: [] }
 }
 
 export interface SerializeOptions {
