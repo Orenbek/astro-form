@@ -30,8 +30,7 @@
   "dependencies": {
     "@astro-form/core": "workspace:^",
     "mobx": "^6.12.3",
-    "mobx-react-lite": "^4.0.7",
-    "react": "^17"
+    "mobx-react-lite": "^4.0.7"
   },
   "devDependencies": {
     "@modern-js/module-tools": "2.50.0",
@@ -41,8 +40,12 @@
     "rimraf": "~3.0.2",
     "typescript": "~5.0.4",
     "@modern-js/storybook": "2.50.0",
-    "react-dom": "^17",
+    "react": "~18.2.0",
+    "react-dom": "~18.2.0",
     "@storybook/addon-essentials": "^7"
+  },
+  "peerDependencies": {
+    "react": ">=17.0.0"
   },
   "sideEffects": [],
   "publishConfig": {

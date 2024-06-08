@@ -7,7 +7,7 @@ import { is } from '@astrojs/compiler/utils'
 
 import { TransformResult, ValueType } from '@/shared/types'
 import { DiagnosticCode } from '@/shared/const'
-import { printSlotNode } from '@/printer/slot'
+import { printSlotNode, genSlotName } from '@/printer/slot'
 
 export function transform(source: string, filename: string): TransformResult {
   const result = parse(source, undefined)
@@ -98,7 +98,7 @@ export default function ${changeCase.pascalCase(opts.filename)}(props) {
   const form = useForm$$()
   $Form.props = props
   $Form.form = form
-  $Form.useRef = useRef$$
+  $Form.ref = useRef$$
   ${frontmatter}
   return <>
     ${output}
@@ -135,10 +135,6 @@ function getElementName(elemName: string): [string, ValueType | undefined] {
     return ['$$React.Fragment', undefined]
   }
   return [elemName, undefined]
-}
-
-function genSlotName(name: string) {
-  return `$${changeCase.camelCase(`slot-${name}`)}`
 }
 
 function getFormPropsName(name: string) {

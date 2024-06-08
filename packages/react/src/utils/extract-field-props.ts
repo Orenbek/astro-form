@@ -5,13 +5,13 @@ import type { FieldProps } from '../types'
 export function extractFieldPropsAndComponentProps(
   props: FieldProps
 ): [
-  IFieldFactoryProps<any> & Pick<FieldProps, 'name' | 'as' | 'x-valueType' | 'x-ref'>,
+  IFieldFactoryProps<any> & Pick<FieldProps, 'name' | 'as' | '$$valueType' | '$$ref'>,
   Record<string | number | symbol, any>,
 ] {
   return Object.entries(props).reduce<ReturnType<typeof extractFieldPropsAndComponentProps>>(
     (acc, [key, val]) => {
-      if (key.startsWith('x-')) {
-        if (key === 'x-valueType' || key === 'x-ref') {
+      if (key.startsWith('$$')) {
+        if (key === '$$valueType' || key === '$$ref') {
           acc[0][key] = val
         } else {
           Object.assign(acc[0], { [key.slice(2)]: val })

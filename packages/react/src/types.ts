@@ -11,23 +11,23 @@ export enum ValueType {
 export type FieldProps = {
   name: string
   as?: string | React.FC<any>
-  'x-valueType': ValueType
-  'x-ref'?: IObservableValue<Field | null> | Array<IObservableValue<Field | null>>
+  $$valueType: ValueType
+  $$ref?: IObservableValue<Field | null> | Array<IObservableValue<Field | null>>
   children?: React.ReactNode | undefined
   [key: string | number | symbol]: any
 } & Prettify<AppendPrefix<Exclude<IFieldFactoryProps<any>, 'component' | 'basePath'>>>
 
 /**
- * <Item><f.string name="test" ref={ref} /></Item>
+ * <Item><f.string name="test" x:ref={ref} /></Item>
  * ------ Item component -----
- * <div><f.slot ref={ref} /></div>
+ * <div><f.slot x:ref={ref} /></div>
  *
  * 上面这种情况下 应该传给组件两个ref
  */
 
-export type IFieldProps = Omit<FieldProps, 'x-valueType'>
+export type IFieldProps = Omit<FieldProps, '$$valueType'>
 
 type AppendPrefix<T> = {
-  [K in keyof T as `x-${K & string}`]: T[K]
+  [K in keyof T as `$$${K & string}`]: T[K]
 }
 type Prettify<T> = T extends infer U ? { [K in keyof U]: U[K] } : never

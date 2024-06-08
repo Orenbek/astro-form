@@ -61,7 +61,7 @@ export const BaseField = observer<FieldProps, unknown>(
 
     React.useEffect(() => {
       if (basePath === undefined) return
-      const { as, 'x-valueType': valueType, 'x-ref': xref, ...rest } = fieldProps
+      const { as, $$valueType: valueType, $$ref: xref, ...rest } = fieldProps
       const fprops = { ...rest, basePath, component: [as, compoenntProps] as FieldComponent<any> }
       if (valueType === 'object') {
         ref.current = $$form.createObjectField(fprops)
@@ -114,20 +114,20 @@ export const BaseField = observer<FieldProps, unknown>(
 )
 
 const StringField = React.forwardRef<unknown, IFieldProps>((props, ref) => {
-  return <BaseField {...props} x-valueType={ValueType.String} ref={ref} />
+  return <BaseField {...props} $$valueType={ValueType.String} ref={ref} />
 })
 const NumberField = React.forwardRef<unknown, IFieldProps>((props, ref) => {
-  return <BaseField {...props} x-valueType={ValueType.Number} ref={ref} />
+  return <BaseField {...props} $$valueType={ValueType.Number} ref={ref} />
 })
 
 const BooleanField = React.forwardRef<unknown, IFieldProps>((props, ref) => {
-  return <BaseField {...props} x-valueType={ValueType.Boolean} ref={ref} />
+  return <BaseField {...props} $$valueType={ValueType.Boolean} ref={ref} />
 })
 const ObjectField = React.forwardRef<unknown, IFieldProps>((props, ref) => {
-  return <BaseField {...props} x-valueType={ValueType.Object} ref={ref} />
+  return <BaseField {...props} $$valueType={ValueType.Object} ref={ref} />
 })
 const ArrayField = React.forwardRef<unknown, IFieldProps>((props, ref) => {
-  return <BaseField {...props} x-valueType={ValueType.Array} ref={ref} />
+  return <BaseField {...props} $$valueType={ValueType.Array} ref={ref} />
 })
 
 export const f = {

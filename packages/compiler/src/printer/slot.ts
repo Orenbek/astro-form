@@ -1,7 +1,7 @@
 import changeCase from 'change-case-all'
 import type { TagLikeNode } from '@astrojs/compiler/types'
 
-function genSlotName(name: string) {
+export function genSlotName(name: string) {
   return `$${changeCase.camelCase(`slot-${name}`)}`
 }
 export function printSlotNode(node: TagLikeNode) {
