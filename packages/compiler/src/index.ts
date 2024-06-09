@@ -9,6 +9,8 @@ import { TransformResult, ValueType } from '@/shared/types'
 import { DiagnosticCode } from '@/shared/const'
 import { printSlotNode, genSlotName } from '@/printer/slot'
 
+import { printFrotmatter } from './printer/frontmatter'
+
 export function transform(source: string, filename: string): TransformResult {
   const result = parse(source, undefined)
   if (
@@ -91,15 +93,17 @@ export function serialize(root: Node, opts: SerializeOptions): string {
     }
   }
   visitor(root)
+  const [importStatement, regularStatement] = printFrotmatter(frontmatter)
   output = `import * as $$React from 'react'
 import { useForm as useForm$$, Field as $$Field, passRefToChild, useRef as useRef$$ } from '@astro-form/react'
+${importStatement}
 const $Form = {}
 export default function ${changeCase.pascalCase(opts.filename)}(props) {
   const form = useForm$$()
   $Form.props = props
   $Form.form = form
   $Form.ref = useRef$$
-  ${frontmatter}
+  ${regularStatement}
   return <>
     ${output}
   </>

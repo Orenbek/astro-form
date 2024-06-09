@@ -1,0 +1,19 @@
+---
+import Component from './component.afrom'
+---
+<ul>
+  <li>
+    <label>name</label>
+    <f.string name="name" as="input" x:required />
+  </li>
+  <li>
+    <label>age</label>
+    <f.number name="age" as="input" type="checkbox" />
+  </li>
+  <li>
+    <label>obj</label>
+    <!-- field 也可以不绑定组件 这种情况下仅会注册一个field -->
+    <f.object name="obj" />
+  </li>
+  <Component />
+</ul>
