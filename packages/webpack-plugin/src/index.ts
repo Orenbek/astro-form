@@ -8,11 +8,9 @@ export class AstroFormPlugin {
     compiler.hooks.normalModuleFactory.tap('AstroFormPlugin', (nmf) => {
       nmf.hooks.afterResolve.tapAsync('AstroFormPlugin', async (resolveData, callback) => {
         if (resolveData.request.endsWith('.aform')) {
-          const filepath = resolveData.createData.resource!
-          const filename = path.basename(filepath).slice(0, -6)
           resolveData.createData.loaders!.push({
             loader: path.resolve(__dirname, 'loader.js'),
-            options: { filename },
+            options: {},
             ident: null,
             type: null,
           })
