@@ -15,7 +15,7 @@ export type FieldProps = {
   $$ref?: IObservableValue<Field | null> | Array<IObservableValue<Field | null>>
   children?: React.ReactNode | undefined
   [key: string | number | symbol]: any
-} & Prettify<AppendPrefix<Exclude<IFieldFactoryProps<any>, 'component' | 'basePath'>>>
+} & Prettify<AppendPrefix<Exclude<IFieldFactoryProps<any>, 'component' | 'basePath' | 'value'>>>
 
 /**
  * <Item><f.string name="test" x:ref={ref} /></Item>

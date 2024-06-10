@@ -6,19 +6,20 @@
     "url": "",
     "directory": "packages/language-server"
   },
-  "main": "out/index.js",
   "license": "MIT",
   "files": [
-    "out/**/*.js",
-    "out/**/*.d.ts"
+    "dist/**/*.js",
+    "dist/**/*.d.ts"
   ],
   "bin": {
     "astro-form-ls": "./bin/language-server.js"
   },
   "dependencies": {
+    "@astrojs/compiler": "^2.8.0",
     "@volar/language-core": "~2.3.0-alpha.7",
     "@volar/language-server": "~2.3.0-alpha.7",
     "@volar/language-service": "~2.3.0-alpha.7",
+    "tslib": "^2.6.3",
     "volar-service-css": "volar-2.3",
     "volar-service-emmet": "volar-2.3",
     "volar-service-html": "volar-2.3",

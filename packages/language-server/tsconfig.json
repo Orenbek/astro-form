@@ -1,8 +1,11 @@
 {
   "extends": "../../config/tsconfig.base.json",
   "compilerOptions": {
-    "outDir": "out",
-    "rootDir": "src"
+    "outDir": "dist",
+    "rootDir": "src",
+    "emitDeclarationOnly": false,
+    "module": "commonjs",
+    "moduleResolution": "node"
   },
   "include": ["src", "bin"]
 }

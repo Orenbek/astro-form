@@ -5,6 +5,8 @@ import * as lsp from 'vscode-languageclient/node'
 
 let client: lsp.BaseLanguageClient
 
+const languageId = 'astro-form'
+
 export async function activate(context: vscode.ExtensionContext) {
   const serverModule = vscode.Uri.joinPath(context.extensionUri, 'dist', 'server.js')
   const runOptions = { execArgv: <string[]>[] }
@@ -22,18 +24,18 @@ export async function activate(context: vscode.ExtensionContext) {
     },
   }
   const clientOptions: lsp.LanguageClientOptions = {
-    documentSelector: [{ language: 'astro-form' }],
+    documentSelector: [{ language: languageId }],
     initializationOptions: {
       typescript: {
         tsdk: (await getTsdk(context))?.tsdk,
       },
     },
   }
-  client = new lsp.LanguageClient('astro-form', 'Astro-Form Language Server', serverOptions, clientOptions)
+  client = new lsp.LanguageClient(languageId, 'Astro-Form Language Server', serverOptions, clientOptions)
   await client.start()
 
   // support for auto close tag
-  activateAutoInsertion('astro-form', client)
+  activateAutoInsertion(languageId, client)
 
   // support for https://marketplace.visualstudio.com/items?itemName=johnsoncodehk.volarjs-labs
   // ref: https://twitter.com/johnsoncodehk/status/1656126976774791168

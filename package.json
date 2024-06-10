@@ -8,7 +8,8 @@
     "prepare": "husky .git-hooks",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "lint:fix": "eslint --fix",
-    "create": "create"
+    "create": "create",
+    "watch": "cd ./packages/vscode && npm run watch"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.1",

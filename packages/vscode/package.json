@@ -39,7 +39,10 @@
         "scope": "astro-form",
         "path": "./languages/astro-form.code-snippets"
       }
-    ]
+    ],
+    "breakpoints": [],
+    "menus": {},
+    "grammars": []
   },
   "scripts": {
     "build": "node scripts/build -- --minify",
@@ -58,5 +61,8 @@
   },
   "engines": {
     "vscode": "^1.82.0"
+  },
+  "dependencies": {
+    "@astrojs/compiler": "^2.8.0"
   }
 }

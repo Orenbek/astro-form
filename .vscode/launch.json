@@ -9,7 +9,7 @@
       "runtimeExecutable": "${execPath}",
       "args": [
         "--extensionDevelopmentPath=${workspaceRoot}/packages/vscode",
-        "--folder-uri=${workspaceRoot}/sample"
+        "--folder-uri=${workspaceRoot}/apps/examples"
         // "--disable-updates",
         // "--disable-workspace-trust",
         // "--profile-temp",
