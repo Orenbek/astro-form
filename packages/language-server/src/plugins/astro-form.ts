@@ -63,7 +63,7 @@ export const create = (): LanguageServicePlugin => {
               range: Range.create(start, end),
               code: message.code,
               severity: message.severity,
-              source: 'astro',
+              source: 'astro-form',
             }
           }
         },

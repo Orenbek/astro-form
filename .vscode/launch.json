@@ -30,5 +30,11 @@
       "restart": true,
       "outFiles": ["${workspaceRoot}/packages/vscode/dist/*.js"]
     }
+  ],
+  "compounds": [
+    {
+      "name": "Launch Extension",
+      "configurations": ["Launch Client", "Attach to Server"]
+    }
   ]
 }
