@@ -16,11 +16,7 @@
         // "--skip-release-notes",
         // "--skip-welcome"
       ],
-      "outFiles": ["${workspaceRoot}/packages/vscode/dist/*.js"],
-      "preLaunchTask": {
-        "type": "npm",
-        "script": "watch"
-      }
+      "outFiles": ["${workspaceRoot}/packages/vscode/dist/*.js"]
     },
     {
       "name": "Attach to Server",

@@ -331,11 +331,20 @@ importers:
       '@astro-form/language-server':
         specifier: workspace:*
         version: link:../language-server
+      '@jridgewell/sourcemap-codec':
+        specifier: ^1.4.15
+        version: 1.4.15
       '@types/vscode':
         specifier: ^1.82.0
         version: 1.89.0
+      '@volar/language-core':
+        specifier: ~2.3.0
+        version: 2.3.0
       '@volar/language-server':
         specifier: ~2.3.0
+        version: 2.3.0
+      '@volar/typescript':
+        specifier: ^2.3.0
         version: 2.3.0
       '@volar/vscode':
         specifier: ~2.3.0
@@ -349,6 +358,12 @@ importers:
       vscode-languageclient:
         specifier: ^9.0.1
         version: 9.0.1
+      vscode-languageserver-textdocument:
+        specifier: ^1.0.11
+        version: 1.0.11
+      vscode-uri:
+        specifier: ^3.0.8
+        version: 3.0.8
 
   packages/webpack-plugin:
     dependencies:

@@ -40,24 +40,61 @@
         "path": "./languages/astro-form.code-snippets"
       }
     ],
+    "grammars": [
+      {
+        "language": "astro-form",
+        "scopeName": "source.astro",
+        "path": "./syntaxes/astro.tmLanguage.json",
+        "embeddedLanguages": {
+          "text.html": "html",
+          "source.js": "javascript",
+          "source.ts": "typescript",
+          "source.json": "json",
+          "source.tsx": "typescriptreact",
+          "meta.tag.tsx": "jsx-tags",
+          "meta.tag.without-attributes.tsx": "jsx-tags",
+          "meta.tag.attributes.tsx": "typescriptreact",
+          "meta.embedded.expression.tsx": "typescriptreact"
+        },
+        "unbalancedBracketScopes": [
+          "keyword.operator.relational",
+          "storage.type.function.arrow",
+          "keyword.operator.bitwise.shift",
+          "meta.brace.angle",
+          "punctuation.definition.tag",
+          "keyword.operator.assignment.compound.bitwise.ts"
+        ]
+      }
+    ],
+    "typescriptServerPlugins": [
+      {
+        "name": "astro-form-ts-plugin-bundle",
+        "enableForWorkspaceTypeScriptVersions": true
+      }
+    ],
     "breakpoints": [],
     "menus": {},
-    "grammars": []
+    "commands": []
   },
   "scripts": {
-    "build": "node scripts/build -- --minify",
-    "watch": "npm run build -- --watch",
+    "build": "node scripts/build.mjs -- --minify",
+    "watch": "node scripts/build.mjs -- --watch",
     "pack": "npm run build && vsce package --pre-release",
     "release": "npm run build && vsce publish --pre-release"
   },
   "devDependencies": {
     "@astro-form/language-server": "workspace:*",
+    "@jridgewell/sourcemap-codec": "^1.4.15",
     "@types/vscode": "^1.82.0",
+    "@volar/language-core": "~2.3.0",
     "@volar/language-server": "~2.3.0",
+    "@volar/typescript": "^2.3.0",
     "@volar/vscode": "~2.3.0",
     "esbuild": "latest",
     "vsce": "latest",
-    "vscode-languageclient": "^9.0.1"
+    "vscode-languageclient": "^9.0.1",
+    "vscode-languageserver-textdocument": "^1.0.11",
+    "vscode-uri": "^3.0.8"
   },
   "engines": {
     "vscode": "^1.82.0"

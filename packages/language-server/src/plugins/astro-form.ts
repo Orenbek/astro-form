@@ -22,7 +22,9 @@ export const create = (): LanguageServicePlugin => {
       completionProvider: {
         triggerCharacters: ['-'],
       },
-      diagnosticProvider: true,
+      diagnosticProvider: {
+        workspaceDiagnostics: true,
+      },
     },
     create(context): LanguageServicePluginInstance {
       return {

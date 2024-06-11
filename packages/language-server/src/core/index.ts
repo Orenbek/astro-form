@@ -1,7 +1,8 @@
+/* eslint-disable no-restricted-syntax */
 /* eslint-disable no-plusplus */
 import path from 'node:path'
 
-import { type CodeMapping, type LanguagePlugin, type VirtualCode } from '@volar/language-core'
+import { type CodeMapping, type LanguagePlugin, type VirtualCode, forEachEmbeddedCode } from '@volar/language-core'
 import type { DiagnosticMessage } from '@astrojs/compiler/types'
 import type * as ts from 'typescript'
 import type { HTMLDocument } from 'vscode-html-languageservice'
@@ -21,7 +22,7 @@ export const AstroFormLanguagePlugin: LanguagePlugin<URI, AstroFormVirtualCode> 
   },
   createVirtualCode(_uri, languageId, snapshot) {
     if (languageId === LANGUAGE_ID) {
-      const fileName = path.basename(_uri.toString())
+      const fileName = path.basename(_uri.path)
       return new AstroFormVirtualCode(fileName, snapshot)
     }
     return undefined
@@ -29,6 +30,22 @@ export const AstroFormLanguagePlugin: LanguagePlugin<URI, AstroFormVirtualCode> 
   updateVirtualCode(_scriptId, astroCode, snapshot) {
     astroCode.update(snapshot)
     return astroCode
+  },
+  typescript: {
+    extraFileExtensions: [{ extension: 'aform', isMixedContent: true, scriptKind: 7 }],
+    getServiceScript(astroCode) {
+      for (const code of forEachEmbeddedCode(astroCode)) {
+        if (code.id === 'tsx') {
+          return {
+            code,
+            extension: '.tsx',
+            scriptKind: 4 satisfies ts.ScriptKind.TSX,
+          }
+        }
+      }
+      return undefined
+    },
+    // TODO 这里应该还有其他 functionality 需要补充
   },
 }
 
