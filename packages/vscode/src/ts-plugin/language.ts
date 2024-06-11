@@ -31,8 +31,8 @@ export function getLanguagePlugin(): LanguagePlugin<URI, AstroFormVirtualCode> {
     },
     typescript: {
       extraFileExtensions: [{ extension: 'aform', isMixedContent: true, scriptKind: 7 }],
-      getServiceScript(astroCode) {
-        for (const code of forEachEmbeddedCode(astroCode)) {
+      getServiceScript(astroFormCode) {
+        for (const code of forEachEmbeddedCode(astroFormCode)) {
           if (code.id === 'tsx') {
             return {
               code,

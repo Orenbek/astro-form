@@ -2,11 +2,11 @@
 import { createConnection, createServer, createTypeScriptProject, loadTsdkByPath } from '@volar/language-server/node'
 import { create as createEmmetService } from 'volar-service-emmet'
 import { create as createTypeScriptServices } from 'volar-service-typescript'
-import { create as createPrettierService } from 'volar-service-prettier'
 
 import { AstroFormLanguagePlugin } from './core/index'
 import { create as createHtmlService } from './plugins/html'
 import { create as createAstroFormService } from './plugins/astro-form'
+import { create as createPrettierService } from './plugins/prettier'
 
 const connection = createConnection()
 const server = createServer(connection)
@@ -25,7 +25,13 @@ connection.onInitialize((params) => {
     // language plugin
     createTypeScriptProject(tsdk.typescript, tsdk.diagnosticMessages, () => [AstroFormLanguagePlugin]),
     // service plugins
-    [createHtmlService(), createEmmetService(), ...createTypeScriptServices(tsdk.typescript), createAstroFormService()]
+    [
+      createHtmlService(),
+      createEmmetService(),
+      ...createTypeScriptServices(tsdk.typescript),
+      createAstroFormService(),
+      createPrettierService(connection),
+    ]
   )
 })
 

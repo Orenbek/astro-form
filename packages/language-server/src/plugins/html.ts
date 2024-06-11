@@ -34,8 +34,8 @@ export const create = (): LanguageServicePlugin => {
   })
   return {
     ...htmlServicePlugin,
-    create(context, languageService): LanguageServicePluginInstance {
-      const htmlPlugin = htmlServicePlugin.create(context, languageService)
+    create(context): LanguageServicePluginInstance {
+      const htmlPlugin = htmlServicePlugin.create(context)
 
       return {
         ...htmlPlugin,

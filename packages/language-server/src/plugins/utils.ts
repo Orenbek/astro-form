@@ -1,4 +1,7 @@
+import { dirname } from 'node:path'
+
 import type { HTMLDocument, Node } from 'vscode-html-languageservice'
+import type * as prettier from 'prettier'
 
 /**
  * Return if a given position is inside a JSX expression
@@ -22,4 +25,34 @@ export function isPossibleComponent(node: Node): boolean {
 export function isInComponentStartTag(html: HTMLDocument, offset: number): boolean {
   const node = html.findNodeAt(offset)
   return isPossibleComponent(node) && (!node.startTagEnd || offset < node.startTagEnd)
+}
+
+/**
+ * Get the path of a package's directory from the paths in `fromPath`, if `root` is set to false, it will return the path of the package's entry point
+ */
+export function getPackagePath(packageName: string, fromPath: string[], root = true): string | undefined {
+  try {
+    return root
+      ? dirname(require.resolve(`${packageName}/package.json`, { paths: fromPath }))
+      : require.resolve(packageName, { paths: fromPath })
+  } catch (e) {
+    return undefined
+  }
+}
+
+export function importPrettier(fromPath: string): typeof prettier | undefined {
+  const prettierPkg = getPackagePath('prettier', [fromPath, __dirname])
+  if (!prettierPkg) {
+    return undefined
+  }
+  // eslint-disable-next-line import/no-dynamic-require, global-require
+  return require(prettierPkg)
+}
+
+export function getPrettierPluginPath(fromPath: string): string | undefined {
+  const prettierPluginPath = getPackagePath('prettier-plugin-astro-form', [fromPath, __dirname], false)
+  if (!prettierPluginPath) {
+    return undefined
+  }
+  return prettierPluginPath
 }

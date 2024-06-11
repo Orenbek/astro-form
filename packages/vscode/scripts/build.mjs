@@ -22,7 +22,7 @@ export default async function build() {
     bundle: true,
     metafile: metaFile,
     outdir: '.',
-    external: ['vscode', '@astrojs/compiler'],
+    external: ['vscode', '@astrojs/compiler', 'prettier', 'prettier-plugin-astro-form'],
     format: 'cjs',
     platform: 'node',
     tsconfig: './tsconfig.json',

@@ -27,14 +27,14 @@ export const AstroFormLanguagePlugin: LanguagePlugin<URI, AstroFormVirtualCode> 
     }
     return undefined
   },
-  updateVirtualCode(_scriptId, astroCode, snapshot) {
-    astroCode.update(snapshot)
-    return astroCode
+  updateVirtualCode(_scriptId, astroFormCode, snapshot) {
+    astroFormCode.update(snapshot)
+    return astroFormCode
   },
   typescript: {
     extraFileExtensions: [{ extension: 'aform', isMixedContent: true, scriptKind: 7 }],
-    getServiceScript(astroCode) {
-      for (const code of forEachEmbeddedCode(astroCode)) {
+    getServiceScript(astroFormCode) {
+      for (const code of forEachEmbeddedCode(astroFormCode)) {
         if (code.id === 'tsx') {
           return {
             code,
@@ -63,6 +63,8 @@ export class AstroFormVirtualCode implements VirtualCode {
   astroMeta!: AstroMetadata
 
   compilerDiagnostics!: DiagnosticMessage[]
+
+  codegenStacks = []
 
   constructor(
     public fileName: string,

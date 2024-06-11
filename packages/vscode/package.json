@@ -100,6 +100,8 @@
     "vscode": "^1.82.0"
   },
   "dependencies": {
-    "@astrojs/compiler": "^2.8.0"
+    "@astrojs/compiler": "^2.8.0",
+    "prettier": "^3.2.5",
+    "prettier-plugin-astro-form": "workspace:^"
   }
 }
