@@ -15,10 +15,13 @@
     "astro-form-ls": "./bin/language-server.js"
   },
   "dependencies": {
+    "@astro-form/compiler": "workspace:^",
     "@astrojs/compiler": "^2.8.0",
+    "@jridgewell/sourcemap-codec": "^1.4.15",
     "@volar/language-core": "~2.3.0",
     "@volar/language-server": "~2.3.0",
     "@volar/language-service": "~2.3.0",
+    "@volar/typescript": "^2.3.0",
     "prettier": "^3.2.5",
     "tslib": "^2.6.3",
     "volar-service-emmet": "volar-2.3",
@@ -26,6 +29,7 @@
     "volar-service-prettier": "volar-2.3",
     "volar-service-typescript": "volar-2.3",
     "vscode-html-languageservice": "^5.2.0",
+    "vscode-languageserver-textdocument": "^1.0.11",
     "vscode-uri": "^3.0.8"
   }
 }

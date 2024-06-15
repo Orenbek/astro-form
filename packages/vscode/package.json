@@ -83,18 +83,12 @@
     "release": "npm run build && vsce publish --pre-release"
   },
   "devDependencies": {
-    "@astro-form/language-server": "workspace:*",
-    "@jridgewell/sourcemap-codec": "^1.4.15",
     "@types/vscode": "^1.82.0",
-    "@volar/language-core": "~2.3.0",
     "@volar/language-server": "~2.3.0",
-    "@volar/typescript": "^2.3.0",
     "@volar/vscode": "~2.3.0",
     "esbuild": "latest",
     "vsce": "latest",
-    "vscode-languageclient": "^9.0.1",
-    "vscode-languageserver-textdocument": "^1.0.11",
-    "vscode-uri": "^3.0.8"
+    "vscode-languageclient": "^9.0.1"
   },
   "engines": {
     "vscode": "^1.82.0"

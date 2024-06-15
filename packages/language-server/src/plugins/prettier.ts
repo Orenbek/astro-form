@@ -2,6 +2,8 @@ import { LanguageServicePlugin, Connection, ShowMessageNotification, MessageType
 import { create as createPrettierService } from 'volar-service-prettier'
 import { URI } from 'vscode-uri'
 
+import { LANGUAGE_ID } from '../utils/constant'
+
 import { importPrettier, getPrettierPluginPath } from './utils'
 
 export const create = (connection: Connection): LanguageServicePlugin => {
@@ -16,7 +18,7 @@ export const create = (connection: Connection): LanguageServicePlugin => {
       return undefined
     },
     {
-      documentSelector: ['astro-form'],
+      documentSelector: [LANGUAGE_ID],
       getFormattingOptions: async (prettierInstance, document, formatOptions, context) => {
         const filePath = URI.parse(document.uri).fsPath
 
@@ -56,7 +58,7 @@ export const create = (connection: Connection): LanguageServicePlugin => {
         return {
           ...resolvedConfig,
           plugins: [...(prettierPluginPath ? [prettierPluginPath] : []), ...(resolvedConfig.plugins ?? [])],
-          parser: 'astro-form',
+          parser: LANGUAGE_ID,
         }
       },
     }

@@ -8,10 +8,11 @@ import type * as ts from 'typescript'
 import type { HTMLDocument } from 'vscode-html-languageservice'
 import { URI } from 'vscode-uri'
 
+import { LANGUAGE_ID } from '../utils/constant'
+import { astro2tsx } from '../utils/astro2tsx'
+
 import { AstroMetadata, getAstroMetadata } from './parseAstroForm'
 import { parseHTML } from './parseHTML'
-
-const LANGUAGE_ID = 'astro-form'
 
 export const AstroFormLanguagePlugin: LanguagePlugin<URI, AstroFormVirtualCode> = {
   getLanguageId(uri) {
@@ -109,5 +110,11 @@ export class AstroFormVirtualCode implements VirtualCode {
     this.htmlDocument = htmlDocument
     this.embeddedCodes = []
     this.embeddedCodes.push(htmlVirtualCode)
+
+    const tsx = astro2tsx(this.snapshot.getText(0, this.snapshot.getLength()), this.fileName)
+    this.compilerDiagnostics.push(...tsx.diagnostics)
+    this.embeddedCodes.push(tsx.virtualCode)
+
+    this.astroMeta = astroMetadata
   }
 }

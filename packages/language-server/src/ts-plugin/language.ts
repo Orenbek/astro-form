@@ -6,9 +6,8 @@ import { type CodeMapping, type LanguagePlugin, type VirtualCode, forEachEmbedde
 import type ts from 'typescript'
 import { URI } from 'vscode-uri'
 
-import { astro2tsx } from './astro2tsx'
-
-const LANGUAGE_ID = 'astro-form'
+import { LANGUAGE_ID } from '../utils/constant'
+import { astro2tsx } from '../utils/astro2tsx'
 
 export function getLanguagePlugin(): LanguagePlugin<URI, AstroFormVirtualCode> {
   return {
@@ -91,6 +90,6 @@ export class AstroFormVirtualCode implements VirtualCode {
 
     const tsx = astro2tsx(this.snapshot.getText(0, this.snapshot.getLength()), this.fileName)
 
-    this.embeddedCodes.push(tsx.virtualFile)
+    this.embeddedCodes.push(tsx.virtualCode)
   }
 }

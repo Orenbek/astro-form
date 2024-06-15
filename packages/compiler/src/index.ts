@@ -1,6 +1,8 @@
 /* eslint-disable no-fallthrough */
 /* eslint-disable no-restricted-syntax */
-import changeCase from 'change-case-all'
+import path from 'node:path'
+
+import * as changeCase from 'change-case-all'
 import { parse } from '@astrojs/compiler/sync'
 import type { Node, TagLikeNode } from '@astrojs/compiler/types'
 import { is } from '@astrojs/compiler/utils'
@@ -10,9 +12,12 @@ import { DiagnosticCode } from '@/shared/const'
 import { printSlotNode, genSlotName } from '@/printer/slot'
 
 import { printFrotmatter } from './printer/frontmatter'
+import { SourceMap } from './shared/source-map'
+
+export type { TransformResult }
 
 export function transform(source: string, filename: string): TransformResult {
-  const result = parse(source, undefined)
+  const result = parse(source, { position: true })
   if (
     result.diagnostics.some((diagnostic) =>
       [
@@ -23,17 +28,34 @@ export function transform(source: string, filename: string): TransformResult {
       ].includes(diagnostic.code as any)
     )
   ) {
-    return { code: '', map: '', diagnostics: result.diagnostics }
+    return {
+      code: '',
+      map: {
+        file: filename ?? '',
+        sources: [],
+        sourcesContent: [],
+        names: [],
+        mappings: '',
+        version: 0,
+      },
+      diagnostics: result.diagnostics,
+    }
   }
-  return { code: serialize(result.ast, { filename }), map: '', diagnostics: [] }
+  const output = serialize(result.ast, { filename, source }).toStringWithSourceMap()
+  return {
+    code: output.code,
+    map: output.map.toJSON() as TransformResult['map'],
+    diagnostics: result.diagnostics,
+  }
 }
 
-export interface SerializeOptions {
+interface SerializeOptions {
   filename: string
+  source: string
 }
 
-export function serialize(root: Node, opts: SerializeOptions): string {
-  let output = ''
+function serialize(root: Node, opts: SerializeOptions): SourceMap {
+  const output = new SourceMap(opts.filename)
   let frontmatter = ''
   function visitor(node: Node) {
     if (is.root(node)) {
@@ -41,28 +63,25 @@ export function serialize(root: Node, opts: SerializeOptions): string {
     } else if (is.frontmatter(node)) {
       frontmatter += node.value
     } else if (is.expression(node)) {
-      output += `{`
+      output.add(`{`)
       node.children.forEach((child) => visitor(child))
-      output += `}`
+      output.add(`}`)
     } else if (is.literal(node)) {
       if (is.comment(node)) {
         // 注释节点不输出
         return
       }
-      output += node.value
+      output.add(node.value, node.position?.start)
     } else if (is.tag(node)) {
       if (node.name === 'slot') {
-        output += printSlotNode(node)
+        output.add(printSlotNode(node))
         return
       }
-      const [elementName, valType] = getElementName(node.name)
-      output += `<${elementName}`
-      output += serializeAttributes(node)
-      if (valType) {
-        output += ` $$valueType="${valType}"`
-      }
+      const elementName = getElementName(node.name)
+      output.add(`<${elementName}`, node.position?.start)
+      serializeAttributes(node, output)
       if (node.children.length === 0) {
-        output += ` />`
+        output.add(` />`)
       } else {
         const normalChild: Node[] = []
         // 把 slot node 过滤出来
@@ -79,39 +98,42 @@ export function serialize(root: Node, opts: SerializeOptions): string {
             appendedSlotNames.push(slotAttr.value)
             // eslint-disable-next-line no-param-reassign
             child.attributes = child.attributes.filter((a) => a.name !== 'slot')
-            output += ` ${genSlotName(slotAttr.value)}=${child.name === 'slot' ? '' : '{'}`
+            output.add(` ${genSlotName(slotAttr.value)}=${child.name === 'slot' ? '' : '{'}`)
             visitor(child)
-            output += `${child.name === 'slot' ? '' : '}'}`
+            output.add(child.name === 'slot' ? '' : '}')
           } else {
             normalChild.push(child)
           }
         })
-        output += `>`
+        output.add(`>`)
         normalChild.forEach((child) => visitor(child))
-        output += `</${elementName}>`
+        output.add(`</${elementName}>`)
       }
     }
   }
   visitor(root)
-  const [importStatement, regularStatement] = printFrotmatter(frontmatter)
-  output = `import * as $$React from 'react'
-import { useForm as useForm$$, Field as $$Field, passRefToChild, useRef as useRef$$ } from '@astro-form/react'
-${importStatement}
-const $Form = {}
-export default function ${changeCase.pascalCase(opts.filename)}(props) {
+
+  const frontmatterStartLine = opts.source.split('\n').findIndex((v) => v.startsWith('---'))
+  const [importStatements, regularStatement] = printFrotmatter(frontmatter, frontmatterStartLine)
+  output.add(`\n  </>\n})`)
+  output.prepend(`  return <>\n  `)
+  output.prepend(regularStatement.code, regularStatement.position.start)
+  const basename = path.basename(opts.filename, path.extname(opts.filename))
+  output.prepend(`\nconst $Form = {}
+export default $$observer(function ${changeCase.pascalCase(basename)}(props) {
   const form = useForm$$()
   $Form.props = props
   $Form.form = form
-  $Form.ref = useRef$$
-  ${regularStatement}
-  return <>
-    ${output}
-  </>
-}`
+  $Form.ref = useRef$$\n`)
+  importStatements.reverse().forEach((it) => {
+    output.prepend(`${it.code}\n`, it.position.start)
+  })
+  output.prepend(`import * as $$React from 'react'
+import { useForm as useForm$$, f as $$Field, passRefToChild, useRef as useRef$$, observer as $$observer } from '@astro-form/react'\n`)
   return output
 }
 
-function getElementName(elemName: string): [string, ValueType | undefined] {
+function getElementName(elemName: string): string {
   if (elemName.startsWith('f.')) {
     let valType: ValueType
     switch (elemName) {
@@ -133,12 +155,12 @@ function getElementName(elemName: string): [string, ValueType | undefined] {
       default:
         throw new Error(`[astro-form-compiler] unknown field type: ${elemName}`)
     }
-    return ['$$Field', valType]
+    return `$$Field.${valType}`
   }
   if (elemName === 'Fragment') {
-    return ['$$React.Fragment', undefined]
+    return '$$React.Fragment'
   }
-  return [elemName, undefined]
+  return elemName
 }
 
 function getFormPropsName(name: string) {
@@ -148,26 +170,25 @@ function getFormPropsName(name: string) {
   return name
 }
 
-function serializeAttributes(node: TagLikeNode): string {
-  let output = ''
+function serializeAttributes(node: TagLikeNode, output: SourceMap) {
   for (const attr of node.attributes) {
-    output += ' '
+    output.add(' ')
     const attrName = getFormPropsName(attr.name)
     switch (attr.kind) {
       case 'empty': {
-        output += `${attrName}`
+        output.add(`${attrName}`, attr.position?.start)
         break
       }
       case 'expression': {
-        output += `${attrName}={${attr.value}}`
+        output.add(`${attrName}={${attr.value}}`, attr.position?.start)
         break
       }
       case 'quoted': {
-        output += `${attrName}=${attr.raw}`
+        output.add(`${attrName}=${attr.raw}`, attr.position?.start)
         break
       }
       case 'template-literal': {
-        output += `${attrName}={\`${attr.value}\`}`
+        output.add(`${attrName}={\`${attr.value}\`}`, attr.position?.start)
         break
       }
       case 'shorthand': {
@@ -175,12 +196,11 @@ function serializeAttributes(node: TagLikeNode): string {
         break
       }
       case 'spread': {
-        output += `{...${attr.value}}`
+        output.add(`{...${attr.value}}`, attr.position?.start)
         break
       }
       default:
         break
     }
   }
-  return output
 }

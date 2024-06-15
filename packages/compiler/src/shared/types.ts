@@ -1,14 +1,14 @@
-import { DiagnosticMessage } from '@astrojs/compiler/types'
+import type { DiagnosticMessage, SourceMap } from '@astrojs/compiler/types'
 
 export interface TransformResult {
   code: string
-  map: string
+  map: SourceMap
   diagnostics: DiagnosticMessage[]
 }
 export enum ValueType {
-  String = 'string',
-  Number = 'number',
-  Boolean = 'boolean',
-  Object = 'object',
-  Array = 'array',
+  String = 'String',
+  Number = 'Number',
+  Boolean = 'Boolean',
+  Object = 'Object',
+  Array = 'Array',
 }

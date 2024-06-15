@@ -1,4 +1,5 @@
-export { BaseField as Field, f } from './Field'
+export * from 'mobx-react-lite'
+export { BaseField, f } from './Field'
 export * from './FormContext'
 export * from './FieldContext'
 export * from './types'
