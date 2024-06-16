@@ -92,13 +92,16 @@ function serialize(root: Node, opts: SerializeOptions): SourceMap {
             if (slotAttr.kind !== 'quoted') {
               throw new Error(`[astro-form-compiler] slot value must be a string`)
             }
-            if (appendedSlotNames.includes(slotAttr.value)) {
-              throw new Error(`[astro-form-compiler] multiple slot name detected: ${slotAttr.value}`)
+            const slotName = genSlotName(slotAttr.value)
+            if (appendedSlotNames.includes(slotName)) {
+              throw new Error(
+                `[astro-form-compiler] multiple slot name detected: ${slotAttr.value}. Please pass in a unique kebab-case string`
+              )
             }
-            appendedSlotNames.push(slotAttr.value)
+            appendedSlotNames.push(slotName)
             // eslint-disable-next-line no-param-reassign
             child.attributes = child.attributes.filter((a) => a.name !== 'slot')
-            output.add(` ${genSlotName(slotAttr.value)}=${child.name === 'slot' ? '' : '{'}`)
+            output.add(` ${slotName}=${child.name === 'slot' ? '' : '{'}`)
             visitor(child)
             output.add(child.name === 'slot' ? '' : '}')
           } else {
@@ -119,17 +122,21 @@ function serialize(root: Node, opts: SerializeOptions): SourceMap {
   output.prepend(`  return <>\n  `)
   output.prepend(regularStatement.code, regularStatement.position.start)
   const basename = path.basename(opts.filename, path.extname(opts.filename))
-  output.prepend(`\nconst $Form = {}
-export default $$observer(function ${changeCase.pascalCase(basename)}(props) {
-  const form = useForm$$()
-  $Form.props = props
-  $Form.form = form
-  $Form.ref = useRef$$\n`)
+  output.prepend(`
+export default $$observer(function ${changeCase.pascalCase(basename)}($$props) {
+  interface Props {}
+  /**
+   * AstroForm global available in all contexts in .aform files
+   *
+   * [AstroForm documentation](https://todo)
+  */
+  const Form: Readonly<AstroFormGlobal<Props>> = {props:$$getFormProps($$props),ref:useRef$$,slots:{has:$$hasSlotProp}} as any
+  Form.form = useForm$$()\n`)
   importStatements.reverse().forEach((it) => {
     output.prepend(`${it.code}\n`, it.position.start)
   })
   output.prepend(`import * as $$React from 'react'
-import { useForm as useForm$$, f as $$Field, passRefToChild, useRef as useRef$$, observer as $$observer } from '@astro-form/react'\n`)
+import {useForm as useForm$$, f as $$Field, useRef as useRef$$, observer as $$observer, AstroFormGlobal, passRefToChild as $$passRefToChild, hasSlotProp as $$hasSlotProp,getFormProps as $$getFormProps} from '@astro-form/react'\n`)
   return output
 }
 

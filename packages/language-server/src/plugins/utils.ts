@@ -3,6 +3,8 @@ import { dirname } from 'node:path'
 import type { HTMLDocument, Node } from 'vscode-html-languageservice'
 import type * as prettier from 'prettier'
 
+import type { FrontmatterStatus } from '../core/parseAstroForm'
+
 /**
  * Return if a given position is inside a JSX expression
  */
@@ -55,4 +57,20 @@ export function getPrettierPluginPath(fromPath: string): string | undefined {
     return undefined
   }
   return prettierPluginPath
+}
+
+/**
+ * Return if a given offset is inside the frontmatter
+ */
+export function isInsideFrontmatter(offset: number, frontmatter: FrontmatterStatus) {
+  switch (frontmatter.status) {
+    case 'closed':
+      return offset > frontmatter.position.start.offset && offset < frontmatter.position.end.offset
+    case 'open':
+      return offset > frontmatter.position.start.offset
+    case 'doesnt-exist':
+      return false
+    default:
+      return false
+  }
 }

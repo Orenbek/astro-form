@@ -1,6 +1,7 @@
 import { createRequire } from 'node:module'
 
 import esbuild from 'esbuild'
+import { copy } from 'esbuild-plugin-copy'
 
 const require = createRequire(import.meta.url)
 
@@ -29,6 +30,14 @@ export default async function build() {
     define: { 'process.env.NODE_ENV': '"production"' },
     minify: process.argv.includes('--minify'),
     plugins: [
+      copy({
+        resolveFrom: 'cwd',
+        assets: {
+          from: ['../language-server/types/**/*.d.ts'],
+          to: ['./dist/types'],
+          watch: isDev,
+        },
+      }),
       {
         name: 'umd2esm',
         setup(pluginBuild) {
@@ -48,7 +57,7 @@ export default async function build() {
     if (metaFile) fs.writeFileSync('meta.json', JSON.stringify(result.metafile))
   }
 
-  const builder = await esbuild.context(config).then(async (ctx) => {
+  await esbuild.context(config).then(async (ctx) => {
     console.log('building...')
     if (process.argv.includes('--watch')) {
       await ctx.watch()

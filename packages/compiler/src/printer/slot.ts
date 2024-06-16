@@ -9,15 +9,15 @@ export function printSlotNode(node: TagLikeNode) {
   const refAttri = node.attributes.find((i) => i.name === 'x:ref')
   const nodeName = (() => {
     if (!slotNameAttribute) {
-      return `props.children`
+      return `$$props.children`
     }
     if (slotNameAttribute.kind !== 'quoted') {
       throw new Error(`[astro-form-compiler] slot name must be a string`)
     }
-    return `props.${genSlotName(slotNameAttribute.value)}`
+    return `$$props.${genSlotName(slotNameAttribute.value)}`
   })()
   if (refAttri) {
-    return `{passRefToChild(${nodeName}, ${refAttri.value})}`
+    return `{$$passRefToChild(${nodeName}, ${refAttri.value})}`
   }
   return `{${nodeName}}`
 }

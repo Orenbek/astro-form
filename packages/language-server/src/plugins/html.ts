@@ -3,35 +3,22 @@
 /* eslint-disable no-restricted-syntax */
 import { CompletionItemKind, LanguageServicePlugin, LanguageServicePluginInstance } from '@volar/language-server'
 import { create as createHtmlService } from 'volar-service-html'
-import * as html from 'vscode-html-languageservice'
-import { URI, Utils } from 'vscode-uri'
+import { URI } from 'vscode-uri'
 
 import { AstroFormVirtualCode } from '../core/index'
 
-import { astroFormElements } from './html-data'
 import { isInComponentStartTag } from './utils'
 
+const RemainCompletionKinds = [
+  // label completion kind
+  CompletionItemKind.Property,
+  CompletionItemKind.Unit,
+  CompletionItemKind.Keyword,
+  CompletionItemKind.Snippet,
+]
+
 export const create = (): LanguageServicePlugin => {
-  const htmlServicePlugin = createHtmlService({
-    getCustomData: async (context) => {
-      const customData: string[] = (await context.env.getConfiguration?.('html.customData')) ?? []
-      /** this part is the default logic of volar-service-html getCustomData method, we just need to add our custom data to it. */
-      const newData: html.IHTMLDataProvider[] = []
-      for (const customDataPath of customData) {
-        const uri = Utils.resolvePath(context.env.workspaceFolders[0], customDataPath)
-        const json = await context.env.fs?.readFile?.(uri)
-        if (json) {
-          try {
-            const data = JSON.parse(json)
-            newData.push(html.newHTMLDataProvider(customDataPath, data))
-          } catch (error) {
-            console.error(error)
-          }
-        }
-      }
-      return [...newData, astroFormElements]
-    },
-  })
+  const htmlServicePlugin = createHtmlService()
   return {
     ...htmlServicePlugin,
     create(context): LanguageServicePluginInstance {
@@ -58,8 +45,10 @@ export const create = (): LanguageServicePlugin => {
             return null
           }
 
-          // We don't want completions for file references, as they're mostly invalid for Astro
-          completions.items = completions.items.filter((completion) => completion.kind !== CompletionItemKind.File)
+          // filter out most of the auto completions
+          completions.items = completions.items.filter((completion) =>
+            RemainCompletionKinds.includes(completion.kind as any)
+          )
 
           return completions
         },

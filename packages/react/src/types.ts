@@ -1,4 +1,4 @@
-import type { Field, IFieldFactoryProps } from '@astro-form/core'
+import type { Field, IFieldFactoryProps, Form } from '@astro-form/core'
 import type { IObservableValue } from 'mobx'
 
 export enum ValueType {
@@ -31,3 +31,27 @@ type AppendPrefix<T> = {
   [K in keyof T as `$$${K & string}`]: T[K]
 }
 type Prettify<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
+
+/**
+ * Astro global available in all contexts in .astro files
+ *
+ * [Astro reference](https://docs.astro.build/reference/api-reference/#astro-global)
+ */
+export interface AstroFormGlobal<Props extends Record<string, any> = Record<string, any>> {
+  props: Props
+  form: Form
+  ref: <T extends Field = Field>() => IObservableValue<T | null>
+  slots: {
+    /**
+     * Check whether content for this slot name exists
+     *
+     * Example usage:
+     * ```typescript
+     *	if (Astro.slots.has('default')) {
+     *   // Do something...
+     *	}
+     * ```
+     */
+    has(slotName: string): boolean
+  }
+}
