@@ -1,13 +1,12 @@
 /* eslint-disable no-plusplus */
 /* eslint-disable no-restricted-syntax */
+import { CodeMapping } from '@volar/language-core'
 import { transform, TransformResult } from '@astro-form/compiler'
 import type { VirtualCode } from '@volar/language-core'
 
-import { v3mappingToCodemapping } from './v3mapping-to-codemapping'
-
 function safeConvertToTSX(content: string, filename: string) {
   try {
-    const tsx = transform(content, filename)
+    const tsx = transform({ source: content, filename, isLanguageServer: true })
     return tsx
   } catch (e) {
     console.error(
@@ -29,16 +28,30 @@ function safeConvertToTSX(content: string, filename: string) {
           code: 1000,
           location: { file: filename, line: 1, column: 1, length: content.length },
           severity: 1,
-          text: `The Astro compiler encountered an unknown error while parsing this file. Please create an issue with your code and the error shown in the server's logs`,
+          text: `The AstroForm compiler encountered an unknown error while parsing this file. Please create an issue with your code and the error shown in the server's logs`,
         },
       ],
+      mappings: [],
     } satisfies TransformResult
   }
 }
 
 export function astro2tsx(input: string, fileName: string) {
   const tsx = safeConvertToTSX(input, fileName)
-  const mappings = v3mappingToCodemapping(input, tsx, fileName)
+  const mappings = tsx.mappings!.map<CodeMapping>((mapping) => ({
+    sourceOffsets: [mapping.sourceOffset],
+    generatedOffsets: [mapping.generatedOffset],
+    lengths: [mapping.length],
+    generatedLengths: [mapping.generatedLength],
+    data: {
+      verification: true,
+      completion: true,
+      semantic: true,
+      navigation: true,
+      structure: true,
+      format: false,
+    },
+  }))
   const virtualCode: VirtualCode = {
     id: 'tsx',
     languageId: 'typescriptreact',

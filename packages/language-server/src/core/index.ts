@@ -57,14 +57,13 @@ export function getAstroFormLanguagePlugin(
           getScriptFileNames() {
             const fileNames = host.getScriptFileNames()
             const languageServerTypesDirectory = ts.sys.resolvePath(path.resolve(__dirname, '..'))
-            return [
-              ...fileNames,
-              ...['./dist/types/astroform-jsx.d.ts'].map((f) =>
-                ts.sys.resolvePath(
-                  path.resolve(astroFormInstall ? astroFormInstall.path : languageServerTypesDirectory, f)
-                )
-              ),
-            ]
+            const filename = ts.sys.resolvePath(
+              path.resolve(
+                astroFormInstall ? astroFormInstall.path : languageServerTypesDirectory,
+                './dist/types/astroform-jsx.d.ts'
+              )
+            )
+            return [...fileNames, filename]
           },
           getCompilationSettings() {
             const baseCompilationSettings = host.getCompilationSettings()

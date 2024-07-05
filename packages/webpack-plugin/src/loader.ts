@@ -8,7 +8,7 @@ type CallbackType = (err: Error | null, content: string | Buffer, sourceMap?: So
 export default function loader(source: string) {
   // @ts-ignore
   const filePath = this.resourcePath as string
-  const { code } = transform(source, filePath)
+  const { code } = transform({ source, filename: filePath })
   const jsContent = ts.transpileModule(code, {
     compilerOptions: { module: ts.ModuleKind.ESNext, jsx: ts.JsxEmit.ReactJSX },
   }).outputText
