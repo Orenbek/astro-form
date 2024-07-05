@@ -123,7 +123,8 @@ function printAttribute(node: t.AttributeNode, opts: TransformOptions) {
           filename: opts.filename,
           line: node.position!.start.line,
           column: node.position!.start.column,
-          target: `${attrName}="${node.value}"`,
+          // AstroFieldComponent 组件是泛型，为了正确推导 props 类型，as 得是 const
+          target: attrName === 'as' ? `${attrName}={"${node.value}" as const}` : `${attrName}="${node.value}"`,
           source: `${node.name}="${node.value}"`,
           sourceOffset: node.position!.start.offset,
         })

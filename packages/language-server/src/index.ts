@@ -1,4 +1,6 @@
 /* eslint-disable no-plusplus */
+import path from 'node:path'
+
 import { createConnection, createServer, createTypeScriptProject, loadTsdkByPath } from '@volar/language-server/node'
 import { create as createEmmetService } from 'volar-service-emmet'
 import { create as createTypeScriptServices } from 'volar-service-typescript'
@@ -34,7 +36,14 @@ connection.onInitialize((params) => {
         nearestPackageJson,
         readDirectory: ts.sys.readDirectory,
       })
-      return [getAstroFormLanguagePlugin(typeof astroFormInstall === 'string' ? undefined : astroFormInstall, ts)]
+      const languageServerTypesDirectory = ts.sys.resolvePath(path.resolve(__dirname, '..'))
+      const filename = ts.sys.resolvePath(
+        path.resolve(
+          typeof astroFormInstall === 'string' ? languageServerTypesDirectory : astroFormInstall.path,
+          './dist/types/astroform-jsx.d.ts'
+        )
+      )
+      return [getAstroFormLanguagePlugin(ts, filename)]
     }),
     // service plugins
     [

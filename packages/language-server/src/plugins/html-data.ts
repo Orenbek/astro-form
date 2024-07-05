@@ -1,104 +1,84 @@
-import { getDefaultHTMLDataProvider, newHTMLDataProvider, IAttributeData } from 'vscode-html-languageservice'
+import { newHTMLDataProvider, IAttributeData } from 'vscode-html-languageservice'
+
+const fieldAttributeReference = [
+  {
+    name: 'AstroForm reference',
+    url: 'https://TODO',
+  },
+]
 
 const fieldAttributes: IAttributeData[] = [
   {
-    name: 'name',
-    description: '',
-    references: [],
-  },
-  {
-    name: 'as',
-    description: '',
-    references: [],
-  },
-  {
     name: 'x:ref',
     description: '',
-    references: [],
+    references: fieldAttributeReference,
   },
   {
     name: 'x:initialValue',
     description: '',
-    references: [],
+    references: fieldAttributeReference,
   },
   {
     name: 'x:display',
     description: '',
-    references: [],
-  },
-  {
-    name: 'x:visible',
-    description: '',
-    references: [],
-  },
-  {
-    name: 'x:hidden',
-    description: '',
-    references: [],
+    references: fieldAttributeReference,
   },
   {
     name: 'x:pattern',
     description: '',
-    references: [],
+    references: fieldAttributeReference,
+  },
+  {
+    name: 'x:visible',
+    description: '',
+    references: fieldAttributeReference,
+  },
+  {
+    name: 'x:hidden',
+    description: '',
+    references: fieldAttributeReference,
   },
   {
     name: 'x:editable',
     description: '',
-    references: [],
+    references: fieldAttributeReference,
   },
   {
     name: 'x:readPretty',
     description: '',
-    references: [],
+    references: fieldAttributeReference,
   },
   {
     name: 'x:disabled',
     description: '',
-    references: [],
+    references: fieldAttributeReference,
   },
   {
     name: 'x:dataSource',
     description: '',
-    references: [],
+    references: fieldAttributeReference,
   },
   {
     name: 'x:validator',
     description: '',
-    references: [],
+    references: fieldAttributeReference,
   },
   {
     name: 'x:data',
     description: '',
-    references: [],
+    references: fieldAttributeReference,
   },
   {
     name: 'x:reactions',
     description: '',
-    references: [],
+    references: fieldAttributeReference,
   },
   {
     name: 'x:validateFirst',
     description: '',
-    references: [],
+    references: fieldAttributeReference,
   },
 ]
-
-export const classListAttribute = newHTMLDataProvider('class-list', {
-  version: 1,
-  globalAttributes: [
-    {
-      name: 'class:list',
-      description:
-        'Utility to provide a list of classes of the element. Takes an array of class values and converts them into a class string.',
-      references: [
-        {
-          name: 'Astro reference',
-          url: 'https://docs.astro.build/en/reference/directives-reference/#classlist',
-        },
-      ],
-    },
-  ],
-})
 
 export const astroFormElements = newHTMLDataProvider('astro-form-elements', {
   version: 1,
@@ -109,8 +89,8 @@ export const astroFormElements = newHTMLDataProvider('astro-form-elements', {
         'The slot element is a placeholder for external HTML content, allowing you to inject (or “slot”) child elements from other files into your component template.',
       references: [
         {
-          name: 'Astro reference',
-          url: 'https://docs.astro.build/en/core-concepts/astro-components/#slots',
+          name: 'AstroForm reference',
+          url: 'https://TODO',
         },
       ],
       attributes: [
@@ -120,8 +100,8 @@ export const astroFormElements = newHTMLDataProvider('astro-form-elements', {
             'The name attribute allows you to pass only HTML elements with the corresponding slot name into a slot’s location.',
           references: [
             {
-              name: 'Astro reference',
-              url: 'https://docs.astro.build/en/core-concepts/astro-components/#named-slots',
+              name: 'AstroForm reference',
+              url: 'https://TODO',
             },
           ],
         },
@@ -129,31 +109,57 @@ export const astroFormElements = newHTMLDataProvider('astro-form-elements', {
     },
     {
       name: 'f.string',
-      description: 'base field',
+      description: 'string field',
+      references: [
+        {
+          name: 'AstroForm reference',
+          url: 'https://TODO',
+        },
+      ],
       attributes: fieldAttributes,
     },
     {
       name: 'f.number',
-      description: 'base field',
-      references: [],
+      description: 'number field',
+      references: [
+        {
+          name: 'AstroForm reference',
+          url: 'https://TODO',
+        },
+      ],
       attributes: fieldAttributes,
     },
     {
       name: 'f.boolean',
-      description: 'base field',
-      references: [],
+      description: 'boolean field',
+      references: [
+        {
+          name: 'AstroForm reference',
+          url: 'https://TODO',
+        },
+      ],
       attributes: fieldAttributes,
     },
     {
       name: 'f.object',
       description: 'object field',
-      references: [],
+      references: [
+        {
+          name: 'AstroForm reference',
+          url: 'https://TODO',
+        },
+      ],
       attributes: fieldAttributes,
     },
     {
       name: 'f.array',
       description: 'array field',
-      references: [],
+      references: [
+        {
+          name: 'AstroForm reference',
+          url: 'https://TODO',
+        },
+      ],
       attributes: fieldAttributes,
     },
   ],

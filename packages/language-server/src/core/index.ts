@@ -1,6 +1,7 @@
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable no-plusplus */
 import path from 'node:path'
+import fs from 'node:fs'
 
 import { type CodeMapping, type LanguagePlugin, type VirtualCode, forEachEmbeddedCode } from '@volar/language-core'
 import type { DiagnosticMessage } from '@astrojs/compiler/types'
@@ -10,14 +11,13 @@ import { URI } from 'vscode-uri'
 
 import { LANGUAGE_ID } from '../utils/constant'
 import { astro2tsx } from '../utils/astro2tsx'
-import { AstroFormInstall } from '../utils/get-astro-form-install'
 
 import { AstroMetadata, getAstroMetadata } from './parseAstroForm'
 import { parseHTML } from './parseHTML'
 
 export function getAstroFormLanguagePlugin(
-  astroFormInstall: AstroFormInstall | undefined,
-  ts: typeof import('typescript')
+  ts: typeof import('typescript'),
+  additionalFileName: string
 ): LanguagePlugin<URI, AstroFormVirtualCode> {
   return {
     getLanguageId(uri) {
@@ -29,7 +29,7 @@ export function getAstroFormLanguagePlugin(
     createVirtualCode(_uri, languageId, snapshot) {
       if (languageId === LANGUAGE_ID) {
         const fileName = path.basename(_uri.path)
-        return new AstroFormVirtualCode(fileName, snapshot)
+        return new AstroFormVirtualCode(fileName, snapshot, additionalFileName)
       }
       return undefined
     },
@@ -56,14 +56,7 @@ export function getAstroFormLanguagePlugin(
           ...host,
           getScriptFileNames() {
             const fileNames = host.getScriptFileNames()
-            const languageServerTypesDirectory = ts.sys.resolvePath(path.resolve(__dirname, '..'))
-            const filename = ts.sys.resolvePath(
-              path.resolve(
-                astroFormInstall ? astroFormInstall.path : languageServerTypesDirectory,
-                './dist/types/astroform-jsx.d.ts'
-              )
-            )
-            return [...fileNames, filename]
+            return [...fileNames, additionalFileName]
           },
           getCompilationSettings() {
             const baseCompilationSettings = host.getCompilationSettings()
@@ -103,11 +96,15 @@ export class AstroFormVirtualCode implements VirtualCode {
 
   codegenStacks = []
 
+  additionalTypeFileContent: string
+
   constructor(
     public fileName: string,
-    public snapshot: IScriptSnapshot
+    public snapshot: IScriptSnapshot,
+    public additionalFileName: string
   ) {
     this.onSnapshotUpdated()
+    this.additionalTypeFileContent = fs.readFileSync(additionalFileName, { encoding: 'utf-8' })
   }
 
   public update(newSnapshot: IScriptSnapshot) {

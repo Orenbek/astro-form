@@ -74,3 +74,12 @@ export function isInsideFrontmatter(offset: number, frontmatter: FrontmatterStat
       return false
   }
 }
+
+const reg = /^[a-zA-Z:]+/
+export function textSelectionOnOffset(text: string, offset: number) {
+  const before = text.slice(0, offset).split('').reverse().join('')
+  const after = text.slice(offset)
+  const beforeMatch = before.match(reg)
+  const afterMatch = after.match(reg)
+  return `${beforeMatch ? beforeMatch[0].split('').reverse().join('') : ''}${afterMatch ? afterMatch[0] : ''}`
+}

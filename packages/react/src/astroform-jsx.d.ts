@@ -153,8 +153,8 @@ type AstroFieldProps<T> = {
   'x:dataSource'?: FieldDataSource
   'x:validator'?: FieldValidator
   'x:data'?: any
-  'x:validateFirst'?: boolean
   'x:reactions'?: FieldReaction[] | FieldReaction
+  'x:validateFirst'?: boolean
 } & ComponentProps<T>
 
 export declare global {

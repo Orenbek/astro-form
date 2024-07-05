@@ -23,10 +23,10 @@
     "@volar/typescript": "~2.3.1",
     "prettier": "^3.2.5",
     "tslib": "^2.6.3",
-    "volar-service-emmet": "volar-2.3",
-    "volar-service-html": "volar-2.3",
-    "volar-service-prettier": "volar-2.3",
-    "volar-service-typescript": "volar-2.3",
+    "volar-service-emmet": "^0.0.54",
+    "volar-service-html": "^0.0.54",
+    "volar-service-prettier": "^0.0.54",
+    "volar-service-typescript": "^0.0.54",
     "vscode-html-languageservice": "^5.2.0",
     "vscode-uri": "^3.0.8"
   }

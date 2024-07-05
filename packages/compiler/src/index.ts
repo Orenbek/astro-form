@@ -38,6 +38,7 @@ export function transform(opts: TransformOptions): TransformResult {
         version: 0,
       },
       diagnostics: result.diagnostics,
+      mappings: [],
     }
   }
   const output = doPrint(result.ast, opts)
