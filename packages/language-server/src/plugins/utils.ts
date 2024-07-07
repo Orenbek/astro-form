@@ -1,7 +1,9 @@
 import { dirname } from 'node:path'
 
-import type { HTMLDocument, Node } from 'vscode-html-languageservice'
+import type { DocumentContext, HTMLDocument, Node } from 'vscode-html-languageservice'
 import type * as prettier from 'prettier'
+import { LanguageServiceContext } from '@volar/language-server'
+import { URI, Utils } from 'vscode-uri'
 
 import type { FrontmatterStatus } from '../core/parseAstroForm'
 
@@ -82,4 +84,47 @@ export function textSelectionOnOffset(text: string, offset: number) {
   const beforeMatch = before.match(reg)
   const afterMatch = after.match(reg)
   return `${beforeMatch ? beforeMatch[0].split('').reverse().join('') : ''}${afterMatch ? afterMatch[0] : ''}`
+}
+
+export function getDocumentContext(context: LanguageServiceContext): DocumentContext {
+  return {
+    resolveReference(ref, base) {
+      let baseUri = URI.parse(base)
+      const decoded = context.decodeEmbeddedDocumentUri(baseUri)
+      if (decoded) {
+        // eslint-disable-next-line prefer-destructuring
+        baseUri = decoded[0]
+      }
+      return resolveReference(ref, baseUri, context.env.workspaceFolders)
+    },
+  }
+}
+function resolveReference(ref: string, baseUri: URI, workspaceFolders: URI[]) {
+  if (ref.match(/^\w[\w\d+.-]*:/)) {
+    // starts with a schema
+    return ref
+  }
+  if (ref[0] === '/') {
+    // resolve absolute path against the current workspace folder
+    const folderUri = getRootFolder()
+    if (folderUri) {
+      return folderUri + ref.substr(1)
+    }
+  }
+  const baseUriDir = baseUri.path.endsWith('/') ? baseUri : Utils.dirname(baseUri)
+  return Utils.resolvePath(baseUriDir, ref).toString(true)
+
+  // eslint-disable-next-line consistent-return
+  function getRootFolder(): string | undefined {
+    // eslint-disable-next-line no-restricted-syntax
+    for (const folder of workspaceFolders) {
+      let folderURI = folder.toString()
+      if (!folderURI.endsWith('/')) {
+        folderURI += '/'
+      }
+      if (baseUri.toString().startsWith(folderURI)) {
+        return folderURI
+      }
+    }
+  }
 }
