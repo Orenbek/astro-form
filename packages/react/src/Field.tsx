@@ -8,7 +8,8 @@ import { ValueType, type FieldProps, type IFieldProps } from './types'
 import { useForceUpdate } from './hooks/useForceUpdate'
 import { useForm } from './FormContext'
 import { FieldProvider, useBasePath } from './FieldContext'
-import { extractFieldPropsAndComponentProps } from './utils/extract-field-props'
+import { extractFieldPropsAndComponentProps, createFieldHelper } from './utils/extract-field-props'
+import { useUpdateEffect } from './hooks/useUpdateEffect'
 
 type FieldRenderProps = { path?: string; field?: FieldType; as?: string | React.FC<any> }
 
@@ -56,21 +57,12 @@ export const BaseField = observer<FieldProps, unknown>(
 
     const $$form = useForm()
     const basePath = useBasePath()
-    const ref = React.useRef<FieldType>()
+    const ref = React.useRef<FieldType | null>(createFieldHelper(fieldProps, compoenntProps, $$form, basePath))
     const forceUpdate = useForceUpdate()
 
     React.useEffect(() => {
-      if (basePath === undefined) return
-      const { as, $$valueType: valueType, $$ref: xref, ...rest } = fieldProps
-      const fprops = { ...rest, basePath, component: [as, compoenntProps] as FieldComponent<any> }
-      if (valueType === 'object') {
-        ref.current = $$form.createObjectField(fprops)
-      } else if (valueType === 'array') {
-        ref.current = $$form.createArrayField(fprops)
-      } else {
-        const res = $$form.createField(fprops)
-        ref.current = res
-      }
+      ref.current = createFieldHelper(fieldProps, compoenntProps, $$form, basePath)
+      const xref = fieldProps.$$ref
       if (xref) {
         if (Array.isArray(xref)) {
           xref.forEach((item) => item.set(ref.current!))
@@ -78,19 +70,18 @@ export const BaseField = observer<FieldProps, unknown>(
           xref.set(ref.current!)
         }
       }
-      ref.current!.onMount()
       forceUpdate()
       return () => {
-        ref.current!.onUnmount()
+        ref.current?.onUnmount()
       }
     }, [basePath, fieldProps.name])
 
-    React.useEffect(() => {
+    useUpdateEffect(() => {
       if (!ref.current) return
       ref.current.component = [fieldProps.as, compoenntProps] as FieldComponent<any>
     }, [fieldProps.as, compoenntProps])
 
-    React.useEffect(() => {
+    useUpdateEffect(() => {
       runInAction(() => {
         if (!ref.current) return
         ref.current.initialValue = fieldProps.initialValue

@@ -40,7 +40,7 @@ type Prettify<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
 export interface AstroFormGlobal<Props extends Record<string, any> = Record<string, any>> {
   props: Props
   form: Form
-  ref: <T extends Field = Field>() => IObservableValue<T | null>
+  ref: <T = Field>() => IObservableValue<T | null>
   slots: {
     /**
      * Check whether content for this slot name exists
