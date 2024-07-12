@@ -1,5 +1,5 @@
 import { type Doc } from 'prettier'
-import _doc from 'prettier/doc'
+import * as _doc from 'prettier/doc'
 
 import { selfClosingTags } from './elements'
 import { type TextNode } from './nodes'

@@ -5,6 +5,7 @@ const config: ReturnType<typeof defineConfig> = defineConfig({
   buildPreset: 'npm-library',
   buildConfig: {
     tsconfig: 'tsconfig.build.json',
+    externals: ['prettier', '@astrojs/compiler'],
   },
 })
 export default config

@@ -12,17 +12,25 @@ import { splitFrontMatterIntoGlobalStatementAndComponentExpression } from './uti
 export function printComponent(rootNode: Node, frontmatterNode: FrontmatterNode | undefined, opts: TransformOptions) {
   const componentNode = new SourceMap()
   const basename = path.basename(opts.filename, path.extname(opts.filename))
-  componentNode.add(`
-export default $$observer(function ${changeCase.pascalCase(basename)}($$props) {
+  if (opts.isLanguageServer) {
+    componentNode.add(`
+export default function ${changeCase.pascalCase(basename)}($$props: any): any {
   interface Props {}
   /**
    * AstroForm global available in all contexts in .aform files
    *
    * [AstroForm documentation](https://todo)
   */
-  const Form: Readonly<AstroFormGlobal<Props>> = {props:$$getFormProps($$props),ref:useRef$$,slots:{has:$$hasSlotProp}} as any
-  Form.form = useForm$$()
-`)
+  const Form: Readonly<AstroFormGlobal<Props>> = {} as any
+    `)
+  } else {
+    componentNode.add(`
+    export default $$observer(function ${changeCase.pascalCase(basename)}($$props) {
+      interface Props {}
+      const Form: Readonly<AstroFormGlobal<Props>> = {props:$$getFormProps($$props),ref:useRef$$,slots:{has:$$hasSlotProp}} as any
+      Form.form = useForm$$()
+    `)
+  }
   if (frontmatterNode) {
     const [_, componentStatement] = splitFrontMatterIntoGlobalStatementAndComponentExpression(
       frontmatterNode.value,
@@ -45,7 +53,7 @@ export default $$observer(function ${changeCase.pascalCase(basename)}($$props) {
     print(rootNode, opts),
     `
   </>
-})`
+}${opts.isLanguageServer ? '' : ')'}`
   )
   return componentNode
 }

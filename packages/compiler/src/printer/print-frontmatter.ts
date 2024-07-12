@@ -7,9 +7,13 @@ import { splitFrontMatterIntoGlobalStatementAndComponentExpression } from './uti
 
 export function printFrotmatter(node: FrontmatterNode | undefined, opts: TransformOptions) {
   const frontmatterNode = new SourceMap()
-  frontmatterNode.add(`import * as $$React from 'react'
-import {useForm as useForm$$, f as $$Field, useRef as useRef$$, observer as $$observer, AstroFormGlobal, passRefToChild as $$passRefToChild, hasSlotProp as $$hasSlotProp,getFormProps as $$getFormProps} from '@astro-form/react'
-`)
+  if (!opts.isLanguageServer) {
+    frontmatterNode.add(`import * as $$React from 'react'
+    import {useForm as useForm$$, f as $$Field, useRef as useRef$$, observer as $$observer, AstroFormGlobal, passRefToChild as $$passRefToChild, hasSlotProp as $$hasSlotProp,getFormProps as $$getFormProps} from '@astro-form/react'
+    `)
+  } else {
+    frontmatterNode.add(`import {AstroFormGlobal} from '@astro-form/react'`)
+  }
   if (node) {
     const [globalStatement] = splitFrontMatterIntoGlobalStatementAndComponentExpression(node.value, opts.source)
     frontmatterNode.add(

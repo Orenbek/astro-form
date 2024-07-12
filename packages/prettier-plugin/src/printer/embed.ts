@@ -1,7 +1,7 @@
 /* eslint-disable no-param-reassign */
 
 import type { Doc, Options } from 'prettier'
-import _doc from 'prettier/doc'
+import * as _doc from 'prettier/doc'
 
 import type { AttributeNode, ExpressionNode, FragmentNode, Node } from './nodes'
 import {
