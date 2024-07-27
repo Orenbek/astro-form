@@ -1,25 +1,22 @@
 /* eslint-disable no-restricted-syntax */
 /* eslint-disable consistent-return */
-import path from 'node:path'
 
 import { type CodeMapping, type LanguagePlugin, type VirtualCode, forEachEmbeddedCode } from '@volar/language-core'
 import type ts from 'typescript'
-import { URI } from 'vscode-uri'
 
 import { LANGUAGE_ID } from '../utils/constant'
 import { astro2tsx } from '../utils/astro2tsx'
 
-export function getLanguagePlugin(): LanguagePlugin<URI, AstroFormVirtualCode> {
+export function getLanguagePlugin(): LanguagePlugin<string, AstroFormVirtualCode> {
   return {
-    getLanguageId(scriptId) {
-      if (scriptId.path.endsWith('.aform')) {
+    getLanguageId(fileName) {
+      if (fileName.endsWith('.aform')) {
         return LANGUAGE_ID
       }
       return undefined
     },
-    createVirtualCode(scriptId, languageId, snapshot) {
+    createVirtualCode(fileName, languageId, snapshot) {
       if (languageId === LANGUAGE_ID) {
-        const fileName = path.basename(scriptId.path)
         return new AstroFormVirtualCode(fileName, snapshot)
       }
       return undefined
