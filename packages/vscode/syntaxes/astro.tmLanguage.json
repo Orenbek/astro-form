@@ -1,9 +1,7 @@
 {
   "name": "Astro",
   "scopeName": "source.astro",
-  "fileTypes": [
-    "astro"
-  ],
+  "fileTypes": ["aform"],
   "injections": {
     "L:(meta.script.astro) (meta.lang.json) - (meta source)": {
       "patterns": [
@@ -60,111 +58,6 @@
           "patterns": [
             {
               "include": "source.js"
-            }
-          ]
-        }
-      ]
-    },
-    "L:meta.style.astro meta.lang.stylus - (meta source)": {
-      "patterns": [
-        {
-          "begin": "(?<=>)(?!</)",
-          "end": "(?=</)",
-          "name": "meta.embedded.block.astro",
-          "contentName": "source.stylus",
-          "patterns": [
-            {
-              "include": "source.stylus"
-            }
-          ]
-        }
-      ]
-    },
-    "L:meta.style.astro meta.lang.sass - (meta source)": {
-      "patterns": [
-        {
-          "begin": "(?<=>)(?!</)",
-          "end": "(?=</)",
-          "name": "meta.embedded.block.astro",
-          "contentName": "source.sass",
-          "patterns": [
-            {
-              "include": "source.sass"
-            }
-          ]
-        }
-      ]
-    },
-    "L:meta.style.astro meta.lang.css - (meta source)": {
-      "patterns": [
-        {
-          "begin": "(?<=>)(?!</)",
-          "end": "(?=</)",
-          "name": "meta.embedded.block.astro",
-          "contentName": "source.css",
-          "patterns": [
-            {
-              "include": "source.css"
-            }
-          ]
-        }
-      ]
-    },
-    "L:meta.style.astro meta.lang.scss - (meta source)": {
-      "patterns": [
-        {
-          "begin": "(?<=>)(?!</)",
-          "end": "(?=</)",
-          "name": "meta.embedded.block.astro",
-          "contentName": "source.css.scss",
-          "patterns": [
-            {
-              "include": "source.css.scss"
-            }
-          ]
-        }
-      ]
-    },
-    "L:meta.style.astro meta.lang.less - (meta source)": {
-      "patterns": [
-        {
-          "begin": "(?<=>)(?!</)",
-          "end": "(?=</)",
-          "name": "meta.embedded.block.astro",
-          "contentName": "source.css.less",
-          "patterns": [
-            {
-              "include": "source.css.less"
-            }
-          ]
-        }
-      ]
-    },
-    "L:meta.style.astro meta.lang.postcss - (meta source)": {
-      "patterns": [
-        {
-          "begin": "(?<=>)(?!</)",
-          "end": "(?=</)",
-          "name": "meta.embedded.block.astro",
-          "contentName": "source.css.postcss",
-          "patterns": [
-            {
-              "include": "source.css.postcss"
-            }
-          ]
-        }
-      ]
-    },
-    "L:meta.style.astro - meta.lang - (meta source)": {
-      "patterns": [
-        {
-          "begin": "(?<=>)(?!</)",
-          "end": "(?=</)",
-          "name": "meta.embedded.block.astro",
-          "contentName": "source.css",
-          "patterns": [
-            {
-              "include": "source.css"
             }
           ]
         }
@@ -692,7 +585,7 @@
           ]
         }
       },
-      "name": "meta.scope.tag.$1.astro meta.raw.astro",
+      "name": "meta.scope.tag.astro meta.raw.astro",
       "contentName": "source.unknown",
       "patterns": [
         {
@@ -721,7 +614,7 @@
           ]
         }
       },
-      "name": "meta.scope.tag.$1.astro meta.$1.astro",
+      "name": "meta.scope.tag.astro meta.$1.astro",
       "patterns": [
         {
           "begin": "\\G(?=\\s*[^>]*?(type|lang)\\s*=\\s*(['\"]|)(?:text\\/)?(application\\/ld\\+json)\\2)",
@@ -798,7 +691,7 @@
           "name": "meta.tag.start.astro punctuation.definition.tag.end.astro"
         }
       },
-      "name": "meta.scope.tag.$2.astro",
+      "name": "meta.scope.tag.astro",
       "patterns": [
         {
           "include": "#tags-start-attributes"
@@ -826,7 +719,7 @@
           "name": "meta.tag.end.astro punctuation.definition.tag.end.astro"
         }
       },
-      "name": "meta.scope.tag.$2.astro"
+      "name": "meta.scope.tag.astro"
     },
     "text": {
       "patterns": [

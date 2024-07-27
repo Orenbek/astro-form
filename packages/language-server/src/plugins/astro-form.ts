@@ -18,6 +18,7 @@ import { AstroFormVirtualCode } from '../core/index'
 
 export const create = (): LanguageServicePlugin => {
   return {
+    name: 'astro-form-service',
     capabilities: {
       completionProvider: {
         triggerCharacters: ['-'],

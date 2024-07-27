@@ -14,6 +14,7 @@ const htmlLs = html.getLanguageService({ useDefaultDataProvider: true, customDat
 
 export const create = (): LanguageServicePlugin => {
   return {
+    name: 'astro-form-typescript-addons-service',
     capabilities: {
       completionProvider: {
         triggerCharacters: ['interface'],
