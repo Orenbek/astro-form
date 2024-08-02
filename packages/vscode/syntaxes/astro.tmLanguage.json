@@ -72,15 +72,28 @@
       "include": "#frontmatter"
     },
     {
+      "include": "#global-expression"
+    },
+    {
       "include": "#text"
     }
   ],
   "repository": {
+    "global-expression": {
+      "begin": "\\A(?!---)",
+      "end": "(^|\\G)(?=---)",
+      "contentName": "source.ts",
+      "patterns": [
+        {
+          "include": "source.ts"
+        }
+      ]
+    },
     "frontmatter": {
-      "begin": "\\A(-{3})\\s*$",
-      "end": "(^|\\G)(-{3})|\\.{3}\\s*$",
+      "begin": "(^|\\G)(-{3})\\s*$",
+      "end": "(^|\\G)(-{3})\\s*$",
       "beginCaptures": {
-        "1": {
+        "2": {
           "name": "comment"
         }
       },

@@ -1,4 +1,4 @@
-import { serialize } from '@astrojs/compiler/utils'
+import { serialize } from '@astro-form/compiler'
 import { type AstPath as AstP, type Doc, type ParserOptions as ParserOpts } from 'prettier'
 
 import { blockElements, formattableAttributes, type TagName } from './elements'

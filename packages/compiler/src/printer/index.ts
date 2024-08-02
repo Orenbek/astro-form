@@ -7,7 +7,7 @@ import type { TransformOptions } from '../index'
 
 import { printSlotElement, printElementWithSlotAttribute } from './print-slot'
 import { getElementName, getFormPropsName } from './utils'
-import { printFrotmatter } from './print-frontmatter'
+import { printGlobalExpression } from './print-frontmatter'
 import { printComponent } from './print-component'
 
 export function print(node: t.Node, opts: TransformOptions): SourceMap {
@@ -164,19 +164,15 @@ function printAttribute(node: t.AttributeNode, opts: TransformOptions) {
   return attributeNode
 }
 
-export function doPrint(node: t.Node, opts: TransformOptions) {
+export function doPrint(node: t.Node, opts: TransformOptions, globalExpression: string) {
   const sourceMap = new SourceMap()
   // locate frontmatter
   let frontmatterNode: t.FrontmatterNode | undefined
-  if (is.root(node)) {
-    for (const child of node.children) {
-      if (is.frontmatter(child)) {
-        frontmatterNode = child
-        break
-      }
-    }
+  if (is.root(node) && node.children[0].type === 'frontmatter') {
+    // eslint-disable-next-line prefer-destructuring
+    frontmatterNode = node.children[0]
   }
-  sourceMap.add(printFrotmatter(frontmatterNode, opts))
+  sourceMap.add(printGlobalExpression(opts, globalExpression))
   sourceMap.add(printComponent(node, frontmatterNode, opts))
   return sourceMap
 }

@@ -77,6 +77,19 @@ export function isInsideFrontmatter(offset: number, frontmatter: FrontmatterStat
   }
 }
 
+export function isBeforeFrontmatter(offset: number, frontmatter: FrontmatterStatus) {
+  switch (frontmatter.status) {
+    case 'closed':
+      return offset < frontmatter.position.start.offset
+    case 'open':
+      return offset < frontmatter.position.start.offset
+    case 'doesnt-exist':
+      return false
+    default:
+      return false
+  }
+}
+
 const reg = /^[a-zA-Z:]+/
 export function textSelectionOnOffset(text: string, offset: number) {
   const before = text.slice(0, offset).split('').reverse().join('')

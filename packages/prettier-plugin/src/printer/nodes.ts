@@ -13,7 +13,7 @@ import type {
   RootNode,
   TagLikeNode,
   TextNode,
-} from '@astrojs/compiler/types'
+} from '@astro-form/compiler'
 
 export type anyNode =
   | RootNode

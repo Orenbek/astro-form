@@ -1,16 +1,12 @@
-import { parse } from '@astrojs/compiler/sync'
-import type { ParseOptions, ParseResult, Point } from '@astrojs/compiler/types'
+import { parse } from '@astro-form/compiler'
+import type { ParseResult, Point } from '@astro-form/compiler'
 
 export type AstroMetadata = ParseResult & {
   frontmatter: FrontmatterStatus
 }
 
-export function getAstroMetadata(
-  fileName: string,
-  input: string,
-  options: ParseOptions = { position: true }
-): AstroMetadata {
-  const parseResult = safeParseAst(fileName, input, options)
+export function getAstroMetadata(fileName: string, input: string): AstroMetadata {
+  const parseResult = safeParseAst(fileName, input)
 
   return {
     ...parseResult,
@@ -18,9 +14,9 @@ export function getAstroMetadata(
   }
 }
 
-function safeParseAst(fileName: string, input: string, parseOptions: ParseOptions): ParseResult {
+function safeParseAst(fileName: string, input: string): ParseResult {
   try {
-    const parseResult = parse(input, parseOptions)
+    const parseResult = parse(input)
     return parseResult
   } catch (e) {
     console.error(
@@ -45,6 +41,7 @@ function safeParseAst(fileName: string, input: string, parseOptions: ParseOption
           text: `The Astro-Form compiler encountered an unknown error while parsing this file's AST. Please create an issue with your code and the error shown in the server's logs`,
         },
       ],
+      globalExpression: '',
     }
   }
 }

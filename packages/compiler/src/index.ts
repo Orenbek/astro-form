@@ -1,13 +1,46 @@
 /* eslint-disable no-fallthrough */
 /* eslint-disable no-restricted-syntax */
-import { parse } from '@astrojs/compiler/sync'
+import { parse as astroParse } from '@astrojs/compiler/sync'
+import type { ParseResult as IParseResult } from '@astrojs/compiler/types'
 
 import { TransformResult } from '@/shared/types'
 import { DiagnosticCode } from '@/shared/const'
 
 import { doPrint } from './printer/index'
+import { extractGlobalExpression } from './printer/utils'
 
-export type { TransformResult }
+export { serialize } from '@astrojs/compiler/utils'
+export type {
+  AttributeNode,
+  CommentNode,
+  ComponentNode,
+  CustomElementNode,
+  DoctypeNode,
+  ElementNode,
+  ExpressionNode,
+  FragmentNode,
+  FrontmatterNode,
+  Node,
+  ParentLikeNode,
+  RootNode,
+  TagLikeNode,
+  TextNode,
+  TransformResult,
+  Point,
+  ParseResult,
+  DiagnosticMessage,
+} from '@astrojs/compiler/types'
+
+type ParseResult = IParseResult & { globalExpression: string }
+
+export function parse(_source: string): ParseResult {
+  const [globalExpression, source] = extractGlobalExpression(_source)
+  const result = astroParse(source, { position: true })
+  return {
+    ...result,
+    globalExpression,
+  }
+}
 
 export interface TransformOptions {
   source: string
@@ -16,7 +49,7 @@ export interface TransformOptions {
 }
 
 export function transform(opts: TransformOptions): TransformResult {
-  const result = parse(opts.source, { position: true })
+  const result = parse(opts.source)
   if (
     result.diagnostics.some((diagnostic) =>
       [
@@ -41,7 +74,7 @@ export function transform(opts: TransformOptions): TransformResult {
       mappings: [],
     }
   }
-  const output = doPrint(result.ast, opts)
+  const output = doPrint(result.ast, opts, result.globalExpression)
   const codeWithSourceMap = output.toStringWithSourceMap()
   return {
     code: codeWithSourceMap.code,

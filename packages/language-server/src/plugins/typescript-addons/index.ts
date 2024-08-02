@@ -4,7 +4,7 @@ import { LocationLink } from '@volar/language-server'
 import * as html from 'vscode-html-languageservice'
 
 import { AstroFormVirtualCode } from '../../core/index'
-import { getDocumentContext, isInsideFrontmatter, textSelectionOnOffset } from '../utils'
+import { getDocumentContext, isBeforeFrontmatter, textSelectionOnOffset } from '../utils'
 import { AstroFormFieldDirectives, AstroFormFieldTagNames } from '../../utils/constant'
 import { astroFormElements } from '../html-data'
 
@@ -44,9 +44,9 @@ export const create = (): LanguageServicePlugin => {
           const root = sourceScript?.generated?.root
           if (!(root instanceof AstroFormVirtualCode)) return undefined
 
-          if (isInsideFrontmatter(document.offsetAt(position), root.astroMeta.frontmatter)) {
+          if (isBeforeFrontmatter(document.offsetAt(position), root.astroMeta.frontmatter)) {
             const completionList: CompletionList = {
-              items: getSnippetCompletions(root.astroMeta.frontmatter),
+              items: getSnippetCompletions(),
               isIncomplete: false,
             }
             return completionList

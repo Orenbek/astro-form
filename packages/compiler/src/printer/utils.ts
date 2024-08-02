@@ -44,7 +44,7 @@ const ImportStatementRegx =
 const SimpleImportStatementRegx = /import[ \t]*(?:['"])([^'"\n]+)(['"]);?/g
 const CommentRegx = /^[ \n\t]*\/\/(?!\/ <reference).*/gm
 
-export function splitFrontMatterIntoGlobalStatementAndComponentExpression(frontmatter: string, source: string) {
+function splitFrontMatterIntoGlobalStatementAndComponentExpression(frontmatter: string, source: string) {
   /** 在目前的设计中 frontmatter 只有一个，无法得知哪些 expression 应该放在组件内 哪些是在组件外。 */
   /**
    * 例如：
@@ -90,4 +90,28 @@ export function splitFrontMatterIntoGlobalStatementAndComponentExpression(frontm
     offset: offset + globalStatement.length + 1,
   }
   return [gsWithPosition, csWithPosition] as const
+}
+
+export function getFrontmatterPosition(source: string) {
+  const sources = source.split('\n')
+  const frontmatterStartLine = sources.findIndex((v) => v.startsWith('---'))
+  const globalFrontmatter = sources.slice(0, frontmatterStartLine).join('\n')
+  return {
+    line: frontmatterStartLine + 1,
+    column: 4,
+    offset: globalFrontmatter.length + 3,
+  } as const
+}
+
+export function extractGlobalExpression(source: string) {
+  const sources = source.split('\n')
+  const frontmatterStartLine = sources.findIndex((v) => v.startsWith('---'))
+  if (frontmatterStartLine === -1) {
+    return ['', source]
+  }
+  const globalFrontmatter = sources.slice(0, frontmatterStartLine)
+  return [
+    globalFrontmatter.join('\n'),
+    [...globalFrontmatter.map((v) => ' '.repeat(v.length)), ...sources.slice(frontmatterStartLine)].join('\n'),
+  ]
 }

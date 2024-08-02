@@ -4,7 +4,7 @@ import path from 'node:path'
 import fs from 'node:fs'
 
 import { type CodeMapping, type LanguagePlugin, type VirtualCode, forEachEmbeddedCode } from '@volar/language-core'
-import type { DiagnosticMessage } from '@astrojs/compiler/types'
+import type { DiagnosticMessage } from '@astro-form/compiler'
 import type { IScriptSnapshot, ScriptKind } from 'typescript'
 import type { HTMLDocument } from 'vscode-html-languageservice'
 import { URI } from 'vscode-uri'

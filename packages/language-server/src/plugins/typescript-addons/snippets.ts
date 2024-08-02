@@ -1,10 +1,6 @@
 import { type CompletionItem, CompletionItemKind } from '@volar/language-server'
 
-import type { FrontmatterStatus } from '../../core/parseAstroForm'
-
-export function getSnippetCompletions(frontmatter: FrontmatterStatus): CompletionItem[] {
-  if (frontmatter.status === 'doesnt-exist') return []
-
+export function getSnippetCompletions(): CompletionItem[] {
   return [
     {
       label: 'interface Props',

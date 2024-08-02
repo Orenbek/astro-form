@@ -26,7 +26,7 @@
     "test": "modern test"
   },
   "dependencies": {
-    "@astrojs/compiler": "^2.8.0",
+    "@astro-form/compiler": "workspace:^",
     "prettier": "^3.2.5"
   },
   "devDependencies": {

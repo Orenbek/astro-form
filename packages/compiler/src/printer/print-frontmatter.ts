@@ -1,31 +1,26 @@
-import type { FrontmatterNode } from '@astrojs/compiler/types'
-
 import { SourceMap } from '../shared/source-map'
 import { TransformOptions } from '..'
 
-import { splitFrontMatterIntoGlobalStatementAndComponentExpression } from './utils'
-
-export function printFrotmatter(node: FrontmatterNode | undefined, opts: TransformOptions) {
+export function printGlobalExpression(opts: TransformOptions, globalFrontmatter: string) {
   const frontmatterNode = new SourceMap()
   if (!opts.isLanguageServer) {
     frontmatterNode.add(`import * as $$React from 'react'
-    import {useForm as useForm$$, f as $$Field, useRef as useRef$$, observer as $$observer, AstroFormGlobal, passRefToChild as $$passRefToChild, hasSlotProp as $$hasSlotProp,getFormProps as $$getFormProps} from '@astro-form/react'
-    `)
+import {useForm as useForm$$, f as $$Field, useRef as useRef$$, observer as $$observer, AstroFormGlobal, passRefToChild as $$passRefToChild, hasSlotProp as $$hasSlotProp,getFormProps as $$getFormProps} from '@astro-form/react'\n`)
   } else {
-    frontmatterNode.add(`import {AstroFormGlobal} from '@astro-form/react'`)
+    frontmatterNode.add(`import {AstroFormGlobal} from '@astro-form/react'\n`)
   }
-  if (node) {
-    const [globalStatement] = splitFrontMatterIntoGlobalStatementAndComponentExpression(node.value, opts.source)
+  if (globalFrontmatter) {
     frontmatterNode.add(
       new SourceMap({
         filename: opts.filename,
-        line: globalStatement.line,
-        column: globalStatement.column,
-        target: globalStatement.code,
-        source: globalStatement.code,
-        sourceOffset: globalStatement.offset,
+        line: 1,
+        column: 1,
+        target: globalFrontmatter,
+        source: globalFrontmatter,
+        sourceOffset: 0,
       })
     )
   }
+  frontmatterNode.add(`\ninterface Props {}\n`)
   return frontmatterNode
 }

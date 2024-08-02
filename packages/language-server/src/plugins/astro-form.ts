@@ -1,5 +1,5 @@
 /* eslint-disable consistent-return */
-import type { DiagnosticMessage } from '@astrojs/compiler/types'
+import type { DiagnosticMessage } from '@astro-form/compiler'
 import {
   CompletionItem,
   CompletionItemKind,
