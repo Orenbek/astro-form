@@ -17,7 +17,7 @@ export default async function build() {
       'dist/client': './src/client.ts',
       'dist/server': '../language-server/src/index.ts',
       // We need to generate this inside node_modules so VS Code can resolve it
-      'node_modules/astro-form-ts-plugin-bundle/index': '../language-server/src/ts-plugin/index.ts',
+      'node_modules/astro-form-ts-plugin-bundle/index': '../ts-plugin/src/index.ts',
     },
     sourcemap: isDev,
     bundle: true,

@@ -4,8 +4,9 @@
 import { type CodeMapping, type LanguagePlugin, type VirtualCode, forEachEmbeddedCode } from '@volar/language-core'
 import type ts from 'typescript'
 
-import { LANGUAGE_ID } from '../utils/constant'
-import { astro2tsx } from '../utils/astro2tsx'
+import { astro2tsx } from './astro2tsx'
+
+const LANGUAGE_ID = 'astro-form'
 
 export function getLanguagePlugin(): LanguagePlugin<string, AstroFormVirtualCode> {
   return {

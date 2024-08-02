@@ -25,11 +25,11 @@ export type {
   RootNode,
   TagLikeNode,
   TextNode,
-  TransformResult,
   Point,
   ParseResult,
   DiagnosticMessage,
 } from '@astrojs/compiler/types'
+export type { TransformResult }
 
 type ParseResult = IParseResult & { globalExpression: string }
 

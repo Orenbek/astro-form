@@ -7,5 +7,3 @@ import { getLanguagePlugin } from './language'
 export = createLanguageServicePlugin(() => ({
   languagePlugins: [getLanguagePlugin()],
 }))
-
-// this file needs to be bundled separately

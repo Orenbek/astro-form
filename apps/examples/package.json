@@ -13,6 +13,7 @@
   "dependencies": {
     "@astro-form/core": "workspace:^",
     "@astro-form/react": "workspace:^",
+    "@astro-form/ts-plugin": "workspace:^",
     "@astro-form/webpack-plugin": "workspace:^",
     "@modern-js/runtime": "2.52.0",
     "react": "~18.2.0",
