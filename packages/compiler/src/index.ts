@@ -28,6 +28,7 @@ export type {
   Point,
   ParseResult,
   DiagnosticMessage,
+  ValueNode,
 } from '@astrojs/compiler/types'
 export type { TransformResult }
 

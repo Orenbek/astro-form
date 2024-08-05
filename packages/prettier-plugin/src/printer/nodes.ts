@@ -13,7 +13,12 @@ import type {
   RootNode,
   TagLikeNode,
   TextNode,
+  ValueNode,
 } from '@astro-form/compiler'
+
+interface GlobalExpressionNode extends ValueNode {
+  type: 'global-expression'
+}
 
 export type anyNode =
   | RootNode
@@ -27,6 +32,7 @@ export type anyNode =
   | CommentNode
   | FragmentNode
   | FrontmatterNode
+  | GlobalExpressionNode
 
 export type {
   AttributeNode,
@@ -43,4 +49,5 @@ export type {
   RootNode,
   TagLikeNode,
   TextNode,
+  GlobalExpressionNode,
 }

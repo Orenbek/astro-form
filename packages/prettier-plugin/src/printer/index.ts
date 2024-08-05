@@ -294,6 +294,8 @@ export function print(path: AstPath, opts: ParserOptions, print: printFn): Doc {
         trailingLine = hardline
       }
       return ['<!--', getUnencodedText(node), '-->', trailingLine]
+    case 'global-expression':
+      return ''
 
     default: {
       throw new Error(`Unhandled node type "${node.type}"!`)

@@ -124,8 +124,16 @@ export const embed = ((path: AstPath, options: Options) => {
         ...options,
         parser: 'babel-ts',
       })
-
       return [group(['---', hardline, frontmatterContent, hardline, '---', hardline]), hardline]
+    }
+
+    // GlobalExpression
+    if (node.type === 'global-expression') {
+      const globalExpressionContent = await wrapParserTryCatch(textToDoc, node.value, {
+        ...options,
+        parser: 'babel-ts',
+      })
+      return [group([globalExpressionContent, hardline]), hardline]
     }
 
     return undefined
