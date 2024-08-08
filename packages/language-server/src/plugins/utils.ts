@@ -77,12 +77,12 @@ export function isInsideFrontmatter(offset: number, frontmatter: FrontmatterStat
   }
 }
 
-export function isBeforeFrontmatter(offset: number, frontmatter: FrontmatterStatus) {
+export function isBeforeFrontmatter(offset: number, frontmatter: FrontmatterStatus, globalExpression: string) {
   switch (frontmatter.status) {
     case 'closed':
-      return offset < frontmatter.position.start.offset
+      return offset < globalExpression.length
     case 'open':
-      return offset < frontmatter.position.start.offset
+      return offset < globalExpression.length
     case 'doesnt-exist':
       return false
     default:

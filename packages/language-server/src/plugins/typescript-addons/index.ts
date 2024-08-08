@@ -44,7 +44,13 @@ export const create = (): LanguageServicePlugin => {
           const root = sourceScript?.generated?.root
           if (!(root instanceof AstroFormVirtualCode)) return undefined
 
-          if (isBeforeFrontmatter(document.offsetAt(position), root.astroMeta.frontmatter)) {
+          if (
+            isBeforeFrontmatter(
+              document.offsetAt(position),
+              root.astroMeta.frontmatter,
+              root.astroMeta.globalExpression
+            )
+          ) {
             const completionList: CompletionList = {
               items: getSnippetCompletions(),
               isIncomplete: false,

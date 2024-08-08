@@ -26,13 +26,11 @@ export type {
   TagLikeNode,
   TextNode,
   Point,
-  ParseResult,
   DiagnosticMessage,
   ValueNode,
 } from '@astrojs/compiler/types'
-export type { TransformResult }
-
 type ParseResult = IParseResult & { globalExpression: string }
+export type { TransformResult, ParseResult }
 
 export function parse(_source: string): ParseResult {
   const [globalExpression, source] = extractGlobalExpression(_source)
