@@ -16,6 +16,7 @@ import type {
   IBaseFieldProps,
   FieldFeedbackTypes,
   FormPathPattern,
+  ValidatorRuleName,
 } from '../types'
 import { LifeCycles, FormPath } from '../types'
 import { updateFeedback, setValidatorRule, createChildrenFeedbackFilter, queryFeedbacks } from '../shared/internals'
@@ -571,11 +572,12 @@ export class BaseField<Component extends JSXComponent = any, ValueType = any> {
     })
   }
 
+  /** 如果调用 validator，则直接覆盖了 setValidatorRule 设置的值 */
   setValidator(validator: FieldValidator) {
     this.validator = validator
   }
 
-  setValidatorRule(name: string, value: any) {
+  setValidatorRule(name: ValidatorRuleName, value: any) {
     setValidatorRule(this, name, value)
   }
 

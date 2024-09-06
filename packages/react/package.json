@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "@astro-form/core": "workspace:^",
+    "@formily/validator": "^2.3.1",
     "@types/react": "~18.0.26",
     "change-case-all": "^2.1.0",
     "mobx": "^6.12.3",

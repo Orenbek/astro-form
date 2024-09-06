@@ -33,8 +33,14 @@ export function getElementName(elemName: string, isLanguageServer?: boolean): st
 }
 
 export function getFormPropsName(name: string, isLanguageServer?: boolean) {
-  if (!isLanguageServer && name.startsWith('x:')) {
-    return `$$${changeCase.camelCase(name.slice(2))}`
+  if (!isLanguageServer) {
+    if (name.startsWith('x:')) {
+      return `$$${changeCase.camelCase(name.slice(2))}`
+    }
+    // validator directives
+    if (name.startsWith('v:')) {
+      return `v$$${changeCase.camelCase(name.slice(2))}`
+    }
   }
   return name
 }

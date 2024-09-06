@@ -1,5 +1,6 @@
 import type { Field, IFieldFactoryProps, Form } from '@astro-form/core'
 import type { IObservableValue } from 'mobx'
+import type { ValidatorFormats } from '@formily/validator'
 
 export enum ValueType {
   String = 'string',
@@ -15,7 +16,8 @@ export type FieldProps = {
   $$ref?: IObservableValue<Field | null> | Array<IObservableValue<Field | null>>
   children?: React.ReactNode | undefined
   [key: string | number | symbol]: any
-} & Prettify<AppendPrefix<Exclude<IFieldFactoryProps<any>, 'component' | 'basePath' | 'value' | 'plugins'>>>
+} & Prettify<AppendPrefix<Exclude<IFieldFactoryProps<any>, 'component' | 'value' | 'plugins'>, '$$'>> &
+  Prettify<AppendPrefix<ValidatorProps, 'v$$'>>
 
 /**
  * <Item><f.string name="test" x:ref={ref} /></Item>
@@ -27,8 +29,32 @@ export type FieldProps = {
 
 export type IFieldProps = Omit<FieldProps, '$$valueType'>
 
-type AppendPrefix<T> = {
-  [K in keyof T as `$$${K & string}`]: T[K]
+export interface ValidatorProps {
+  format?: ValidatorFormats
+  required?: boolean
+  pattern?: RegExp | string
+  max?: number
+  maximum?: number
+  maxItems?: number
+  minItems?: number
+  maxLength?: number
+  minLength?: number
+  exclusiveMaximum?: number
+  exclusiveMinimum?: number
+  minimum?: number
+  min?: number
+  len?: number
+  whitespace?: boolean
+  enum?: any[]
+  const?: any
+  multipleOf?: number
+  uniqueItems?: boolean
+  maxProperties?: number
+  minProperties?: number
+}
+
+type AppendPrefix<T, Prefix extends string> = {
+  [K in keyof T as `${Prefix}${K & string}`]: T[K]
 }
 type Prettify<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
 

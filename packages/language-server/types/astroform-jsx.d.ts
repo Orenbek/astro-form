@@ -14,6 +14,21 @@ interface IObservableValue<T> {
   get(): T
   set(value: T): void
 }
+type ValidatorFormats =
+  | 'url'
+  | 'email'
+  | 'ipv6'
+  | 'ipv4'
+  | 'number'
+  | 'integer'
+  | 'idcard'
+  | 'qq'
+  | 'phone'
+  | 'money'
+  | 'zh'
+  | 'date'
+  | 'zip'
+  | (string & {})
 
 type Prettify<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
 type Elements = [
@@ -164,6 +179,7 @@ type PolymorphicComponentProps<AsTarget extends WebTarget | void> = Prettify<
   name: string
   as?: AsTarget
   children?: React.ReactNode | undefined
+  'x:basePath'?: string
   'x:ref'?: IObservableValue<Field | null>
   'x:initialValue'?: any
   'x:display'?: FieldDisplayTypes
@@ -178,6 +194,27 @@ type PolymorphicComponentProps<AsTarget extends WebTarget | void> = Prettify<
   'x:data'?: any
   'x:reactions'?: FieldReaction[] | FieldReaction
   'x:validateFirst'?: boolean
+  'v:format'?: ValidatorFormats
+  'v:required'?: boolean
+  'v:pattern'?: RegExp | string
+  'v:max'?: number
+  'v:maximum'?: number
+  'v:maxItems'?: number
+  'v:minItems'?: number
+  'v:maxLength'?: number
+  'v:minLength'?: number
+  'v:exclusiveMaximum'?: number
+  'v:exclusiveMinimum'?: number
+  'v:minimum'?: number
+  'v:min'?: number
+  'v:len'?: number
+  'v:whitespace'?: boolean
+  'v:enum'?: any[]
+  'v:const'?: any
+  'v:multipleOf'?: number
+  'v:uniqueItems'?: boolean
+  'v:maxProperties'?: number
+  'v:minProperties'?: number
 }
 
 export declare global {

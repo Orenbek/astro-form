@@ -1,12 +1,12 @@
 import type { IFieldFactoryProps, Field as FieldType, FieldComponent, Form } from '@astro-form/core'
 
-import type { FieldProps } from '../types'
+import type { FieldProps, ValidatorProps } from '../types'
 
 type IFieldProps = IFieldFactoryProps<any> & Pick<FieldProps, 'name' | 'as' | '$$valueType' | '$$ref'>
 
 export function extractFieldPropsAndComponentProps(
   props: FieldProps
-): [IFieldProps, Record<string | number | symbol, any>] {
+): [IFieldProps, Record<string | number | symbol, any>, ValidatorProps] {
   return Object.entries(props).reduce<ReturnType<typeof extractFieldPropsAndComponentProps>>(
     (acc, [key, val]) => {
       if (key.startsWith('$$')) {
@@ -17,12 +17,15 @@ export function extractFieldPropsAndComponentProps(
         }
       } else if (key === 'name' || key === 'as') {
         acc[0][key] = val
+      } else if (key.startsWith('v$$')) {
+        // 将键名去掉前缀 'v$$' 后，将值赋给 acc[2] 对象的相应属性
+        Object.assign(acc[2], { [key.slice(3)]: val })
       } else {
         Object.assign(acc[1], { [key]: val })
       }
       return acc
     },
-    [{} as any, {}]
+    [{} as any, {}, {}]
   )
 }
 

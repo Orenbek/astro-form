@@ -4,7 +4,7 @@ import type { FieldComponent, Field as FieldType } from '@astro-form/core'
 import { observer } from 'mobx-react-lite'
 import { runInAction } from 'mobx'
 
-import { ValueType, type FieldProps, type IFieldProps } from './types'
+import { ValueType, type FieldProps, type IFieldProps, ValidatorProps } from './types'
 import { useForceUpdate } from './hooks/useForceUpdate'
 import { useForm } from './FormContext'
 import { FieldProvider, useBasePath } from './FieldContext'
@@ -53,10 +53,13 @@ const FieldRender = observer<FieldRenderProps, unknown>(
 
 export const BaseField = observer<FieldProps, unknown>(
   React.forwardRef<unknown, FieldProps>(function Field(props, _ref) {
-    const [fieldProps, compoenntProps] = extractFieldPropsAndComponentProps(props)
+    const [fieldProps, compoenntProps, validatorProps] = extractFieldPropsAndComponentProps(props)
 
     const $$form = useForm()
-    const basePath = useBasePath()
+    let basePath = useBasePath()
+    if (props.$$basePath) {
+      basePath = props.$$basePath as string
+    }
     const ref = React.useRef<FieldType | null>(createFieldHelper(fieldProps, compoenntProps, $$form, basePath))
     const forceUpdate = useForceUpdate()
 
@@ -70,6 +73,15 @@ export const BaseField = observer<FieldProps, unknown>(
           xref.set(ref.current!)
         }
       }
+      runInAction(() => {
+        if (ref.current) {
+          // 创建实例后更新 validator
+          Object.keys(validatorProps).forEach((key) =>
+            ref.current!.setValidatorRule(key, validatorProps[key as keyof ValidatorProps])
+          )
+        }
+      })
+
       forceUpdate()
       return () => {
         ref.current?.onUnmount()
@@ -99,6 +111,15 @@ export const BaseField = observer<FieldProps, unknown>(
         ref.current.data = fieldProps.data!
       })
     }, [fieldProps])
+
+    useUpdateEffect(() => {
+      if (!ref.current) return
+      runInAction(() => {
+        Object.keys(validatorProps).forEach((key) => {
+          ref.current!.setValidatorRule(key, validatorProps[key as keyof ValidatorProps])
+        })
+      })
+    }, [validatorProps])
 
     return <FieldRender path={ref.current?.path.toString()} field={ref.current!} as={fieldProps.as} ref={_ref} />
   })

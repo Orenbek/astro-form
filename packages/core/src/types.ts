@@ -229,3 +229,28 @@ export interface IFieldFactoryProps<Component extends JSXComponent, ValueType = 
 }
 
 export type GeneralField = Field | ArrayField | ObjectField
+
+export type ValidatorRuleName =
+  | 'format'
+  | 'required'
+  | 'pattern | string'
+  | 'max'
+  | 'maximum'
+  | 'maxItems'
+  | 'minItems'
+  | 'maxLength'
+  | 'minLength'
+  | 'exclusiveMaximum'
+  | 'exclusiveMinimum'
+  | 'minimum'
+  | 'min'
+  | 'len'
+  | 'whitespace'
+  | 'enum[]'
+  | 'const'
+  | 'multipleOf'
+  | 'uniqueItems'
+  | 'maxProperties'
+  | 'minProperties'
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  | (string & {})
