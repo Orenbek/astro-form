@@ -9,6 +9,11 @@ const fieldAttributeReference = [
 
 const fieldAttributes: IAttributeData[] = [
   {
+    name: 'x:basePath',
+    description: '',
+    references: fieldAttributeReference,
+  },
+  {
     name: 'x:ref',
     description: '',
     references: fieldAttributeReference,
@@ -78,6 +83,27 @@ const fieldAttributes: IAttributeData[] = [
     description: '',
     references: fieldAttributeReference,
   },
+  { name: 'v:format', description: '', references: fieldAttributeReference },
+  { name: 'v:required', description: '', references: fieldAttributeReference },
+  { name: 'v:pattern', description: '', references: fieldAttributeReference },
+  { name: 'v:max', description: '', references: fieldAttributeReference },
+  { name: 'v:maximum', description: '', references: fieldAttributeReference },
+  { name: 'v:maxItems', description: '', references: fieldAttributeReference },
+  { name: 'v:minItems', description: '', references: fieldAttributeReference },
+  { name: 'v:maxLength', description: '', references: fieldAttributeReference },
+  { name: 'v:minLength', description: '', references: fieldAttributeReference },
+  { name: 'v:exclusiveMaximum', description: '', references: fieldAttributeReference },
+  { name: 'v:exclusiveMinimum', description: '', references: fieldAttributeReference },
+  { name: 'v:minimum', description: '', references: fieldAttributeReference },
+  { name: 'v:min', description: '', references: fieldAttributeReference },
+  { name: 'v:len', description: '', references: fieldAttributeReference },
+  { name: 'v:whitespace', description: '', references: fieldAttributeReference },
+  { name: 'v:enum', description: '', references: fieldAttributeReference },
+  { name: 'v:const', description: '', references: fieldAttributeReference },
+  { name: 'v:multipleOf', description: '', references: fieldAttributeReference },
+  { name: 'v:uniqueItems', description: '', references: fieldAttributeReference },
+  { name: 'v:maxProperties', description: '', references: fieldAttributeReference },
+  { name: 'v:minProperties', description: '', references: fieldAttributeReference },
 ]
 
 export const astroFormElements = newHTMLDataProvider('astro-form-elements', {

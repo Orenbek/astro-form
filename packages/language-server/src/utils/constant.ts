@@ -2,6 +2,7 @@ export const LANGUAGE_ID = 'astro-form'
 
 export const AstroFormFieldTagNames = ['f.string', 'f.number', 'f.boolean', 'f.array', 'f.object']
 export const AstroFormFieldDirectives = [
+  'x:basePath',
   'x:ref',
   'x:initialValue',
   'x:display',
@@ -16,4 +17,25 @@ export const AstroFormFieldDirectives = [
   'x:data',
   'x:validateFirst',
   'x:reactions',
+  'v:format',
+  'v:required',
+  'v:pattern',
+  'v:max',
+  'v:maximum',
+  'v:maxItems',
+  'v:minItems',
+  'v:maxLength',
+  'v:minLength',
+  'v:exclusiveMaximum',
+  'v:exclusiveMinimum',
+  'v:minimum',
+  'v:min',
+  'v:len',
+  'v:whitespace',
+  'v:enum',
+  'v:const',
+  'v:multipleOf',
+  'v:uniqueItems',
+  'v:maxProperties',
+  'v:minProperties',
 ]
