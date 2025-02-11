@@ -36,9 +36,9 @@
     "mobx-react-lite": "^4.0.7"
   },
   "devDependencies": {
-    "@modern-js/module-tools": "2.50.0",
-    "@modern-js/plugin-testing": "2.50.0",
-    "@modern-js/storybook": "2.50.0",
+    "@modern-js/module-tools": "2.64.1",
+    "@modern-js/plugin-testing": "2.64.1",
+    "@modern-js/storybook": "2.64.1",
     "@storybook/addon-essentials": "^7",
     "@types/jest": "~29.2.4",
     "@types/node": "~16.11.7",

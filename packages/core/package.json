@@ -39,15 +39,15 @@
     "mobx": "^6.12.3"
   },
   "devDependencies": {
-    "@modern-js/module-tools": "2.50.0",
-    "@modern-js/storybook": "2.50.0",
+    "@modern-js/module-tools": "2.64.1",
+    "@modern-js/storybook": "2.64.1",
     "@storybook/addon-essentials": "^7",
     "@types/node": "~16.11.7",
     "react": "^17",
     "react-dom": "^17",
     "rimraf": "~3.0.2",
     "typescript": "~5.0.4",
-    "@modern-js/plugin-testing": "2.50.0",
+    "@modern-js/plugin-testing": "2.64.1",
     "@types/jest": "~29.2.4"
   },
   "sideEffects": [],

@@ -38,8 +38,8 @@
     "typescript": "~5.0.4"
   },
   "devDependencies": {
-    "@modern-js/module-tools": "2.50.0",
-    "@modern-js/plugin-testing": "2.50.0",
+    "@modern-js/module-tools": "2.64.1",
+    "@modern-js/plugin-testing": "2.64.1",
     "@types/jest": "~29.2.4",
     "@types/node": "~16.11.7",
     "rimraf": "~3.0.2"
