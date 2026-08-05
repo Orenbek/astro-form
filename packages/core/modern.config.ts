@@ -1,3 +1,4 @@
+import path from 'node:path'
 import { moduleTools, defineConfig } from '@modern-js/module-tools'
 import { testingPlugin } from '@modern-js/plugin-testing'
 
@@ -9,9 +10,19 @@ const config: ReturnType<typeof defineConfig> = defineConfig({
   },
   testing: {
     jest: {
-      moduleNameMapper: {},
+      // Source uses `@/*` (tsconfig paths); Jest does not read that by default.
+      moduleNameMapper: {
+        '^@/(.*)$': '<rootDir>/src/$1',
+      },
+      // Override Modern.js default babel-jest transformer so class private
+      // methods (`#foo`) work with legacy-decorator class-properties include.
+      transform: {
+        '\\.[jt]sx?$': path.join(__dirname, 'tests/babel-transformer.cjs'),
+      },
       transformIgnorePatterns: [`node_modules/.pnpm/(?!(lodash-es|@modern-js\\+(runtime|plugin)|@formily\\+.*?)@)`],
-      setupFilesAfterEnv: [], // '<rootDir>/tests/jest.setup.js'
+      // Silence noisy console noise from core tests when needed.
+      // setupFilesAfterEnv: ['<rootDir>/tests/jest.setup.js'],
+      setupFilesAfterEnv: [],
     },
   },
 })

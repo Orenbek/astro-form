@@ -145,9 +145,13 @@ export const BaseField = observer<FieldProps, unknown>(
   })
 )
 
-/** Inject value type for `f.*` without putting `$$*` on the public prop type. */
-function withValueType(props: IFieldProps, valueType: ValueType): FieldProps {
-  return { ...props, $$valueType: valueType }
+/**
+ * Inject value type for `f.*` without putting `$$*` on the public prop type.
+ * React 19 `forwardRef` props are `Omit<P, 'ref'>`; with an index signature that can
+ * erase required keys in the type checker, so accept a loose props shape here.
+ */
+function withValueType(props: Record<string, any>, valueType: ValueType): FieldProps {
+  return { ...props, $$valueType: valueType } as unknown as FieldProps
 }
 
 const StringField = React.forwardRef<unknown, IFieldProps>((props, ref) => {

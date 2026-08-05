@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ValidatorTriggerType } from '@formily/validator'
-import { makeObservable, observable, action, computed, reaction, autorun, toJS, flow } from 'mobx'
+import { makeObservable, observable, observableRef, action, computed, reaction, autorun, toJS, flow } from 'mobx'
 import { isArr, isFn, isValid } from '@/utils'
 
 import { LifeCycles, FormPathPattern, FormPath } from '@/types'
@@ -29,7 +29,7 @@ export class Field<Component extends JSXComponent = any, ValueType = any> extend
   constructor(path: FormPathPattern, props: IFieldProps<Component, ValueType>, form: Form) {
     super(path, props, form)
     this.#makeObservable()
-    // 得放在 makeObservable 执行之后，不然 this 中标注的 observable.ref 并不会生效
+    // 得放在 makeObservable 执行之后，不然 this 中标注的 observableRef 并不会生效
     this.#initialize(props)
     this.#makeReactive()
     if (props.plugins) {
@@ -56,14 +56,14 @@ export class Field<Component extends JSXComponent = any, ValueType = any> extend
     makeObservable<Field, '_self'>(this, {
       _self: observable,
       data: observable,
-      componentType: observable.ref,
+      componentType: observableRef,
       componentProps: observable,
       dataSource: observable,
-      validator: observable.ref,
+      validator: observableRef,
       // Field defined states
 
-      validateFirst: observable.ref,
-      inputValue: observable.ref,
+      validateFirst: observableRef,
+      inputValue: observableRef,
       form: computed,
       path: computed,
       initialized: computed,

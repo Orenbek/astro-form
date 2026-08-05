@@ -1,6 +1,11 @@
 import React from 'react'
 import type { IObservableValue } from 'mobx'
 
+/** Props shape used by compiler slot / multi-ref merge (React 19: element.props is unknown). */
+type PassRefProps = {
+  $$ref?: IObservableValue<any> | Array<IObservableValue<any>>
+}
+
 /**
  * Merge a Field-ref box onto slot children (`.aform` composition helper).
  *
@@ -39,25 +44,26 @@ export function passRefToChild(node: React.ReactNode | undefined, ref: IObservab
   if (Array.isArray(node)) {
     let newNode: React.ReactNode | undefined
     if (React.isValidElement(node[0])) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      newNode = React.cloneElement(node[0], { ...node[0]?.props, $$ref: getRef(node[0], ref) })
+      const el = node[0] as React.ReactElement<PassRefProps>
+      newNode = React.cloneElement(el, { ...el.props, $$ref: getRef(el, ref) })
     }
     return node.map((it, index) => (index === 0 ? newNode || it : it))
   }
   if (React.isValidElement(node)) {
-    return React.cloneElement(node, { ...node.props, $$ref: getRef(node, ref) })
+    const el = node as React.ReactElement<PassRefProps>
+    return React.cloneElement(el, { ...el.props, $$ref: getRef(el, ref) })
   }
   return node
 }
 
 /** Append `ref` to existing `$$ref` (scalar or array) so multiple consumers share one Field. */
-function getRef(node: React.ReactElement, ref: IObservableValue<any>) {
-  if (!node.props.$$ref) {
+function getRef(node: React.ReactElement<PassRefProps>, ref: IObservableValue<any>) {
+  const existing = node.props.$$ref
+  if (!existing) {
     return ref
   }
-  if (Array.isArray(node.props.$$ref)) {
-    return [...node.props.$$ref, ref]
+  if (Array.isArray(existing)) {
+    return [...existing, ref]
   }
-  return [node.props.$$ref, ref]
+  return [existing, ref]
 }

@@ -3,7 +3,7 @@
 import { merge } from '@formily/shared/esm/merge'
 import { isValid, isPlainObj, isFn } from '@/utils'
 import structuredClone from '@ungap/structured-clone'
-import { makeObservable, observable, computed, action, toJS, reaction } from 'mobx'
+import { makeObservable, observable, observableRef, observableShallow, computed, action, toJS, reaction } from 'mobx'
 
 import {
   JSXComponent,
@@ -110,10 +110,10 @@ export class Form<ValueType extends object = any> {
   #makeObservable() {
     makeObservable<Form, '_self'>(this, {
       _self: observable,
-      modified: observable.ref,
-      validateFirst: observable.ref,
-      fields: observable.shallow,
-      indexes: observable.shallow,
+      modified: observableRef,
+      validateFirst: observableRef,
+      fields: observableShallow,
+      indexes: observableShallow,
       initialized: computed,
       mounted: computed,
       unmounted: computed,
