@@ -1,4 +1,4 @@
-import type { MutableRefObject } from 'react'
+import type { RefObject } from 'react'
 import type { Field as FieldType } from '@astro-form/core'
 import { runInAction } from 'mobx'
 
@@ -13,7 +13,7 @@ import { useUpdateEffect } from './useUpdateEffect'
  * Deps are value identity (not the extract bag object) so parent re-renders
  * that only reallocate `extractFieldPropsAndComponentProps` results do not re-run.
  */
-export function useSyncFieldModel(fieldRef: MutableRefObject<FieldType | null>, fieldProps: ExtractedFieldProps) {
+export function useSyncFieldModel(fieldRef: RefObject<FieldType | null>, fieldProps: ExtractedFieldProps) {
   useUpdateEffect(() => {
     runInAction(() => {
       if (!fieldRef.current) return

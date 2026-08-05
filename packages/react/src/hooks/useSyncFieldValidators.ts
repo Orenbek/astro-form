@@ -1,4 +1,4 @@
-import type { MutableRefObject } from 'react'
+import type { RefObject } from 'react'
 import type { Field as FieldType } from '@astro-form/core'
 import { runInAction } from 'mobx'
 
@@ -12,7 +12,7 @@ import { useUpdateEffect } from './useUpdateEffect'
  * Sync Formily-style validator rules onto the core Field after mount.
  * Deps are per-rule values (not the extract bag object).
  */
-export function useSyncFieldValidators(fieldRef: MutableRefObject<FieldType | null>, validatorProps: ValidatorProps) {
+export function useSyncFieldValidators(fieldRef: RefObject<FieldType | null>, validatorProps: ValidatorProps) {
   useUpdateEffect(() => {
     if (!fieldRef.current) return
     runInAction(() => {
