@@ -1,22 +1,44 @@
 {
-  "private": true,
   "name": "@astro-form/vscode",
   "version": "0.0.1",
+  "private": true,
   "repository": {
     "type": "git",
     "url": "",
     "directory": "packages/vscode"
   },
-  "activationEvents": [
-    "onLanguage:astro-form"
-  ],
-  "main": "./dist/client.js",
   "files": [
     "dist/",
     "languages/",
     "syntaxes/",
     "assets/"
   ],
+  "main": "./dist/client.js",
+  "scripts": {
+    "build": "node scripts/build.mjs -- --minify",
+    "watch": "node scripts/build.mjs -- --watch",
+    "pack": "npm run build && vsce package --pre-release",
+    "release": "npm run build && vsce publish --pre-release",
+    "build:grammar": "node scripts/build-grammar.mjs",
+    "dev:grammar": "node scripts/build-grammar.mjs -- --watch"
+  },
+  "dependencies": {
+    "@astro-form/compiler": "workspace:^",
+    "prettier": "^3.2.5",
+    "prettier-plugin-astro-form": "workspace:^"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/vscode": "^1.82.0",
+    "@volar/language-server": "~2.3.1",
+    "@volar/vscode": "~2.3.1",
+    "esbuild": "latest",
+    "esbuild-plugin-copy": "^2.1.1",
+    "js-yaml": "^4.1.0",
+    "typescript": "^6.0.3",
+    "vsce": "latest",
+    "vscode-languageclient": "^9.0.1"
+  },
   "contributes": {
     "languages": [
       {
@@ -76,30 +98,10 @@
     "menus": {},
     "commands": []
   },
-  "scripts": {
-    "build": "node scripts/build.mjs -- --minify",
-    "watch": "node scripts/build.mjs -- --watch",
-    "pack": "npm run build && vsce package --pre-release",
-    "release": "npm run build && vsce publish --pre-release",
-    "build:grammar": "node scripts/build-grammar.mjs",
-    "dev:grammar": "node scripts/build-grammar.mjs -- --watch"
-  },
-  "devDependencies": {
-    "@types/vscode": "^1.82.0",
-    "@volar/language-server": "~2.3.1",
-    "@volar/vscode": "~2.3.1",
-    "esbuild": "latest",
-    "esbuild-plugin-copy": "^2.1.1",
-    "js-yaml": "^4.1.0",
-    "vsce": "latest",
-    "vscode-languageclient": "^9.0.1"
-  },
+  "activationEvents": [
+    "onLanguage:astro-form"
+  ],
   "engines": {
     "vscode": "^1.82.0"
-  },
-  "dependencies": {
-    "@astro-form/compiler": "workspace:^",
-    "prettier": "^3.2.5",
-    "prettier-plugin-astro-form": "workspace:^"
   }
 }

@@ -4,10 +4,9 @@
   "scripts": {
     "build": "turbo build",
     "dev": "turbo dev",
-    "lint": "eslint .",
-    "prepare": "husky .git-hooks",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "lint:fix": "eslint --fix",
+    "check": "vp check",
+    "prepare": "vp config",
+    "commitlint": "commitlint --edit",
     "create": "create",
     "watch": "cd ./packages/vscode && npm run watch"
   },
@@ -16,50 +15,9 @@
     "@commitlint/cli": "^19.1.0",
     "@commitlint/config-conventional": "^19.1.0",
     "@modern-js/create": "latest",
-    "@repo/eslint-config-standard": "workspace:^",
-    "@rushstack/eslint-patch": "^1.7.2",
-    "husky": "^9.0.11",
-    "lint-staged": "^15.2.2",
-    "prettier": "^3.2.5",
     "turbo": "latest",
-    "typescript": "^5.4.2"
-  },
-  "packageManager": "pnpm@10.2.1",
-  "engines": {
-    "node": ">=18"
-  },
-  "eslintIgnore": [
-    "**/*/es",
-    "**/*/lib",
-    "**/*/dist",
-    "**/*/output",
-    "**/node_modules",
-    "**/.eslintrc.js",
-    "**/*.less",
-    "**/*.json"
-  ],
-  "prettier": {
-    "semi": false,
-    "tabWidth": 2,
-    "singleQuote": true,
-    "trailingComma": "es5",
-    "printWidth": 120,
-    "overrides": [
-      {
-        "files": "*.json",
-        "options": {
-          "trailingComma": "none"
-        }
-      }
-    ]
-  },
-  "lint-staged": {
-    "**/*.{js,ts,jsx,tsx}": [
-      "npm run lint:fix"
-    ],
-    "**/*.{css,json}": [
-      "npx prettier --write"
-    ]
+    "typescript": "^6.0.3",
+    "vite-plus": "^0.2.5"
   },
   "commitlint": {
     "extends": [
@@ -77,5 +35,9 @@
         ]
       ]
     }
-  }
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "packageManager": "pnpm@11.16.0"
 }

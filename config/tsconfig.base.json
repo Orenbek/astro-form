@@ -26,6 +26,8 @@
     "noEmitOnError": true,
     "incremental": true,
     "isolatedModules": true,
-    "emitDeclarationOnly": true
+    "emitDeclarationOnly": true,
+    "types": ["node"],
+    "ignoreDeprecations": "6.0"
   }
 }

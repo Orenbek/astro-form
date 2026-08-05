@@ -6,11 +6,16 @@
     "url": "",
     "directory": "packages/core"
   },
+  "sideEffects": [],
   "exports": {
     ".": {
       "types": "./dist/types/index.d.ts",
       "default": "./dist/es/index.js"
     }
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
     "build-storybook": "storybook build",
@@ -36,23 +41,18 @@
     "@formily/shared": "^2.3.1",
     "@formily/validator": "^2.3.1",
     "@ungap/structured-clone": "^1.2.0",
-    "mobx": "^6.12.3"
+    "mobx": "^6.16.1"
   },
   "devDependencies": {
-    "@modern-js/module-tools": "2.64.1",
-    "@modern-js/storybook": "2.64.1",
+    "@modern-js/module-tools": "2.71.1",
+    "@modern-js/plugin-testing": "2.71.1",
+    "@modern-js/storybook": "2.71.1",
     "@storybook/addon-essentials": "^7",
-    "@types/node": "~16.11.7",
+    "@types/jest": "~29.2.4",
+    "@types/node": "^24.0.0",
     "react": "^17",
     "react-dom": "^17",
     "rimraf": "~3.0.2",
-    "typescript": "~5.0.4",
-    "@modern-js/plugin-testing": "2.64.1",
-    "@types/jest": "~29.2.4"
-  },
-  "sideEffects": [],
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
+    "typescript": "^6.0.3"
   }
 }

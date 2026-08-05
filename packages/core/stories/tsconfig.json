@@ -2,7 +2,6 @@
   "extends": "../tsconfig.json",
   "compilerOptions": {
     "jsx": "react",
-    "baseUrl": "../",
     "paths": {
       "@astro-form/core": ["./src"],
       "@astro-form/core/*": ["./src/*"]

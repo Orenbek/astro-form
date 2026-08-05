@@ -127,7 +127,6 @@ function resolveReference(ref: string, baseUri: URI, workspaceFolders: URI[]) {
   const baseUriDir = baseUri.path.endsWith('/') ? baseUri : Utils.dirname(baseUri)
   return Utils.resolvePath(baseUriDir, ref).toString(true)
 
-  // eslint-disable-next-line consistent-return
   function getRootFolder(): string | undefined {
     // eslint-disable-next-line no-restricted-syntax
     for (const folder of workspaceFolders) {
@@ -139,5 +138,6 @@ function resolveReference(ref: string, baseUri: URI, workspaceFolders: URI[]) {
         return folderURI
       }
     }
+    return undefined
   }
 }

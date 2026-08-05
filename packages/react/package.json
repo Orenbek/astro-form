@@ -6,9 +6,14 @@
     "url": "",
     "directory": "packages/react"
   },
-  "types": "./dist/types/index.d.ts",
+  "sideEffects": [],
   "main": "./dist/lib/index.js",
   "module": "./dist/es/index.js",
+  "types": "./dist/types/index.d.ts",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "scripts": {
     "build-storybook": "storybook build",
     "storybook": "storybook dev -p 6006",
@@ -32,27 +37,22 @@
     "@formily/validator": "^2.3.1",
     "@types/react": "~18.0.26",
     "change-case-all": "^2.1.0",
-    "mobx": "^6.12.3",
+    "mobx": "^6.16.1",
     "mobx-react-lite": "^4.0.7"
   },
   "devDependencies": {
-    "@modern-js/module-tools": "2.64.1",
-    "@modern-js/plugin-testing": "2.64.1",
-    "@modern-js/storybook": "2.64.1",
+    "@modern-js/module-tools": "2.71.1",
+    "@modern-js/plugin-testing": "2.71.1",
+    "@modern-js/storybook": "2.71.1",
     "@storybook/addon-essentials": "^7",
     "@types/jest": "~29.2.4",
-    "@types/node": "~16.11.7",
+    "@types/node": "^24.0.0",
     "react": "~18.2.0",
     "react-dom": "~18.2.0",
     "rimraf": "~3.0.2",
-    "typescript": "~5.0.4"
+    "typescript": "^6.0.3"
   },
   "peerDependencies": {
     "react": ">=17.0.0"
-  },
-  "sideEffects": [],
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
   }
 }

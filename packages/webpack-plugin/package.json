@@ -6,9 +6,14 @@
     "url": "",
     "directory": "packages/webpack-plugin"
   },
-  "types": "./dist/types/index.d.ts",
+  "sideEffects": [],
   "main": "./dist/lib/index.js",
   "module": "./dist/es/index.js",
+  "types": "./dist/types/index.d.ts",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
   "scripts": {
     "build-storybook": "storybook build",
     "storybook": "storybook dev -p 6006",
@@ -30,20 +35,15 @@
   "dependencies": {
     "@astro-form/compiler": "workspace:^",
     "fs-extra": "^11.2.0",
-    "typescript": "~5.0.4"
+    "typescript": "^6.0.3"
   },
   "devDependencies": {
-    "@modern-js/module-tools": "2.64.1",
-    "@modern-js/plugin-testing": "2.64.1",
+    "@modern-js/module-tools": "2.71.1",
+    "@modern-js/plugin-testing": "2.71.1",
     "@types/fs-extra": "^11.0.4",
     "@types/jest": "~29.2.4",
-    "@types/node": "~16.11.68",
+    "@types/node": "^24.0.0",
     "@types/webpack": "^5.28.5",
     "rimraf": "~3.0.2"
-  },
-  "sideEffects": [],
-  "publishConfig": {
-    "access": "public",
-    "registry": "https://registry.npmjs.org/"
   }
 }

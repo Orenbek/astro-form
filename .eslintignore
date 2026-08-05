@@ -1,6 +1,0 @@
-**/*/dist
-**/*/node_modules
-**/*.d.ts
-*.less
-*.json
-**/.eslintrc.js

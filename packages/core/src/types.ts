@@ -166,8 +166,10 @@ export interface IBaseFieldProps<Component extends JSXComponent = any, ValueType
   reactions?: FieldReaction[] | FieldReaction
 }
 
-export interface IFieldProps<Component extends JSXComponent = any, ValueType = any>
-  extends IBaseFieldProps<Component, ValueType> {
+export interface IFieldProps<Component extends JSXComponent = any, ValueType = any> extends IBaseFieldProps<
+  Component,
+  ValueType
+> {
   plugins?: {
     new (field: Field): FieldPlugin
   }[]
@@ -222,8 +224,10 @@ export interface IFormProps<ValueType extends object = any> {
   effects?: (form: Form<ValueType>) => void
 }
 
-export interface IFieldFactoryProps<Component extends JSXComponent, ValueType = any>
-  extends IFieldProps<Component, ValueType> {
+export interface IFieldFactoryProps<Component extends JSXComponent, ValueType = any> extends IFieldProps<
+  Component,
+  ValueType
+> {
   name: FormPathPattern
   basePath?: FormPathPattern
 }

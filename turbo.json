@@ -1,13 +1,13 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": ["**/.env.*local"],
+  "globalDependencies": ["**/.env.*local", "vite.config.ts"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**"]
+      "outputs": ["dist/**", "es/**", "lib/**"]
     },
-    "lint": {
-      "dependsOn": ["^lint"]
+    "check": {
+      "cache": false
     },
     "dev": {
       "cache": false,

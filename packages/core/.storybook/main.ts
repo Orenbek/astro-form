@@ -1,4 +1,4 @@
-import type { StorybookConfig } from '@modern-js/storybook';
+import type { StorybookConfig } from '@modern-js/storybook'
 
 const config: StorybookConfig = {
   stories: ['../stories/**/*.stories.@(js|jsx|ts|tsx)'],
@@ -10,8 +10,8 @@ const config: StorybookConfig = {
     },
   },
   typescript: {
-    reactDocgen: 'react-docgen'
-  }
-};
+    reactDocgen: 'react-docgen',
+  },
+}
 
-export default config;
+export default config

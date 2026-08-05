@@ -1,19 +1,19 @@
 {
   "name": "@astro-form/language-server",
   "version": "0.0.1",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "",
     "directory": "packages/language-server"
   },
-  "license": "MIT",
+  "bin": {
+    "astro-form-ls": "./bin/language-server.js"
+  },
   "files": [
     "dist/**/*.js",
     "dist/**/*.d.ts"
   ],
-  "bin": {
-    "astro-form-ls": "./bin/language-server.js"
-  },
   "dependencies": {
     "@astro-form/compiler": "workspace:^",
     "@volar/language-core": "~2.3.1",
@@ -28,5 +28,9 @@
     "volar-service-typescript": "^0.0.54",
     "vscode-html-languageservice": "^5.2.0",
     "vscode-uri": "^3.0.8"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^6.0.3"
   }
 }

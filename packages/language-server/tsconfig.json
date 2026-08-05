@@ -5,7 +5,7 @@
     "rootDir": "src",
     "emitDeclarationOnly": false,
     "module": "commonjs",
-    "moduleResolution": "node"
+    "moduleResolution": "bundler"
   },
   "include": ["src", "bin", "types"]
 }
