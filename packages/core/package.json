@@ -36,7 +36,6 @@
     "test": "modern test"
   },
   "dependencies": {
-    "@astro-form/shared": "workspace:*",
     "@formily/path": "^2.3.1",
     "@formily/shared": "^2.3.1",
     "@formily/validator": "^2.3.1",

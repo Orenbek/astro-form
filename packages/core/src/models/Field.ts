@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ValidatorTriggerType } from '@formily/validator'
 import { makeObservable, observable, action, computed, reaction, autorun, toJS, flow } from 'mobx'
-import { isArr, isFn, isValid } from '@astro-form/shared'
+import { isArr, isFn, isValid } from '@/utils'
 
 import { LifeCycles, FormPathPattern, FormPath } from '@/types'
 

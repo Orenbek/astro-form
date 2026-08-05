@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import { isPlainObj, isValid } from '@astro-form/shared'
+import { isPlainObj, isValid } from '@/utils'
 import { parseValidatorDescriptions, ValidatorTriggerType, validate, IValidateResults } from '@formily/validator'
 import { toJS } from 'mobx'
 

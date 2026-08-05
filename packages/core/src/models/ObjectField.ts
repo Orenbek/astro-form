@@ -1,4 +1,4 @@
-import { isObj } from '@astro-form/shared'
+import { isObj } from '@/utils'
 
 import type { JSXComponent, FormPathPattern, IFieldProps } from '../types'
 

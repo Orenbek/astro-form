@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { isValid, isFn, isArr, isEmpty } from '@astro-form/shared'
+import { isValid, isFn, isArr, isEmpty } from '@/utils'
 import { parseValidatorDescriptions } from '@formily/validator'
 import { runInAction, type IReactionDisposer } from 'mobx'
 

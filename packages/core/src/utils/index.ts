@@ -1,4 +1,7 @@
 /* eslint-disable no-plusplus */
+export * from './checkers'
+export * from './isEmpty'
+
 export function move(array: any[], fromIndex: number, toIndex: number) {
   if (fromIndex === toIndex) return array
 

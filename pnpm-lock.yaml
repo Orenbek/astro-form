@@ -212,9 +212,6 @@ importers:
 
   packages/core:
     dependencies:
-      '@astro-form/shared':
-        specifier: workspace:*
-        version: link:../shared
       '@formily/path':
         specifier: ^2.3.1
         version: 2.3.2
@@ -378,27 +375,6 @@ importers:
       react-dom:
         specifier: ~18.2.0
         version: 18.2.0(react@18.2.0)
-      rimraf:
-        specifier: ~3.0.2
-        version: 3.0.2
-      typescript:
-        specifier: ^6.0.3
-        version: 6.0.3
-
-  packages/shared:
-    devDependencies:
-      '@modern-js/module-tools':
-        specifier: 2.71.1
-        version: 2.71.1(@types/node@24.13.3)(debug@4.4.0(supports-color@8.1.1))(supports-color@8.1.1)(typescript@6.0.3)
-      '@modern-js/storybook':
-        specifier: 2.71.1
-        version: 2.71.1(@types/react-dom@18.0.11)(@types/react@18.0.38)(clean-css@5.3.3)(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.33.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(supports-color@8.1.1)(typescript@6.0.3)(uglify-js@3.19.3)(webpack@5.109.2(@swc/core@1.15.8(@swc/helpers@0.5.23))(clean-css@5.3.3)(cssnano@7.1.9(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.25)(uglify-js@3.19.3))
-      '@storybook/addon-essentials':
-        specifier: ^7
-        version: 7.6.20(@types/react-dom@18.0.11)(@types/react@18.0.38)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(supports-color@8.1.1)
-      '@types/node':
-        specifier: ^24.0.0
-        version: 24.13.3
       rimraf:
         specifier: ~3.0.2
         version: 3.0.2
@@ -15353,25 +15329,6 @@ snapshots:
       - '@types/react'
       - '@types/react-dom'
 
-  '@modern-js/plugin-state@2.71.1(@modern-js/runtime@2.71.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(supports-color@8.1.1))(@types/react-dom@18.0.11)(@types/react@18.0.38)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)':
-    dependencies:
-      '@modern-js-reduck/plugin-auto-actions': 1.1.13(@modern-js-reduck/store@1.1.13)
-      '@modern-js-reduck/plugin-devtools': 1.1.13(@modern-js-reduck/store@1.1.13)
-      '@modern-js-reduck/plugin-effects': 1.1.13(@modern-js-reduck/store@1.1.13)
-      '@modern-js-reduck/plugin-immutable': 1.1.13(@modern-js-reduck/store@1.1.13)
-      '@modern-js-reduck/react': 1.1.13(@types/react-dom@18.0.11)(@types/react@18.0.38)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
-      '@modern-js-reduck/store': 1.1.13
-      '@modern-js/runtime': 2.71.1(react-dom@18.2.0(react@18.2.0))(react-server-dom-webpack@19.2.8(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(webpack@5.109.2(@swc/core@1.15.8(@swc/helpers@0.5.23))(clean-css@5.3.3)(cssnano@7.1.9(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.25)(uglify-js@3.19.3)))(react@18.2.0)(supports-color@8.1.1)
-      '@modern-js/runtime-utils': 2.71.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
-      '@modern-js/types': 2.71.1
-      '@modern-js/utils': 2.71.1
-      '@swc/helpers': 0.5.23
-      react: 18.2.0
-      react-dom: 18.2.0(react@18.2.0)
-    transitivePeerDependencies:
-      - '@types/react'
-      - '@types/react-dom'
-
   '@modern-js/plugin-testing@2.71.1(@jest/transform@29.7.0(supports-color@8.1.1))(@modern-js/runtime@2.71.1(react-dom@17.0.2(react@17.0.2))(react-server-dom-webpack@19.2.8(react-dom@17.0.2(react@17.0.2))(react@17.0.2)(webpack@5.109.2(@swc/core@1.15.8(@swc/helpers@0.5.23))(clean-css@5.3.3)(cssnano@7.1.9(postcss@8.5.25))(csso@5.0.5)(esbuild@0.18.20)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.25)(uglify-js@3.19.3)))(react@17.0.2)(supports-color@8.1.1))(@rsbuild/core@1.7.6)(@types/node@24.13.3)(esbuild@0.18.20)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)(supports-color@8.1.1)(ts-node@10.9.2(@swc/core@1.15.8(@swc/helpers@0.5.23))(@types/node@24.13.3)(typescript@6.0.3))(tsconfig-paths@4.2.0)(typescript@6.0.3)':
     dependencies:
       '@babel/core': 7.29.7(supports-color@8.1.1)
@@ -15886,62 +15843,6 @@ snapshots:
       - webpack-hot-middleware
       - webpack-plugin-serve
 
-  '@modern-js/storybook-builder@2.71.1(@types/react-dom@18.0.11)(@types/react@18.0.38)(clean-css@5.3.3)(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.33.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(supports-color@8.1.1)(typescript@6.0.3)(uglify-js@3.19.3)(webpack@5.109.2(@swc/core@1.15.8(@swc/helpers@0.5.23))(clean-css@5.3.3)(cssnano@7.1.9(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.25)(uglify-js@3.19.3))':
-    dependencies:
-      '@modern-js/core': 2.71.1
-      '@modern-js/plugin-state': 2.71.1(@modern-js/runtime@2.71.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(supports-color@8.1.1))(@types/react-dom@18.0.11)(@types/react@18.0.38)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
-      '@modern-js/runtime': 2.71.1(react-dom@18.2.0(react@18.2.0))(react-server-dom-webpack@19.2.8(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(webpack@5.109.2(@swc/core@1.15.8(@swc/helpers@0.5.23))(clean-css@5.3.3)(cssnano@7.1.9(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.25)(uglify-js@3.19.3)))(react@18.2.0)(supports-color@8.1.1)
-      '@modern-js/uni-builder': 2.71.1(clean-css@5.3.3)(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.33.0)(supports-color@8.1.1)(typescript@6.0.3)(uglify-js@3.19.3)
-      '@modern-js/utils': 2.71.1
-      '@rsbuild/core': 1.7.6
-      '@storybook/components': 7.6.20(@types/react-dom@18.0.11)(@types/react@18.0.38)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
-      '@storybook/core-common': 7.6.20(supports-color@8.1.1)
-      '@storybook/csf-plugin': 7.6.20(supports-color@8.1.1)
-      '@storybook/global': 5.0.0
-      '@storybook/mdx1-csf': 1.0.0(react@18.2.0)(supports-color@8.1.1)
-      '@storybook/mdx2-csf': 1.1.0
-      '@storybook/preview': 7.6.20
-      '@storybook/preview-api': 7.6.20
-      '@storybook/react-docgen-typescript-plugin': 1.0.6--canary.9.0c3f3b7.0(supports-color@8.1.1)(typescript@6.0.3)(webpack@5.109.2(@swc/core@1.15.8(@swc/helpers@0.5.23))(clean-css@5.3.3)(cssnano@7.1.9(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.25)(uglify-js@3.19.3))
-      '@storybook/router': 7.6.20
-      '@storybook/theming': 7.6.20(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
-      ast-types: 0.14.2
-      minimatch: 9.0.5
-      react-docgen: 6.0.0-alpha.3(supports-color@8.1.1)
-      remark-external-links: 9.0.1
-      remark-slug: 7.0.1
-      serve-static: 1.16.2(supports-color@8.1.1)
-      tinypool: 0.8.4
-    transitivePeerDependencies:
-      - '@minify-html/node'
-      - '@parcel/css'
-      - '@rspack/core'
-      - '@swc/css'
-      - '@swc/html'
-      - '@types/react'
-      - '@types/react-dom'
-      - '@types/webpack'
-      - '@typescript/native-preview'
-      - clean-css
-      - csso
-      - encoding
-      - esbuild
-      - lightningcss
-      - react
-      - react-dom
-      - react-server-dom-webpack
-      - sockjs-client
-      - styled-components
-      - supports-color
-      - type-fest
-      - typescript
-      - uglify-js
-      - webpack
-      - webpack-cli
-      - webpack-dev-server
-      - webpack-hot-middleware
-      - webpack-plugin-serve
-
   '@modern-js/storybook@2.71.1(@types/react-dom@18.0.11)(@types/react@18.0.38)(clean-css@5.3.3)(csso@5.0.5)(esbuild@0.18.20)(lightningcss@1.33.0)(react-dom@17.0.2(react@17.0.2))(react-server-dom-webpack@19.2.8(react-dom@17.0.2(react@17.0.2))(react@17.0.2)(webpack@5.109.2(@swc/core@1.15.8(@swc/helpers@0.5.23))(clean-css@5.3.3)(cssnano@7.1.9(postcss@8.5.25))(csso@5.0.5)(esbuild@0.18.20)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.25)(uglify-js@3.19.3)))(react@17.0.2)(supports-color@8.1.1)(typescript@6.0.3)(uglify-js@3.19.3)(webpack@5.109.2(@swc/core@1.15.8(@swc/helpers@0.5.23))(clean-css@5.3.3)(cssnano@7.1.9(postcss@8.5.25))(csso@5.0.5)(esbuild@0.18.20)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.25)(uglify-js@3.19.3))':
     dependencies:
       '@modern-js/storybook-builder': 2.71.1(@types/react-dom@18.0.11)(@types/react@18.0.38)(clean-css@5.3.3)(csso@5.0.5)(esbuild@0.18.20)(lightningcss@1.33.0)(react-dom@17.0.2(react@17.0.2))(react-server-dom-webpack@19.2.8(react-dom@17.0.2(react@17.0.2))(react@17.0.2)(webpack@5.109.2(@swc/core@1.15.8(@swc/helpers@0.5.23))(clean-css@5.3.3)(cssnano@7.1.9(postcss@8.5.25))(csso@5.0.5)(esbuild@0.18.20)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.25)(uglify-js@3.19.3)))(react@17.0.2)(supports-color@8.1.1)(typescript@6.0.3)(uglify-js@3.19.3)(webpack@5.109.2(@swc/core@1.15.8(@swc/helpers@0.5.23))(clean-css@5.3.3)(cssnano@7.1.9(postcss@8.5.25))(csso@5.0.5)(esbuild@0.18.20)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.25)(uglify-js@3.19.3))
@@ -15983,44 +15884,6 @@ snapshots:
   '@modern-js/storybook@2.71.1(@types/react-dom@18.0.11)(@types/react@18.0.38)(clean-css@5.3.3)(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.33.0)(react-dom@18.2.0(react@18.2.0))(react-server-dom-webpack@19.2.8(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(webpack@5.109.2(@swc/core@1.15.8(@swc/helpers@0.5.23))(clean-css@5.3.3)(cssnano@7.1.9(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.25)(uglify-js@3.19.3)))(react@18.2.0)(supports-color@8.1.1)(typescript@6.0.3)(uglify-js@3.19.3)(webpack@5.109.2(@swc/core@1.15.8(@swc/helpers@0.5.23))(clean-css@5.3.3)(cssnano@7.1.9(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.25)(uglify-js@3.19.3))':
     dependencies:
       '@modern-js/storybook-builder': 2.71.1(@types/react-dom@18.0.11)(@types/react@18.0.38)(clean-css@5.3.3)(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.33.0)(react-dom@18.2.0(react@18.2.0))(react-server-dom-webpack@19.2.8(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(webpack@5.109.2(@swc/core@1.15.8(@swc/helpers@0.5.23))(clean-css@5.3.3)(cssnano@7.1.9(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.25)(uglify-js@3.19.3)))(react@18.2.0)(supports-color@8.1.1)(typescript@6.0.3)(uglify-js@3.19.3)(webpack@5.109.2(@swc/core@1.15.8(@swc/helpers@0.5.23))(clean-css@5.3.3)(cssnano@7.1.9(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.25)(uglify-js@3.19.3))
-      '@modern-js/utils': 2.71.1
-      '@storybook/react': 7.6.20(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(supports-color@8.1.1)(typescript@6.0.3)
-      storybook: 7.6.20(supports-color@8.1.1)
-    transitivePeerDependencies:
-      - '@minify-html/node'
-      - '@parcel/css'
-      - '@rspack/core'
-      - '@swc/css'
-      - '@swc/html'
-      - '@types/react'
-      - '@types/react-dom'
-      - '@types/webpack'
-      - '@typescript/native-preview'
-      - bufferutil
-      - clean-css
-      - csso
-      - encoding
-      - esbuild
-      - lightningcss
-      - react
-      - react-dom
-      - react-server-dom-webpack
-      - sockjs-client
-      - styled-components
-      - supports-color
-      - type-fest
-      - typescript
-      - uglify-js
-      - utf-8-validate
-      - webpack
-      - webpack-cli
-      - webpack-dev-server
-      - webpack-hot-middleware
-      - webpack-plugin-serve
-
-  '@modern-js/storybook@2.71.1(@types/react-dom@18.0.11)(@types/react@18.0.38)(clean-css@5.3.3)(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.33.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(supports-color@8.1.1)(typescript@6.0.3)(uglify-js@3.19.3)(webpack@5.109.2(@swc/core@1.15.8(@swc/helpers@0.5.23))(clean-css@5.3.3)(cssnano@7.1.9(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.25)(uglify-js@3.19.3))':
-    dependencies:
-      '@modern-js/storybook-builder': 2.71.1(@types/react-dom@18.0.11)(@types/react@18.0.38)(clean-css@5.3.3)(csso@5.0.5)(esbuild@0.28.1)(lightningcss@1.33.0)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(supports-color@8.1.1)(typescript@6.0.3)(uglify-js@3.19.3)(webpack@5.109.2(@swc/core@1.15.8(@swc/helpers@0.5.23))(clean-css@5.3.3)(cssnano@7.1.9(postcss@8.5.25))(csso@5.0.5)(esbuild@0.28.1)(html-minifier-terser@7.2.0)(lightningcss@1.33.0)(postcss@8.5.25)(uglify-js@3.19.3))
       '@modern-js/utils': 2.71.1
       '@storybook/react': 7.6.20(react-dom@18.2.0(react@18.2.0))(react@18.2.0)(supports-color@8.1.1)(typescript@6.0.3)
       storybook: 7.6.20(supports-color@8.1.1)

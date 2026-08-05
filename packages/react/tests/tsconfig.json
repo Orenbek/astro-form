@@ -1,11 +1,15 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
+    // base pins types to ["node"] only; tests need Jest globals (describe/test/expect).
+    "types": ["node", "jest"],
+    "noEmit": true,
     "paths": {
-      "@astro-form/react": ["./src"],
-      "@astro-form/react/*": ["./src/*"]
+      "@astro-form/react": ["../src"],
+      "@astro-form/react/*": ["../src/*"],
+      "@/*": ["../src/*"]
     }
   },
-  "include": ["**/*", "../src"],
+  "include": ["./**/*", "../src"],
   "exclude": ["**/node_modules"]
 }

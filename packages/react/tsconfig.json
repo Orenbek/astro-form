@@ -6,5 +6,6 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src", "modern.config.ts", "tests"]
+  "include": ["src", "modern.config.ts"],
+  "exclude": ["**/node_modules", "tests"]
 }

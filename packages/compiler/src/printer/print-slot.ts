@@ -10,6 +10,14 @@ import { print } from './index'
 function genSlotName(name: string) {
   return `$${changeCase.camelCase(`slot-${name}`)}`
 }
+/**
+ * Print `<slot />` / `<slot name="..." />`.
+ *
+ * When the slot has `x:ref={box}`, emit `passRefToChild(slotContent, box)` so a wrapper
+ * component can obtain the same core Field as the page that put `x:ref` on the nested
+ * `f.*` field. Without this, page ref and wrapper ref cannot both win.
+ * @see packages/react/src/utils/pass-ref-to-child.ts
+ */
 export function printSlotElement(node: ElementNode, opts: TransformOptions): SourceMap {
   const slotNode = new SourceMap()
   const slotNameAttribute = node.attributes.find((i) => i.name === 'name')

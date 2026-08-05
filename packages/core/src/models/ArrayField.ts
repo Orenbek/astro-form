@@ -1,7 +1,5 @@
-import { isArr } from '@astro-form/shared'
+import { isArr, move } from '@/utils'
 import { makeObservable, action } from 'mobx'
-
-import { move } from '@/utils'
 
 import { spliceArrayState, exchangeArrayState, INodePatch } from '../shared/internals'
 import { JSXComponent, IFieldProps, FormPathPattern, LifeCycles } from '../types'

@@ -1,4 +1,4 @@
-import { isFn } from '@astro-form/shared'
+import { isFn } from '@/utils'
 
 import { GeneralField, FormPath, FormPathPattern } from '../types'
 

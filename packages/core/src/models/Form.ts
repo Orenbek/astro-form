@@ -1,7 +1,7 @@
 /* eslint-disable no-new */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { merge } from '@formily/shared/esm/merge'
-import { isValid, isPlainObj, isFn } from '@astro-form/shared'
+import { isValid, isPlainObj, isFn } from '@/utils'
 import structuredClone from '@ungap/structured-clone'
 import { makeObservable, observable, computed, action, toJS, reaction } from 'mobx'
 
