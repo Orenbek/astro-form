@@ -1,0 +1,61 @@
+{
+  "skill_name": "astro-form-react",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "I'm building a todo editor page with @astro-form/react. It should show a list of todo rows (title input + a 'done' checkbox per row) with an 'Add row' button that appends an empty todo and a remove button per row. The form should be seeded with one existing todo [{ title: 'First', done: false }]. Each title must be required — submitting should fail and show which row's title is empty. Also a count of remaining undone items next to the heading. Please give me the component code.",
+      "expected_output": "A working `Todos` React component: stable `createForm` via useMemo, `f.Array` with `x-ref` box from the package's `useRef`, rows rendered from the array field's `.value` inside an `observer` with index names (`${i}.title`) and `key={i}`, add/remove via `ArrayField.push/remove`, remaining-count in an observer, submit wired through `form.submit`.",
+      "expectations": [
+        "Uses `useMemo(() => createForm(), [])` for a stable form instance",
+        "Reads the array value via a field box: `box.get()?.value ?? []` (not `box.get() ?? []`)",
+        "Uses the package's `useRef` (observable.box) for `x-ref`, not React.useRef",
+        "Item fields use index names (`${i}.title`) and `key={i}` aligned to the index path",
+        "Add/remove use ArrayField methods (`push`/`remove`)",
+        "The component that reads the box is wrapped in `observer`",
+        "Remaining-count reads reactive state inside an `observer`",
+        "Only hyphen directives (`x-*`/`v-*`) and normal React props; no colon prefixes"
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "Need a signup form with @astro-form/react in plain React TSX. Fields: username (2–20 chars, required), email (required, must be a valid email format), password (required, min 8 chars), confirm password (must equal password, run this check when the field loses focus), and a nested address object (street + city, city required). There's also a 'preview mode' toggle — when on, all fields should become read-only and validation should stop running. Please write the component.",
+      "expected_output": "Nested fields under `f.Object` children (automatic basePath), validators via `x-required` / `v-format` / `x-minLength` / `x-maxLength`, confirm-password via `x-validator` with a rule object declaring `triggerType: 'onBlur'`, read-only mode via `v-pattern=\"readPretty\"` (or `x-readPretty`), and a regex used with `x-pattern` (never `v-pattern`).",
+      "expectations": [
+        "Nests the address fields inside an `f.Object` (children join the path automatically)",
+        "Uses `x-required` for required validation rules",
+        "Uses `v-format=\"email\"` (or `x-format`) for email format validation",
+        "Confirm-password validator declares `triggerType: 'onBlur'` inside an `x-validator` rule object",
+        "Uses `x-pattern` (not `v-pattern`) for any regex validation",
+        "Read-only mode uses `v-pattern=\"readPretty\"` or `x-readPretty` (field pattern, not a regex)",
+        "Only hyphen directives (`x-*`/`v-*`); no colon prefixes"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "Building a settings form with @astro-form/react. I need: a custom toggle switch component for a boolean 'notifications' setting (must store a real boolean), a custom number input for 'age' (must store a real number, empty = undefined, min 0 max 150), a Save button that shows 'Saving…' and is disabled while the form is submitting, a top error banner listing all field errors, and a Reset button that restores the initial values. Form should submit via a fake API and toast on success. Give me the code.",
+      "expected_output": "Custom `as` components honoring the value/onChange/pattern contract (checkbox → `onChange(e.target.checked)`, number → parse with `Number(...)`), observer-wrapped Save button driven by `form.submitting`, error banner reading `form.errors` in an observer, `form.submit` with `Array.isArray(err)` to distinguish validation failure from handler errors, stable createForm.",
+      "expectations": [
+        "Boolean control passes a plain boolean value to `onChange` (e.g. `e.target.checked`), never a DOM event or the checkbox `value` attribute",
+        "Number control passes a parsed number (`Number(...)`) and maps empty to undefined",
+        "Custom controls treat `value` as controlled input",
+        "Save button is wrapped in `observer` and driven by `form.submitting`",
+        "Error banner is wrapped in `observer` and reads `form.errors`",
+        "`form.submit` error handling distinguishes validation errors via `Array.isArray(err)`",
+        "Uses `useMemo(() => createForm(), [])` for a stable form",
+        "Only hyphen directives (`x-*`/`v-*`); no colon prefixes"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "A checkout form with @astro-form/react (plain React). There's a 'shipping' section and a 'billing' section; billing is only needed for guest checkout, so it has a 'billing same as shipping' checkbox. When billing is toggled off, the billing section must NOT block form submit (its validation should be skipped) but the data the user already typed in billing must be kept so it reappears if they toggle back on. Each field should show its own inline error under the input. Please write the component.",
+      "expected_output": "Billing section toggled with `x-hidden`/`x-display` (not conditional rendering that loses data), values retained because `display='hidden'` keeps the value tree (only `'none'` clears it), hidden fields skipped by validation, per-field inline errors via `x-ref` box + observer reading `field.selfErrors`.",
+      "expectations": [
+        "Billing section visibility toggled with `x-hidden` or `x-display` (not unmount-based conditional rendering)",
+        "Solution does not copy values around on toggle (relies on `display='hidden'` retaining values)",
+        "Billing field models (or the container) are skipped by validation while hidden — submit succeeds with billing off",
+        "Inline per-field errors read `field.selfErrors` reactively inside an `observer` (via `x-ref` box or `form.query(path).take()`)",
+        "Only hyphen directives (`x-*`/`v-*`); no colon prefixes"
+      ]
+    }
+  ]
+}
