@@ -8,7 +8,8 @@
     "prepare": "vp config",
     "commitlint": "commitlint --edit",
     "create": "create",
-    "watch": "cd ./packages/vscode && npm run watch"
+    "watch": "cd ./packages/vscode && npm run watch",
+    "changeset": "changeset"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.1",
