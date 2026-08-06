@@ -43,3 +43,6 @@ yarn-error.log*
 thoughts/
 # Local agent notes
 thoughts/
+
+# Local npm auth (never commit)
+.npmrc.local

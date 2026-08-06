@@ -6,7 +6,15 @@
   "access": "public",
   "baseBranch": "master",
   "updateInternalDependencies": "patch",
-  "ignore": [],
+  "ignore": [
+    "examples",
+    "@astro-form/compiler",
+    "@astro-form/language-server",
+    "prettier-plugin-astro-form",
+    "@astro-form/ts-plugin",
+    "@astro-form/webpack-plugin",
+    "@astro-form/vscode"
+  ],
   "___experimentalUnsafeOptions_WILL_CHANGE_IN_PATCH": {
     "onlyUpdatePeerDependentsWhenOutOfRange": true,
     "updateInternalDependents": "always"

@@ -1,6 +1,7 @@
 {
   "name": "examples",
   "version": "0.1.1",
+  "private": true,
   "scripts": {
     "reset": "npx rimraf ./**/node_modules",
     "dev": "modern dev",
