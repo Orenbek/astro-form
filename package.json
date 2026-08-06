@@ -9,7 +9,8 @@
     "commitlint": "commitlint --edit",
     "create": "create",
     "watch": "cd ./packages/vscode && npm run watch",
-    "changeset": "changeset"
+    "changeset": "changeset",
+    "publish:core-react": "node scripts/publish-core-react.mjs"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.1",

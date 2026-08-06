@@ -33,7 +33,7 @@
     "test": "modern test"
   },
   "dependencies": {
-    "@astro-form/core": "workspace:^",
+    "@astro-form/core": "workspace:*",
     "@formily/validator": "^2.3.1",
     "@types/react": "^19.2.18",
     "change-case-all": "^2.1.0",
