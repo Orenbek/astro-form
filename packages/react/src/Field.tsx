@@ -1,10 +1,10 @@
 /* eslint-disable consistent-return */
 import React from 'react'
-import type { FieldComponent, Field as FieldType } from '@astro-form/core'
+import type { FieldComponent as CoreFieldComponent, Field as FieldType } from '@astro-form/core'
 import { observer } from 'mobx-react-lite'
 import { runInAction } from 'mobx'
 
-import { ValueType, type FieldProps, type IFieldProps, ValidatorProps } from './types'
+import { ValueType, type FieldComponent, type FieldProps, type ValidatorProps } from './types'
 import { useForceUpdate } from './hooks/useForceUpdate'
 import { useSyncFieldModel } from './hooks/useSyncFieldModel'
 import { useSyncFieldValidators } from './hooks/useSyncFieldValidators'
@@ -14,7 +14,11 @@ import { FieldProvider, useBasePath } from './FieldContext'
 import { extractFieldPropsAndComponentProps, createFieldHelper } from './utils/extract-field-props'
 import { shallowEqualRecord } from './utils/shallow-equal'
 
-type FieldRenderProps = { path?: string; field?: FieldType; as?: string | React.FC<any> }
+type FieldRenderProps = {
+  path?: string
+  field?: FieldType
+  as?: string | React.ElementType
+}
 
 /**
  * Renders the UI bound to a core Field.
@@ -28,8 +32,11 @@ type FieldRenderProps = { path?: string; field?: FieldType; as?: string | React.
  * So the tuple's first slot is kept for model parity / future schema-style use; the second
  * slot (`componentProps`) is what actually drives this render path. Public FieldProps does
  * not expose a `component` prop — callers pass `as` + plain DOM/control props.
+ *
+ * React `ref` is forwarded to the `as` host (DOM node / class / forwarded component).
+ * Core `Field` model refs use `x-ref` / `$$ref`, not this React ref.
  */
-const FieldRender = observer<FieldRenderProps, unknown>(
+const FieldRender = observer(
   React.forwardRef<unknown, FieldRenderProps>(function _FieldRender(props, ref) {
     const { field } = props
     const onChange = (...args: any[]) => {
@@ -67,7 +74,12 @@ const FieldRender = observer<FieldRenderProps, unknown>(
   })
 )
 
-export const BaseField = observer<FieldProps, unknown>(
+/**
+ * Implementation is intentionally loosely typed; the public surface is {@link FieldComponent}
+ * so `as` can drive passthrough props and ref instance type. `forwardRef` cannot express that
+ * polymorphic generic directly without a cast.
+ */
+const BaseFieldImpl = observer(
   React.forwardRef<unknown, FieldProps>(function Field(props, _ref) {
     // Runtime may include compiler inject (`$$*` / `v$$*`); not part of public FieldProps.
     const [fieldProps, compoenntProps, validatorProps] = extractFieldPropsAndComponentProps(props)
@@ -135,7 +147,7 @@ export const BaseField = observer<FieldProps, unknown>(
         return
       }
       // Sync core Field.component = [as, uiProps]. See FieldRender note on as vs componentType.
-      field.component = [fieldProps.as, compoenntProps] as FieldComponent<any>
+      field.component = [fieldProps.as, compoenntProps] as CoreFieldComponent<any>
     }, [fieldProps.as, compoenntProps])
 
     useSyncFieldModel(ref, fieldProps)
@@ -145,36 +157,21 @@ export const BaseField = observer<FieldProps, unknown>(
   })
 )
 
-/**
- * Inject value type for `f.*` without putting `$$*` on the public prop type.
- * React 19 `forwardRef` props are `Omit<P, 'ref'>`; with an index signature that can
- * erase required keys in the type checker, so accept a loose props shape here.
- */
-function withValueType(props: Record<string, any>, valueType: ValueType): FieldProps {
-  return { ...props, $$valueType: valueType } as unknown as FieldProps
+export const BaseField = BaseFieldImpl as unknown as FieldComponent
+
+function createTypedField(valueType: ValueType): FieldComponent {
+  // Use BaseFieldImpl (not the polymorphic cast) so prop spreads stay structurally typed.
+  // $$valueType is runtime-only inject — not on public FieldProps.
+  const Comp = React.forwardRef<unknown, FieldProps>(function TypedField(props, ref) {
+    return <BaseFieldImpl {...({ ...props, $$valueType: valueType } as FieldProps)} ref={ref} />
+  })
+  return Comp as unknown as FieldComponent
 }
 
-const StringField = React.forwardRef<unknown, IFieldProps>((props, ref) => {
-  return <BaseField {...withValueType(props, ValueType.String)} ref={ref} />
-})
-const NumberField = React.forwardRef<unknown, IFieldProps>((props, ref) => {
-  return <BaseField {...withValueType(props, ValueType.Number)} ref={ref} />
-})
-
-const BooleanField = React.forwardRef<unknown, IFieldProps>((props, ref) => {
-  return <BaseField {...withValueType(props, ValueType.Boolean)} ref={ref} />
-})
-const ObjectField = React.forwardRef<unknown, IFieldProps>((props, ref) => {
-  return <BaseField {...withValueType(props, ValueType.Object)} ref={ref} />
-})
-const ArrayField = React.forwardRef<unknown, IFieldProps>((props, ref) => {
-  return <BaseField {...withValueType(props, ValueType.Array)} ref={ref} />
-})
-
 export const f = {
-  String: StringField,
-  Number: NumberField,
-  Boolean: BooleanField,
-  Object: ObjectField,
-  Array: ArrayField,
+  String: createTypedField(ValueType.String),
+  Number: createTypedField(ValueType.Number),
+  Boolean: createTypedField(ValueType.Boolean),
+  Object: createTypedField(ValueType.Object),
+  Array: createTypedField(ValueType.Array),
 }

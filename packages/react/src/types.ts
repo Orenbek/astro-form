@@ -1,3 +1,4 @@
+import type React from 'react'
 import type { Field, IFieldFactoryProps, Form } from '@astro-form/core'
 import type { IObservableValue } from 'mobx'
 import type { ValidatorFormats } from '@formily/validator'
@@ -10,65 +11,55 @@ export enum ValueType {
   Array = 'array',
 }
 
-/** Field model props accepted by `f.*` / BaseField (mirrors core factory props). */
+/** Core field factory props minus UI wiring (`component` / `value` / `plugins` / `name`). */
 export type FieldModelProps = Omit<IFieldFactoryProps<any>, 'component' | 'value' | 'plugins' | 'name'>
 
 /**
- * Hand-written field props (`x-required`, `x-initialValue`, `x-ref`, …).
- *
- * ## Prefix history (keep both runtimes)
- * - `.aform` / compiler inject uses **`$$*`** / **`v$$*`** (not listed on public types).
- * - Hand-written React uses **`x-*`** / **`v-*`**. Runtime still accepts compiler prefixes so
- *   `.aform` components can coexist; we only hide `$$` / `v$$` from the **public** type surface.
- *
- * ## `x-ref` / multi-ref
- * Not a DOM ref — MobX `observable.box` filled with the core `Field` on mount.
- * May be a **single box or an array**: wrapper slots can merge refs via `passRefToChild`
- * (page `x:ref` + Item `<slot x:ref>` both need the same Field). See that util's file comment.
+ * Field directives (`x-*` only). `v-*` is validators only — see {@link HyphenValidatorProps}.
+ * `x-ref` is a MobX box (or array of boxes) for the core Field, not a React/DOM ref.
+ * Compiler inject `$$*` is runtime-only, not typed here.
  */
 export type HyphenFieldProps = Prettify<AppendPrefix<FieldModelProps, 'x-'>> & {
   'x-ref'?: IObservableValue<Field | null> | Array<IObservableValue<Field | null>>
 }
 
-/**
- * Hand-written validator props.
- * - `v-*` — explicit validator namespace
- * - `x-*` — validator keys also allowed under `x-` for DX (e.g. `x-maxLength`)
- *
- * Routing (see `extractFieldPropsAndComponentProps`):
- * - `x-*` + key ∈ validator set → validator bucket
- * - `v-*` + key ∈ field-model set → field bucket
- * Dual keys like `required` / `pattern` therefore depend on which prefix you use.
- */
-export type HyphenValidatorProps = Prettify<AppendPrefix<ValidatorProps, 'v-'>> &
-  Prettify<AppendPrefix<ValidatorProps, 'x-'>>
+/** Validator directives (`v-*` only). `required` / `pattern` live on field via `x-*`. */
+export type HyphenValidatorProps = Prettify<AppendPrefix<ValidatorProps, 'v-'>>
 
-/**
- * Public props for `f.*` / field components.
- *
- * - Typed API: hyphen directives only (`x-*` / `v-*`).
- * - Compiler inject (`$$*` / `v$$*`) works at **runtime** but is intentionally **not** typed here.
- * - Extra keys (`placeholder`, `className`, …) forward to the `as` UI component.
- * - Public API does **not** expose core's `component` / `value` / `plugins` factory fields;
- *   UI type is `as`, UI props are passthrough keys stored on the field model as `componentProps`.
- */
-export type FieldProps = {
+export type FieldOwnProps = {
   name: string
-  as?: string | React.FC<any>
   children?: React.ReactNode | undefined
 } & HyphenFieldProps &
-  HyphenValidatorProps & {
-    /** Passthrough props for the rendered `as` component (not field/validator directives). */
-    [key: string]: any
-  }
+  HyphenValidatorProps
 
-/** Same as {@link FieldProps}; kept for call-site naming (`f.String` props). */
-export type IFieldProps = FieldProps
+/**
+ * Public props for `f.*` / BaseField.
+ * - `C` is the `as` host; passthrough props + React `ref` follow `C`.
+ * - Default must be a concrete tag (e.g. `'input'`), **not** `React.ElementType` —
+ *   that widens `keyof` to `string` and kills autocomplete.
+ * - Do **not** wrap the intersection in `Prettify` / mapped types: that erases the
+ *   bare `as?: C` site and TypeScript can no longer infer `C` from `as={Component}`.
+ * - Compiler `$$*` / `v$$*` work at runtime but are not typed.
+ */
+export type FieldProps<C extends React.ElementType = 'input'> = FieldOwnProps & {
+  as?: C
+} & Omit<React.ComponentPropsWithoutRef<C>, keyof FieldOwnProps | 'as' | 'value'>
+
+/** Alias of {@link FieldProps}. */
+export type IFieldProps<C extends React.ElementType = 'input'> = FieldProps<C>
+
+/**
+ * Polymorphic field component. Interface call signature helps infer `C` from `as={...}`.
+ * React `ref` → `as` instance; core Field → `x-ref`.
+ */
+export interface FieldComponent {
+  <C extends React.ElementType = 'input'>(
+    props: FieldProps<C> & React.RefAttributes<React.ComponentRef<C>>
+  ): React.ReactElement | null
+}
 
 export interface ValidatorProps {
   format?: ValidatorFormats
-  required?: boolean
-  pattern?: RegExp | string
   max?: number
   maximum?: number
   maxItems?: number
@@ -94,11 +85,7 @@ type AppendPrefix<T, Prefix extends string> = {
 }
 type Prettify<T> = T extends infer U ? { [K in keyof U]: U[K] } : never
 
-/**
- * Astro global available in all contexts in .astro files
- *
- * [Astro reference](https://docs.astro.build/reference/api-reference/#astro-global)
- */
+/** Injected into `.aform` / compiled components as the Astro-like form global. */
 export interface AstroFormGlobal<Props extends Record<string, any> = Record<string, any>> {
   props: Props
   form: Form

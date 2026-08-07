@@ -7,5 +7,5 @@
       "@astro-form/react/*": ["./src/*"]
     }
   },
-  "include": ["**/*"]
+  "include": ["**/*", "../src/**/*"]
 }

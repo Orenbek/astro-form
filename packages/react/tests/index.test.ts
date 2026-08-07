@@ -49,61 +49,57 @@ describe('extractFieldPropsAndComponentProps', () => {
     expect(field.required).toBe(true)
     expect(field.initialValue).toBe('')
     expect(validator.maxLength).toBe(32)
-    expect(validator.required).toBe(true)
+    expect((validator as any).required).toBe(true)
     expect(component.placeholder).toBe('email')
     expect(component.type).toBe('text')
   })
 
-  test('parses x-* field props and v-* validators', () => {
+  test('x-* → field only; v-* → validators only', () => {
     const [field, component, validator] = extractFieldPropsAndComponentProps({
       ...base,
       'x-required': true,
       'x-initialValue': 'a@b.com',
       'x-display': 'visible',
+      'x-pattern': 'editable',
       'v-maxLength': 64,
       'v-format': 'email',
       className: 'input',
     })
 
-    // x-required is a validator key → validator bucket
-    expect(field.required).toBeUndefined()
-    expect(validator.required).toBe(true)
+    expect(field.required).toBe(true)
     expect(field.initialValue).toBe('a@b.com')
     expect(field.display).toBe('visible')
+    expect(field.pattern).toBe('editable')
     expect(validator.maxLength).toBe(64)
     expect(validator.format).toBe('email')
+    expect((validator as any).required).toBeUndefined()
     expect(component.className).toBe('input')
   })
 
-  test('routes validator keys under x-* to validators (e.g. x-maxLength, x-required)', () => {
+  test('does not cross-route: x-maxLength stays on field bag; v-initialValue stays on validator bag', () => {
     const [field, , validator] = extractFieldPropsAndComponentProps({
       ...base,
       'x-maxLength': 20,
-      'x-minLength': 2,
-      'x-format': 'email',
-      'x-required': true,
+      'v-initialValue': 'hi',
     })
 
-    expect(field.required).toBeUndefined()
-    expect((field as any).maxLength).toBeUndefined()
-    expect(validator.required).toBe(true)
-    expect(validator.maxLength).toBe(20)
-    expect(validator.minLength).toBe(2)
-    expect(validator.format).toBe('email')
+    // Untyped misuse: prefix wins over key name
+    expect((field as any).maxLength).toBe(20)
+    expect(validator.maxLength).toBeUndefined()
+    expect((validator as any).initialValue).toBe('hi')
+    expect(field.initialValue).toBeUndefined()
   })
 
-  test('routes field keys under v-* to field (e.g. v-initialValue)', () => {
+  test('v-* never lands on field even for field-like names', () => {
     const [field, , validator] = extractFieldPropsAndComponentProps({
       ...base,
-      'v-initialValue': 'hi',
       'v-display': 'hidden',
       'v-maxLength': 8,
     })
 
-    expect(field.initialValue).toBe('hi')
-    expect(field.display).toBe('hidden')
+    expect(field.display).toBeUndefined()
+    expect((validator as any).display).toBe('hidden')
     expect(validator.maxLength).toBe(8)
-    expect((validator as any).initialValue).toBeUndefined()
   })
 
   test('supports kebab-case after hyphen prefix', () => {
@@ -130,14 +126,12 @@ describe('extractFieldPropsAndComponentProps', () => {
   })
 
   test('x-* and $$* can coexist; later entry wins for same target key order', () => {
-    // Object.entries order: insertion order. $$ after x- overwrites field.required
     const [field] = extractFieldPropsAndComponentProps({
       ...base,
       'x-required': false,
       $$required: true,
     })
 
-    // x-required → validator; $$required → field.required
     expect(field.required).toBe(true)
   })
 })

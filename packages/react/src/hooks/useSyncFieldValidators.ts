@@ -23,8 +23,6 @@ export function useSyncFieldValidators(fieldRef: RefObject<FieldType | null>, va
   }, [
     fieldRef,
     validatorProps.format,
-    validatorProps.required,
-    validatorProps.pattern,
     validatorProps.max,
     validatorProps.maximum,
     validatorProps.maxItems,
