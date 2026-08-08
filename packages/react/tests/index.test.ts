@@ -1,3 +1,4 @@
+import { describe, expect, test } from '@rstest/core'
 import { extractFieldPropsAndComponentProps, normalizeDirectiveKey } from '../src/utils/extract-field-props'
 import { shallowEqualRecord } from '../src/utils/shallow-equal'
 import { ValueType } from '../src/types'
@@ -116,7 +117,7 @@ describe('extractFieldPropsAndComponentProps', () => {
   })
 
   test('x-ref maps to internal $$ref', () => {
-    const box = { set: jest.fn(), get: jest.fn() } as any
+    const box = { set: () => {}, get: () => {} } as any
     const [field] = extractFieldPropsAndComponentProps({
       ...base,
       'x-ref': box,

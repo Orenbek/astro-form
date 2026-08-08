@@ -1,11 +1,35 @@
 {
+  "$schema": "https://json.schemastore.org/tsconfig",
   "extends": "../../config/tsconfig.base.json",
   "compilerOptions": {
-    "rootDir": ".",
+    /* Source layout */
+    "rootDir": "src",
+    "jsx": "react-jsx",
+    "lib": ["DOM", "ES2022"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "useDefineForClassFields": true,
+
+    /*
+     * Base is tuned for modern declaration emit (composite + emitDeclarationOnly).
+     * This package uses Rslib for .d.ts, so typecheck is noEmit-only.
+     * `incremental` must be off (or pair with tsBuildInfoFile) when noEmit is true.
+     */
+    "composite": false,
+    "incremental": false,
+    "declaration": true,
+    "declarationMap": true,
+    "emitDeclarationOnly": false,
+    "noEmit": true,
+    "noEmitOnError": true,
+
+    /* React types come from @types/react dependency; keep node for path/fs if needed */
+    "types": ["node"],
+
     "paths": {
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src", "modern.config.ts"],
-  "exclude": ["**/node_modules", "tests"]
+  "include": ["src"],
+  "exclude": ["**/node_modules", "dist", "tests", "stories", "storybook-static"]
 }

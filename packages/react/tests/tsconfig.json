@@ -1,15 +1,22 @@
 {
+  "$schema": "https://json.schemastore.org/tsconfig",
   "extends": "../tsconfig.json",
   "compilerOptions": {
-    // base pins types to ["node"] only; tests need Jest globals (describe/test/expect).
-    "types": ["node", "jest"],
+    "rootDir": "..",
     "noEmit": true,
+    "composite": false,
+    "incremental": false,
+    "declaration": false,
+    "declarationMap": false,
+    "emitDeclarationOnly": false,
+    "jsx": "react-jsx",
+    "types": ["node"],
     "paths": {
       "@astro-form/react": ["../src"],
       "@astro-form/react/*": ["../src/*"],
       "@/*": ["../src/*"]
     }
   },
-  "include": ["./**/*", "../src"],
-  "exclude": ["**/node_modules"]
+  "include": ["./**/*", "../src", "../rstest.setup.ts"],
+  "exclude": ["**/node_modules", "../dist", "../storybook-static"]
 }

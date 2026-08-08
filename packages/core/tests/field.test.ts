@@ -1831,6 +1831,37 @@ test('onInput should ignore HTMLInputEvent propagation', async () => {
   expect(aa.value).toEqual('123')
 })
 
+test('onInput checkbox uses checked boolean, not value attribute', async () => {
+  const form = attach(createForm<any>())
+  const check = attach(
+    form.createField({
+      name: 'check',
+    })!
+  )
+  // HTML checkbox default value is "on"; semantic state is checked
+  const el = { type: 'checkbox', value: 'on', checked: true }
+  await check.onInput({ target: el, currentTarget: el })
+  expect(check.value).toBe(true)
+  expect(form.values.check).toBe(true)
+
+  el.checked = false
+  await check.onInput({ target: el, currentTarget: el })
+  expect(check.value).toBe(false)
+  expect(form.values.check).toBe(false)
+})
+
+test('onInput text still prefers target.value over checked', async () => {
+  const form = attach(createForm<any>())
+  const aa = attach(
+    form.createField({
+      name: 'aa',
+    })!
+  )
+  const el = { type: 'text', value: 'hello', checked: false }
+  await aa.onInput({ target: el, currentTarget: el })
+  expect(aa.value).toBe('hello')
+})
+
 test('onFocus and onBlur with invalid target value', async () => {
   const form = attach(createForm<any>())
   const field = attach(

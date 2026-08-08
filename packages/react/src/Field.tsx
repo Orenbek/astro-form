@@ -54,16 +54,19 @@ const FieldRender = observer(
     const children = (() => {
       if (field && field.display !== 'visible') return null
       if (props.as) {
+        // checkbox: React controlled state is `checked` (boolean), not `value`.
+        // `value` on checkbox is only the submitted attribute (default "on").
+        const isCheckbox = field?.componentProps?.type === 'checkbox'
         return React.createElement(
           props.as,
           {
             pattern: field?.pattern,
             ...field?.componentProps,
-            value: field?.value,
             onChange,
             onFocus,
             onBlur,
             ref,
+            ...(isCheckbox ? { checked: Boolean(field?.value) } : { value: field?.value }),
           },
           field?.componentProps.children || null
         )
@@ -133,7 +136,15 @@ const BaseFieldImpl = observer(
 
       forceUpdate()
       return () => {
+        // Teardown order matters:
+        // 1) onUnmount — emit ON_FIELD_UNMOUNT while the field is still on the form graph,
+        //    so effects / listeners subscribed to that lifecycle still run.
+        // 2) destroy() — default forceClear=true: drop values + initialValues and remove the
+        //    field from form.fields. React unmount here means “field leaves the form”, not a
+        //    temporary hide (use display: 'hidden' | 'none' for that without unmounting).
+        // destroy alone would skip ON_FIELD_UNMOUNT; onUnmount alone would leave orphan values.
         ref.current?.onUnmount()
+        ref.current?.destroy()
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps -- field/ui props sync via useUpdateEffect hooks below
     }, [$$form, basePath, fieldProps.name])

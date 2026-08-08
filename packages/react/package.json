@@ -1,36 +1,41 @@
 {
   "name": "@astro-form/react",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "repository": {
     "type": "git",
     "url": "",
     "directory": "packages/react"
   },
+  "files": [
+    "dist"
+  ],
   "sideEffects": [],
   "main": "./dist/lib/index.js",
-  "module": "./dist/es/index.js",
+  "module": "./dist/es/index.mjs",
   "types": "./dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/es/index.mjs",
+      "require": "./dist/lib/index.js",
+      "default": "./dist/es/index.mjs"
+    },
+    "./package.json": "./package.json"
+  },
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "build-storybook": "storybook build",
+    "build": "rslib",
+    "build:watch": "rslib --watch",
+    "dev": "rslib --watch",
+    "prepare": "rslib",
     "storybook": "storybook dev -p 6006",
-    "prepare": "modern build",
-    "dev": "modern dev",
-    "build": "modern build",
-    "build:watch": "modern build -w",
-    "reset": "rimraf ./**/node_modules",
-    "change": "modern change",
-    "bump": "modern bump",
-    "pre": "modern pre",
-    "change-status": "modern change-status",
-    "gen-release-note": "modern gen-release-note",
-    "release": "modern release",
-    "new": "modern new",
-    "upgrade": "modern upgrade",
-    "test": "modern test"
+    "build:storybook": "storybook build",
+    "test": "rstest",
+    "test:watch": "rstest --watch",
+    "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tests/tsconfig.json && tsc --noEmit -p stories/tsconfig.json"
   },
   "dependencies": {
     "@astro-form/core": "workspace:*",
@@ -41,18 +46,28 @@
     "mobx-react-lite": "^5.0.0"
   },
   "devDependencies": {
-    "@modern-js/module-tools": "2.71.1",
-    "@modern-js/plugin-testing": "2.71.1",
-    "@modern-js/storybook": "2.71.1",
-    "@storybook/addon-essentials": "^7",
-    "@types/jest": "~29.2.4",
+    "@rsbuild/core": "~2.1.4",
+    "@rsbuild/plugin-react": "^2.1.0",
+    "@rslib/core": "^0.23.2",
+    "@rstest/adapter-rslib": "^0.10.6",
+    "@rstest/core": "^0.10.6",
+    "@storybook/addon-docs": "^10.4.6",
+    "@storybook/react": "^10.4.6",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/node": "^24.0.0",
+    "@types/react-dom": "^19.2.3",
+    "happy-dom": "^20.10.6",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "rimraf": "~3.0.2",
+    "storybook": "^10.4.6",
+    "storybook-addon-rslib": "^3.3.4",
+    "storybook-react-rsbuild": "^3.3.4",
     "typescript": "^6.0.3"
   },
   "peerDependencies": {
-    "react": ">=18.0.0"
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
   }
 }

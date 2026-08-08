@@ -1,11 +1,21 @@
 {
+  "$schema": "https://json.schemastore.org/tsconfig",
   "extends": "../tsconfig.json",
   "compilerOptions": {
-    "jsx": "react",
+    "rootDir": "..",
+    "noEmit": true,
+    "composite": false,
+    "incremental": false,
+    "declaration": false,
+    "declarationMap": false,
+    "emitDeclarationOnly": false,
+    "jsx": "react-jsx",
     "paths": {
-      "@astro-form/react": ["./src"],
-      "@astro-form/react/*": ["./src/*"]
+      "@astro-form/react": ["../src"],
+      "@astro-form/react/*": ["../src/*"],
+      "@/*": ["../src/*"]
     }
   },
-  "include": ["**/*", "../src/**/*"]
+  "include": ["./**/*", "../src"],
+  "exclude": ["**/node_modules", "../dist", "../storybook-static"]
 }

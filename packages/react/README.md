@@ -1,46 +1,29 @@
-# Modern.js Package
+# @astro-form/react
 
-## Setup
+React bindings for Astro Form (Rslib + Rstest + Storybook).
 
-Install the dependencies:
-
-```bash
-pnpm run install
-```
-
-## Get Started
-
-Run and debug the module:
+## Scripts
 
 ```bash
-pnpm run dev
+pnpm build            # Build ESM + CJS + d.ts
+pnpm dev              # Watch mode
+pnpm typecheck        # tsc --noEmit (src / node / tests / stories)
+pnpm test             # Run unit tests (rstest)
+pnpm test:watch       # Watch tests
+pnpm storybook        # Storybook dev server
+pnpm build:storybook  # Build static Storybook
 ```
 
-Run test cases:
+## Output
 
-```bash
-pnpm run test
-```
+| Path | Content |
+|------|---------|
+| `dist/es/*.mjs` | ESM (bundleless) |
+| `dist/lib/*.js` | CJS (bundleless) |
+| `dist/types` | TypeScript declarations (+ `astroform-jsx.d.ts`) |
 
-Build the module for production:
+## Docs
 
-```bash
-pnpm run build
-```
-
-Enable optional features:
-
-```bash
-pnpm run new
-```
-
-Other commands:
-
-```bash
-pnpm run lint         # Lint and fix source files
-pnpm run change       # Add a new changeset
-pnpm run bump         # Update version and changelog via changeset
-pnpm run release      # Release the package
-```
-
-For more information, see the [Modern.js Module documentation](https://modernjs.dev/module-tools/en).
+- Rslib: https://rslib.rs/
+- Rstest: https://rstest.rs/
+- Storybook + Rsbuild: https://storybook.rsbuild.rs/

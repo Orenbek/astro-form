@@ -172,11 +172,23 @@ export const batchValidate = async (
   notify(target, LifeCycles.ON_FORM_VALIDATE_SUCCESS, LifeCycles.ON_FIELD_VALIDATE_SUCCESS)
 }
 
+/**
+ * Extract field value(s) from onInput/onChange args.
+ *
+ * HTML checkbox always has a string `value` (default `"on"`), while the semantic
+ * state lives in `checked` (boolean). Prefer `checked` when `type === 'checkbox'`
+ * so boolean fields toggle true/false instead of stuck at `"on"`.
+ */
 export const getValuesFromEvent = (args: any[]) => {
   return args.map((event) => {
     if (event?.target) {
-      if (isValid(event.target.value)) return event.target.value
-      if (isValid(event.target.checked)) return event.target.checked
+      const { type, value, checked } = event.target
+      // checkbox: boolean checked state is the form value
+      if (type === 'checkbox') {
+        return isValid(checked) ? checked : undefined
+      }
+      if (isValid(value)) return value
+      if (isValid(checked)) return checked
       return undefined
     }
     return event

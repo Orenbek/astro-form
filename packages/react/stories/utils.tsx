@@ -7,7 +7,7 @@ import { FormProvider } from '../src/index'
 export function Wrapper(Component: React.FC) {
   const ChildComponent = observer(Component)
   return function Test() {
-    const form = createForm()
+    const form = React.useMemo(() => createForm(), [])
     return (
       <FormProvider form={form}>
         <ChildComponent />

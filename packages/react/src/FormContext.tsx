@@ -1,5 +1,5 @@
 import React from 'react'
-import { Form } from '@astro-form/core'
+import type { Form } from '@astro-form/core'
 
 export type IProviderProps = {
   form: Form
