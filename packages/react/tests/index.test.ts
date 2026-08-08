@@ -1,7 +1,48 @@
 import { describe, expect, test } from '@rstest/core'
+import { createForm } from '@astro-form/core'
 import { extractFieldPropsAndComponentProps, normalizeDirectiveKey } from '../src/utils/extract-field-props'
+import { mapFieldToComponentProps } from '../src/utils/map-field-to-component-props'
 import { shallowEqualRecord } from '../src/utils/shallow-equal'
 import { ValueType } from '../src/types'
+
+describe('mapFieldToComponentProps', () => {
+  test('projects value and default interaction flags', () => {
+    const form = createForm()
+    const field = form.createField({ name: 'email', value: 'a@b.com' })!
+    expect(mapFieldToComponentProps(field)).toEqual({
+      value: 'a@b.com',
+      disabled: false,
+      readOnly: false,
+    })
+  })
+
+  test('disabled / readPretty map to disabled / readOnly', () => {
+    const form = createForm()
+    const field = form.createField({ name: 'email' })!
+    field.disabled = true
+    expect(mapFieldToComponentProps(field)).toMatchObject({ disabled: true, readOnly: false })
+    field.readPretty = true
+    expect(mapFieldToComponentProps(field)).toMatchObject({ disabled: false, readOnly: true })
+  })
+
+  test('checkbox uses checked boolean instead of value', () => {
+    const form = createForm()
+    const field = form.createField({
+      name: 'agree',
+      value: true,
+      component: ['input', { type: 'checkbox' }],
+    })!
+    expect(mapFieldToComponentProps(field)).toEqual({
+      checked: true,
+      disabled: false,
+      readOnly: false,
+    })
+  })
+
+  test('null field returns empty projection', () => {
+    expect(mapFieldToComponentProps(null)).toEqual({})
+  })
+})
 
 describe('shallowEqualRecord', () => {
   test('compares key identity with Object.is', () => {

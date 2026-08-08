@@ -12,6 +12,7 @@ import { useUpdateEffect } from './hooks/useUpdateEffect'
 import { useForm } from './FormContext'
 import { FieldProvider, useBasePath } from './FieldContext'
 import { extractFieldPropsAndComponentProps, createFieldHelper } from './utils/extract-field-props'
+import { mapFieldToComponentProps } from './utils/map-field-to-component-props'
 import { shallowEqualRecord } from './utils/shallow-equal'
 
 type FieldRenderProps = {
@@ -30,8 +31,11 @@ type FieldRenderProps = {
  *
  * **Rendering uses `props.as` for the element type**, not `field.componentType`.
  * So the tuple's first slot is kept for model parity / future schema-style use; the second
- * slot (`componentProps`) is what actually drives this render path. Public FieldProps does
- * not expose a `component` prop — callers pass `as` + plain DOM/control props.
+ * slot (`componentProps`) is pure UI. Form state (`value` / `disabled` / `readOnly`) is
+ * projected from the Field via {@link mapFieldToComponentProps} and overrides passthrough.
+ *
+ * Public FieldProps does not expose a `component` prop — callers pass `as` + UI props.
+ * Availability: set `x-disabled` / `field.disabled` (model), not a bare DOM `disabled` as SSOT.
  *
  * React `ref` is forwarded to the `as` host (DOM node / class / forwarded component).
  * Core `Field` model refs use `x-ref` / `$$ref`, not this React ref.
@@ -54,19 +58,17 @@ const FieldRender = observer(
     const children = (() => {
       if (field && field.display !== 'visible') return null
       if (props.as) {
-        // checkbox: React controlled state is `checked` (boolean), not `value`.
-        // `value` on checkbox is only the submitted attribute (default "on").
-        const isCheckbox = field?.componentProps?.type === 'checkbox'
+        // UI passthrough first; model projection last so disabled/value win over raw props.
+        // Do not pass field.pattern as HTML `pattern` (regex) — use disabled/readOnly instead.
         return React.createElement(
           props.as,
           {
-            pattern: field?.pattern,
             ...field?.componentProps,
+            ...mapFieldToComponentProps(field),
             onChange,
             onFocus,
             onBlur,
             ref,
-            ...(isCheckbox ? { checked: Boolean(field?.value) } : { value: field?.value }),
           },
           field?.componentProps.children || null
         )

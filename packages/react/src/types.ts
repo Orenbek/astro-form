@@ -104,3 +104,24 @@ export interface AstroFormGlobal<Props extends Record<string, any> = Record<stri
     has(slotName: string): boolean
   }
 }
+
+/**
+ * Host-facing props projected from a core Field.
+ *
+ * ## Design: Field model drives the UI
+ * - JSX `x-disabled` / reactions / `field.disabled` write the **model**.
+ * - Render reads the model and produces component props (this helper).
+ * - Pure UI passthrough (`className`, `placeholder`, …) stays in `componentProps`
+ *   and must be spread **before** this object so model wins on conflicts.
+ *
+ * Not a bidirectional sync: DOM `disabled` does not write back to the field.
+ * Value changes flow the other way only through events (`onInput` / `onChange`).
+ */
+export type FieldComponentStateProps = {
+  value?: unknown
+  checked?: boolean
+  /** `field.pattern === 'disabled'` (inherits parent/form pattern). */
+  disabled?: boolean
+  /** `field.pattern === 'readPretty'` — prefer readOnly so text remains selectable. */
+  readOnly?: boolean
+}
