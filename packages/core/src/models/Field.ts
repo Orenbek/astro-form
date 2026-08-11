@@ -1,6 +1,17 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { ValidatorTriggerType } from '@formily/validator'
-import { makeObservable, observable, observableRef, action, computed, reaction, autorun, toJS, flow } from 'mobx'
+import {
+  makeObservable,
+  observable,
+  observableRef,
+  observableShallow,
+  action,
+  computed,
+  reaction,
+  autorun,
+  toJS,
+  flow,
+} from 'mobx'
 import { isArr, isFn, isValid } from '@/utils'
 
 import { LifeCycles, FormPathPattern, FormPath } from '@/types'
@@ -57,8 +68,13 @@ export class Field<Component extends JSXComponent = any, ValueType = any> extend
       _self: observable,
       data: observable,
       componentType: observableRef,
-      componentProps: observable,
-      dataSource: observable,
+      // Shallow only: nested UI objects (style, optionList items, etc.) must stay plain so
+      // third parties (e.g. React 19 setValueForStyles → Object.freeze) can freeze them.
+      // Top-level key changes via Object.assign still notify observers.
+      componentProps: observableShallow,
+      // Shallow only: option list is replaced wholesale; nested {label,value} items stay plain
+      // so Select/option consumers can freeze without MobX proxy errors.
+      dataSource: observableShallow,
       validator: observableRef,
       // Field defined states
 

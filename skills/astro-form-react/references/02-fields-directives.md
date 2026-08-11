@@ -52,7 +52,7 @@ Synced on create / change via `useSyncFieldModel`.
 | `validator` | Custom Formily rule(s); merges with `v-*` |
 | `validateFirst` | Stop at first failing rule |
 | `dataSource` / `data` | Options / arbitrary payload |
-| `reactions` | `autorun` side effects |
+| `reactions` | `autorun` side effects — **registered only when the Field is first created** for that path; later prop changes are **not** re-synced (`useSyncFieldModel` skips them). Same-path remount reuses the field → same reactions. Details → **ref 06**. |
 | `basePath` | Override inherited basePath |
 | `ref` | MobX box(es) for Field model |
 | `plugins` | Runtime-only field plugins |

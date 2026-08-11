@@ -1,6 +1,6 @@
 /* eslint-disable no-param-reassign */
 // import { createForm } from '@astro-form/core'
-import { autorun, observable, runInAction } from 'mobx'
+import { autorun, isObservable, isObservableObject, observable, runInAction } from 'mobx'
 
 import { createForm } from '../src/index'
 
@@ -290,6 +290,65 @@ test('setComponent/setComponentProps', () => {
     hello: 'world',
   })
   expect(field.component[1]).toEqual({ props: 123, hello: 'world' })
+})
+
+test('componentProps is shallow-observable (not deep)', () => {
+  const form = attach(createForm())
+  const field = attach(
+    form.createField({
+      name: 'aa',
+      component: [undefined as any, { style: { width: '100%' }, placeholder: 'x' }],
+    })!
+  )
+
+  // Bag itself is observable so top-level key changes notify observers.
+  expect(isObservable(field.componentProps)).toBe(true)
+  expect(isObservableObject(field.componentProps)).toBe(true)
+
+  // Nested plain objects stay plain — not deep-converted to Proxies.
+  expect(isObservable(field.componentProps.style)).toBe(false)
+  expect(field.componentProps.style).toEqual({ width: '100%' })
+
+  // React 19 freezes style objects; must not throw on nested props.
+  expect(() => Object.freeze(field.componentProps.style)).not.toThrow()
+  expect(Object.isFrozen(field.componentProps.style)).toBe(true)
+
+  // setComponentProps merge keeps nested objects plain + freeze-safe.
+  field.setComponentProps({ style: { height: '50px' }, disabled: true })
+  expect(isObservable(field.componentProps.style)).toBe(false)
+  expect(() => Object.freeze(field.componentProps.style)).not.toThrow()
+  expect(field.componentProps).toEqual({
+    style: { height: '50px' },
+    placeholder: 'x',
+    disabled: true,
+  })
+})
+
+test('componentProps top-level key changes notify observers (shallow)', () => {
+  const form = attach(createForm())
+  const field = attach(
+    form.createField({
+      name: 'aa',
+    })!
+  )
+
+  field.setComponentProps({ placeholder: 'a' })
+
+  const snapshots: string[] = []
+  const dispose = autorun(() => {
+    snapshots.push(field.componentProps?.placeholder)
+  })
+
+  expect(snapshots).toEqual(['a'])
+
+  field.setComponentProps({ placeholder: 'b' })
+  expect(snapshots).toEqual(['a', 'b'])
+
+  // Whole bag replace (component setter) also notifies.
+  field.component = [undefined as any, { placeholder: 'c' }]
+  expect(snapshots).toEqual(['a', 'b', 'c'])
+
+  dispose()
 })
 
 test('reaction initialValue', () => {
@@ -741,6 +800,63 @@ test('setDataSource', () => {
     { label: 's1', value: 's1' },
     { label: 's2', value: 's2' },
   ])
+})
+
+test('dataSource is shallow-observable (not deep)', () => {
+  const form = attach(createForm())
+  const field = attach(
+    form.createField({
+      name: 'aa',
+    })!
+  )
+
+  const options = [
+    { label: 's1', value: 's1' },
+    { label: 's2', value: 's2' },
+  ]
+  field.setDataSource(options)
+
+  // Array bag is observable so wholesale replace notifies observers.
+  expect(isObservable(field.dataSource)).toBe(true)
+
+  // Nested option items stay plain — not deep-converted to Proxies.
+  expect(isObservable(field.dataSource![0])).toBe(false)
+  expect(isObservableObject(field.dataSource![0])).toBe(false)
+  expect(field.dataSource![0]).toEqual({ label: 's1', value: 's1' })
+
+  // Third parties may freeze option objects; must not throw.
+  expect(() => Object.freeze(field.dataSource![0])).not.toThrow()
+  expect(Object.isFrozen(field.dataSource![0])).toBe(true)
+})
+
+test('dataSource setDataSource notifies observers (shallow replace)', () => {
+  const form = attach(createForm())
+  const field = attach(
+    form.createField({
+      name: 'aa',
+    })!
+  )
+
+  field.setDataSource([{ label: 'a', value: 'a' }])
+
+  const snapshots: any[] = []
+  const dispose = autorun(() => {
+    snapshots.push(field.dataSource?.map((o) => o.value))
+  })
+
+  expect(snapshots).toEqual([['a']])
+
+  field.setDataSource([
+    { label: 'b', value: 'b' },
+    { label: 'c', value: 'c' },
+  ])
+  expect(snapshots).toEqual([['a'], ['b', 'c']])
+
+  // Nested items remain non-observable after replace.
+  expect(isObservable(field.dataSource![0])).toBe(false)
+  expect(() => Object.freeze(field.dataSource![0])).not.toThrow()
+
+  dispose()
 })
 
 test('required/setRequired', () => {

@@ -59,6 +59,7 @@ export default function ContactPage() {
 | `03-nesting-paths.md` | basePath, arrays, register-only, path identity, display vs unmount |
 | `04-reactivity-submit.md` | observer rules, errors UI, submit/validate/reset contracts |
 | `05-controls-refs-pitfalls.md` | custom `as`, events, `x-ref`, stable props, anti-patterns |
+| `06-core-observability.md` | Form/Field property observability, live vs `toJS`, `x-reactions` once |
 
 ## Directives (strict)
 
