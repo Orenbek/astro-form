@@ -11,7 +11,7 @@ Public API. Form/Field are MobX models; React re-renders only via **`observer`**
 | `form.errors` / `warnings` / `successes` / `valid` / `invalid` | Yes |
 | `form.submitting` / `validating` / `loading` / `modified` | Yes |
 | `form.pattern` / `display` / `editable` | Yes |
-| `box.get()` field / `form.query(…).take()` then field props | Yes |
+| `useField` / `box.get()` / `form.query(…).take()` then field props | Yes |
 | Static layout | No |
 
 ```tsx
@@ -35,6 +35,17 @@ const Summary = observer(function Summary() {
 - `form.values` is a live observable — **don't mutate in render**. Snapshot: `mobx.toJS(form.values)` or `form.getValuesIn(path)`.
 - `field.value` is `toJS` each read — don't rely on object identity.
 - Writes: `setValues` / `setValuesIn` (strategies: `merge` default, `shallowMerge`, `overwrite`). Programmatic sets don't set `selfModified` the same way as input.
+
+### `useField`
+
+Read a registered Field (does not create). Joins like child `name`: `basePath + path`（不是 Formily 的 `.`/`..` 语法）。
+
+```tsx
+useField()           // field at current basePath; root → undefined
+useField('nick')     // under profile → profile.nick; at root → nick
+```
+
+`form.query` / `field.query` / 相对与通配 → ref **07**。`x-ref` box → ref **05**。
 
 | Getter | Meaning |
 |---|---|
@@ -93,19 +104,17 @@ const ErrorBanner = observer(function ErrorBanner() {
 })
 ```
 
-**Inline via box**
+**Inline**
 
 ```tsx
-const box = useBoxRef()
-// <f.String name="email" x-ref={box} … />
-const FieldError = observer(function FieldError({ box }) {
-  const field = box.get()
+const EmailError = observer(function EmailError() {
+  const field = useField('email')
   if (!field?.selfErrors.length) return null
   return <p>{field.selfErrors[0]}</p>
 })
 ```
 
-Or `form.query('email').take()` inside `observer` (no box).
+Or `x-ref` box / `form.query('email').take()` (ref 05).
 
 ## 6. Batching
 

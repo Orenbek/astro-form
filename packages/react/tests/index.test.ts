@@ -1,9 +1,15 @@
+import React from 'react'
 import { describe, expect, test } from '@rstest/core'
+import { render, renderHook } from '@testing-library/react'
 import { createForm } from '@astro-form/core'
 import { extractFieldPropsAndComponentProps, normalizeDirectiveKey } from '../src/utils/extract-field-props'
 import { mapFieldToComponentProps } from '../src/utils/map-field-to-component-props'
 import { shallowEqualRecord } from '../src/utils/shallow-equal'
 import { ValueType } from '../src/types'
+import { FormProvider } from '../src/FormContext'
+import { FieldProvider } from '../src/FieldContext'
+import { f } from '../src/Field'
+import { useField } from '../src/hooks/useField'
 
 describe('mapFieldToComponentProps', () => {
   test('projects value and default interaction flags', () => {
@@ -175,5 +181,103 @@ describe('extractFieldPropsAndComponentProps', () => {
     })
 
     expect(field.required).toBe(true)
+  })
+})
+
+describe('useField', () => {
+  test('no path at root returns undefined', () => {
+    const form = createForm()
+    form.createField({ name: 'email', value: 'a@b.com' })
+    const wrapper = ({ children }: { children: React.ReactNode }) =>
+      React.createElement(FormProvider, { form }, children)
+
+    const { result } = renderHook(() => useField(), { wrapper })
+    expect(result.current).toBeUndefined()
+  })
+
+  test('path joins basePath like child field registration', () => {
+    const form = createForm()
+    form.createField({ name: 'email', basePath: 'user', value: 'a@b.com' })
+    const wrapper = ({ children }: { children: React.ReactNode }) =>
+      React.createElement(FormProvider, { form }, React.createElement(FieldProvider, { basePath: 'user' }, children))
+
+    const { result } = renderHook(() => useField('email'), { wrapper })
+    expect(result.current?.path.toString()).toBe('user.email')
+    expect(result.current?.value).toBe('a@b.com')
+  })
+
+  test('no path resolves nearest FieldProvider path after f.* mount', () => {
+    const form = createForm({ initialValues: { profile: { nick: 'ada' } } })
+    let seen: string | undefined
+
+    const Probe = () => {
+      const field = useField()
+      seen = field?.path.toString()
+      return null
+    }
+
+    render(
+      React.createElement(
+        FormProvider,
+        { form },
+        React.createElement(
+          f.Object,
+          { name: 'profile' },
+          // Probe is a child of Object → basePath is `profile` (field exists from parent render)
+          React.createElement(Probe, null),
+          React.createElement(f.String, { name: 'nick', as: 'input' })
+        )
+      )
+    )
+
+    expect(seen).toBe('profile')
+    expect(form.query('profile.nick').take()?.value).toBe('ada')
+  })
+
+  test('path under nested field resolves full path', () => {
+    const form = createForm({ initialValues: { profile: { nick: 'ada' } } })
+    let seen: string | undefined
+
+    const Probe = () => {
+      const field = useField('nick')
+      seen = field?.path.toString()
+      return null
+    }
+
+    render(
+      React.createElement(
+        FormProvider,
+        { form },
+        React.createElement(
+          f.Object,
+          { name: 'profile' },
+          // Register leaf first so sibling probe can query it on the same pass
+          React.createElement(f.String, { name: 'nick', as: 'input' }),
+          React.createElement(Probe, null)
+        )
+      )
+    )
+
+    expect(seen).toBe('profile.nick')
+  })
+
+  test('path at form root is absolute-from-root (empty basePath)', () => {
+    const form = createForm()
+    form.createField({ name: 'email', value: 'a@b.com' })
+    const wrapper = ({ children }: { children: React.ReactNode }) =>
+      React.createElement(FormProvider, { form }, children)
+
+    const { result } = renderHook(() => useField('email'), { wrapper })
+    expect(result.current?.path.toString()).toBe('email')
+    expect(result.current?.value).toBe('a@b.com')
+  })
+
+  test('missing path returns undefined', () => {
+    const form = createForm()
+    const wrapper = ({ children }: { children: React.ReactNode }) =>
+      React.createElement(FormProvider, { form }, children)
+
+    const { result } = renderHook(() => useField('missing'), { wrapper })
+    expect(result.current).toBeUndefined()
   })
 })

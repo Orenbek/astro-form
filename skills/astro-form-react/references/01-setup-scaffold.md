@@ -17,7 +17,7 @@ Peer `react >= 18`. Transitive: `mobx`, `mobx-react-lite`, `@formily/validator`.
 
 ### Public exports (`packages/react/src/index.ts`)
 
-`FormProvider`, `useForm`, `FormContext`, `BaseField`, `f`, hooks (`useRef` = MobX box for `x-ref`, `useFormEffects`, `useMount`, `useForceUpdate`), utils (`mapFieldToComponentProps`, `passRefToChild`, slots), `observer` (+ rest of `mobx-react-lite`), types (`FieldProps`, `ValidatorProps`, …).
+`FormProvider`, `useForm`, `FormContext`, `BaseField`, `f`, hooks (`useField`, `useRef` = MobX box for `x-ref`, `useFormEffects`, `useMount`, `useForceUpdate`), utils (`mapFieldToComponentProps`, `passRefToChild`, slots), `observer` (+ rest of `mobx-react-lite`), types (`FieldProps`, `ValidatorProps`, …).
 
 ## `createForm`
 

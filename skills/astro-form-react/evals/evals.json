@@ -49,12 +49,12 @@
     {
       "id": 3,
       "prompt": "A checkout form with @astro-form/react (plain React). There's a 'shipping' section and a 'billing' section; billing is only needed for guest checkout, so it has a 'billing same as shipping' checkbox. When billing is toggled off, the billing section must NOT block form submit (its validation should be skipped) but the data the user already typed in billing must be kept so it reappears if they toggle back on. Each field should show its own inline error under the input. Please write the component.",
-      "expected_output": "Billing section toggled with `x-hidden`/`x-display` (not `{cond && <Field />}` which destroy-clears values on unmount), values retained because `display='hidden'` keeps the value tree (only `'none'` clears it), hidden fields skipped by validation, per-field inline errors via `x-ref` box + observer reading `field.selfErrors`.",
+      "expected_output": "Billing section toggled with `x-hidden`/`x-display` (not `{cond && <Field />}` which destroy-clears values on unmount), values retained because `display='hidden'` keeps the value tree (only `'none'` clears it), hidden fields skipped by validation, per-field inline errors via `useField` / `x-ref` / `query` + observer reading `field.selfErrors`.",
       "expectations": [
         "Billing section visibility toggled with `x-hidden` or `x-display` (not unmount-based conditional rendering)",
         "Solution does not copy values around on toggle (relies on `display='hidden'` retaining values)",
         "Billing field models (or the container) are skipped by validation while hidden — submit succeeds with billing off",
-        "Inline per-field errors read `field.selfErrors` reactively inside an `observer` (via `x-ref` box or `form.query(path).take()`)",
+        "Inline per-field errors read `field.selfErrors` reactively inside an `observer` (`useField`, `x-ref` box, or `form.query`)",
         "Only hyphen directives (`x-*`/`v-*`); no colon prefixes"
       ]
     }

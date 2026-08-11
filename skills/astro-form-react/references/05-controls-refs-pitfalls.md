@@ -50,7 +50,7 @@ onChange={(e) => onChange(e.target.value === '' ? undefined : Number(e.target.va
 // — either set type="checkbox" on the host props or accept `value` as the boolean.
 ```
 
-Inline errors are **not** on `as` props — `observer` + `form.query('email').take()?.selfErrors` or `x-ref` box.
+Inline errors are **not** on `as` props — `observer` + `useField` / `x-ref` / `form.query` (ref 04).
 
 ## 3. Stable passthrough
 

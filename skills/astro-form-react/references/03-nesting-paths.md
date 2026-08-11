@@ -86,7 +86,7 @@ function EmailInput({ path }: { path: string }) {
 
 ```jsx
 const Todos = observer(() => {
-  const listRef = useFieldRef() // @astro-form/react useRef = MobX box
+  const listRef = useRef() // @astro-form/react useRef = MobX box
   const list = listRef.get()?.value ?? []
   return (
     <f.Array name="todos" as="div" x-ref={listRef} x-initialValue={[{ title: 'a' }]}>
@@ -135,8 +135,9 @@ createField 按 path 缓存；React Field cleanup：`onUnmount` + **`destroy()`�
 form.query('user.name').take()?.value
 form.query('user.**').map()
 form.setValuesIn('user.name', 'grace')
-form.deleteValuesIn('user.address')
 ```
+
+路径语法、`field.query` 相对定位、与 `useField` 的差异 → ref **07**。
 
 ## 8. 速查
 

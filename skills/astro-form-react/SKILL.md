@@ -57,9 +57,10 @@ export default function ContactPage() {
 | `01-setup-scaffold.md` | install, exports, `createForm` options, form identity bugs |
 | `02-fields-directives.md` | `f.*` matrix, full `x-*`/`v-*` keys, triggers, dual `required`/`pattern` |
 | `03-nesting-paths.md` | basePath, arrays, register-only, path identity, display vs unmount |
-| `04-reactivity-submit.md` | observer rules, errors UI, submit/validate/reset contracts |
+| `04-reactivity-submit.md` | observer rules, `useField`, errors UI, submit/validate/reset contracts |
 | `05-controls-refs-pitfalls.md` | custom `as`, events, `x-ref`, stable props, anti-patterns |
 | `06-core-observability.md` | Form/Field property observability, live vs `toJS`, `x-reactions` once |
+| `07-path-and-query.md` | FormPath, relative/wildcard query, `form.query` / `field.query` / `useField` |
 
 ## Directives (strict)
 
@@ -89,7 +90,7 @@ Path = `basePath + name` (dots OK: `name="address.city"`). Identity is the path 
 **Arrays:** no render-prop children — `observer` + package `useRef` box + index names + `key={i}`:
 
 ```tsx
-const listBox = useFieldRef() // from '@astro-form/react', not React.useRef
+const listBox = useRef() // from '@astro-form/react', not React.useRef
 const list = listBox.get()?.value ?? []
 // <f.Array x-ref={listBox}> … name={`${i}.title`} key={i} … push/remove via listBox.get()
 ```
@@ -103,10 +104,10 @@ Details → ref 03.
 
 ## Reactivity, submit, feedback
 
-- Observer only for readers of `form.values` / `errors` / `submitting` / field boxes / `query().take()`.
+- Observer only for readers of `form.values` / `errors` / `submitting` / field models / `query().take()`.
 - Snapshot: `mobx.toJS(form.values)` or `form.getValuesIn(path)`.
 - `await form.submit(fn)` · `validate()` · `reset()` / `reset('*', { forceClear, validate })`.
-- Inline errors: `x-ref` box + `observer` → `field.selfErrors` / `validateStatus`.
+- Inline errors: `observer` + `useField(path)` / `x-ref` / `query` → `field.selfErrors` / `validateStatus`.
 
 Details → ref 04.
 
@@ -147,8 +148,9 @@ createForm({ values, initialValues, pattern, display, validateFirst, effects })
 form.values · mobx.toJS(form.values) · getValuesIn / setValuesIn / deleteValuesIn
 form.errors · valid · submitting · modified
 form.submit(onSubmit?) · validate(pattern?) · reset(pattern?, opts?)
-form.clearErrors · field.setSelfErrors · form.query(pattern).take()
+form.clearErrors · field.setSelfErrors · form.query / field.query · useField
 ```
+
 
 ## Non-goals
 
